@@ -3,6 +3,7 @@
 //
 // $Id: r_plane.c,v 1.8 1998/05/03 23:09:53 killough Exp $
 //
+//  BOOM, a modified and improved DOOM engine
 //  Copyright (C) 1999 by
 //  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
 //
@@ -21,7 +22,6 @@
 //  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
 //  02111-1307, USA.
 //
-//
 // DESCRIPTION:
 //      Here is a core component: drawing the floors and ceilings,
 //       while maintaining a per column clipping list only.
@@ -39,8 +39,6 @@
 // Lee Killough
 //
 //-----------------------------------------------------------------------------
-
-//static const char rcsid[] = "$Id: r_plane.c,v 1.8 1998/05/03 23:09:53 killough Exp $";
 
 #include "z_zone.h"  /* memory allocation wrappers -- killough */
 #include "doomstat.h"
@@ -224,8 +222,8 @@ visplane_t *R_FindPlane(fixed_t height, int picnum, int lightlevel,
   visplane_t *check;
   unsigned hash;                      // killough
 
-  if (picnum == skyflatnum || picnum & PL_SKYFLAT)  // killough 10/98
-    lightlevel = height = 0;   // killough 7/19/98: most skies map together
+  if (picnum == skyflatnum)
+    height = lightlevel = 0;          // all skys map together
 
   // New visplane algorithm uses hash table -- killough
   hash = visplane_hash(picnum,lightlevel,height);
@@ -243,7 +241,7 @@ visplane_t *R_FindPlane(fixed_t height, int picnum, int lightlevel,
   check->height = height;
   check->picnum = picnum;
   check->lightlevel = lightlevel;
-  check->minx = viewwidth;            // Was SCREENWIDTH -- killough 11/98
+  check->minx = SCREENWIDTH;
   check->maxx = -1;
   check->xoffs = xoffs;               // killough 2/28/98: Save offsets
   check->yoffs = yoffs;
@@ -316,72 +314,23 @@ static void do_draw_plane(visplane_t *pl)
 {
   register int x;
   if (pl->minx <= pl->maxx)
-    if (pl->picnum == skyflatnum || pl->picnum & PL_SKYFLAT)  // sky flat
+    if (pl->picnum == skyflatnum)            // sky flat
       {
-	int texture;
-	angle_t an, flip;
-
-	// killough 10/98: allow skies to come from sidedefs.
-	// Allows scrolling and/or animated skies, as well as
-	// arbitrary multiple skies per level without having
-	// to use info lumps.
-
-	an = viewangle;
-
-	if (pl->picnum & PL_SKYFLAT)
-	  { 
-	    // Sky Linedef
-	    const line_t *l = &lines[pl->picnum & ~PL_SKYFLAT];
-
-	    // Sky transferred from first sidedef
-	    const side_t *s = *l->sidenum + sides;
-
-	    // Texture comes from upper texture of reference sidedef
-	    texture = texturetranslation[s->toptexture];
-
-	    // Horizontal offset is turned into an angle offset,
-	    // to allow sky rotation as well as careful positioning.
-	    // However, the offset is scaled very small, so that it
-	    // allows a long-period of sky rotation.
-
-	    an += s->textureoffset;
-
-	    // Vertical offset allows careful sky positioning.
-
-	    dc_texturemid = s->rowoffset - 28*FRACUNIT;
-
-	    // We sometimes flip the picture horizontally.
-	    //
-	    // Doom always flipped the picture, so we make it optional,
-	    // to make it easier to use the new feature, while to still
-	    // allow old sky textures to be used.
-
-	    flip = l->special==272 ? 0u : ~0u;
-	  }
-	else 	 // Normal Doom sky, only one allowed per level
-	  {
-	    dc_texturemid = skytexturemid;    // Default y-offset
-	    texture = skytexture;             // Default texture
-	    flip = 0;                         // Doom flips it
-	  }
 
         // Sky is always drawn full bright, i.e. colormaps[0] is used.
         // Because of this hack, sky is not affected by INVUL inverse mapping.
-	//
-	// killough 7/19/98: fix hack to be more realistic:
 
-	if (!(dc_colormap = fixedcolormap))
-	  dc_colormap = fullcolormap;          // killough 3/20/98
-
-        dc_texheight = textureheight[texture]>>FRACBITS; // killough
+        dc_colormap = fullcolormap;          // killough 3/20/98
+        dc_texturemid = skytexturemid;
+        dc_texheight = textureheight[skytexture]>>FRACBITS; // killough
         dc_iscale = pspriteiscale;
 
-	// killough 10/98: Use sky scrolling offset, and possibly flip picture
-        for (x = pl->minx; (dc_x = x) <= pl->maxx; x++)
+        for (x = pl->minx; x <= pl->maxx; x++)
           if ((dc_yl = pl->top[x]) <= (dc_yh = pl->bottom[x]))
             {
-              dc_source = R_GetColumn(texture, ((an + xtoviewangle[x])^flip) >>
-				      ANGLETOSKYSHIFT);
+              dc_x = x;
+              dc_source = R_GetColumn(skytexture,
+                          (viewangle + xtoviewangle[x]) >> ANGLETOSKYSHIFT);
               colfunc();
             }
       }
