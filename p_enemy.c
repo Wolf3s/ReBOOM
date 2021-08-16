@@ -1,8 +1,9 @@
 // Emacs style mode select   -*- C++ -*-
 //-----------------------------------------------------------------------------
 //
-// $Id: p_enemy.c,v 1.22 1998/05/12 12:47:10 phares Exp $
+// $Id: p_enemy.c,v 1.23 1998/08/13 15:27:26 jim Exp $
 //
+//  BOOM, a modified and improved DOOM engine
 //  Copyright (C) 1999 by
 //  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
 //
@@ -27,8 +28,6 @@
 //      that are associated with states/frames.
 //
 //-----------------------------------------------------------------------------
-
-//static const char rcsid[] = "$Id: p_enemy.c,v 1.22 1998/05/12 12:47:10 phares Exp $";
 
 #include "doomstat.h"
 #include "m_random.h"
@@ -133,31 +132,22 @@ void P_NoiseAlert(mobj_t *target, mobj_t *emitter)
 
 static boolean P_CheckMeleeRange(mobj_t *actor)
 {
-  mobj_t *pl = actor->target;
+  mobj_t  *pl;
+  fixed_t dist;
 
-  return  // killough 7/18/98: friendly monsters don't attack other friends
-    pl && !(actor->flags & pl->flags & MF_FRIEND) &&
-    (P_AproxDistance(pl->x-actor->x, pl->y-actor->y) <
-     MELEERANGE - 20*FRACUNIT + pl->info->radius) &&
-    P_CheckSight(actor, actor->target);
-}
+  if (!actor->target)
+    return false;
 
-//
-// P_HitFriend()
-//
-// killough 12/98
-// This function tries to prevent shooting at friends
+  pl = actor->target;
+  dist = P_AproxDistance(pl->x-actor->x, pl->y-actor->y);
 
-static boolean P_HitFriend(mobj_t *actor)
-{
-  return actor->target &&
-    (P_AimLineAttack(actor, 
-		     R_PointToAngle2(actor->x, actor->y,
-				     actor->target->x, actor->target->y),
-		     P_AproxDistance(actor->x-actor->target->x, 
-				     actor->y-actor->target->y), 0),
-     linetarget) && linetarget != actor->target &&
-    !((linetarget->flags ^ actor->flags) & MF_FRIEND);
+  if (dist >= MELEERANGE-20*FRACUNIT+pl->info->radius)
+    return false;
+
+  if (!P_CheckSight(actor, actor->target))
+    return false;
+
+  return true;
 }
 
 //
@@ -226,9 +216,6 @@ static boolean P_CheckMissileRange(mobj_t *actor)
     dist = 160;
 
   if (P_Random(pr_missrange) < dist)
-    return false;
-  
-  if (actor->flags & MF_FRIEND && P_HitFriend(actor))
     return false;
 
   return true;
@@ -1123,32 +1110,7 @@ void A_Chase(mobj_t *actor)
 	else
 	  {
 	    actor->pursuecount = BASETHRESHOLD;
-	    
-	    // If current target is bad and a new one is found, return:
-
-	    if (!(actor->target && actor->target->health > 0 &&
-		  ((!netgame) || 
-		   (((actor->target->flags ^ actor->flags) & MF_FRIEND ||
-		     (!(actor->flags & MF_FRIEND) && monster_infighting)) &&
-		    P_CheckSight(actor, actor->target)))) &&
-		P_LookForTargets(actor, true))
-	      return;
-	    
-	    // (Current target was good, or no new target was found.)
-	    //
-	    // If monster is a missile-less friend, give up pursuit and
-	    // return to player, if no attacks have occurred recently.
-
-	    if (!actor->info->missilestate && actor->flags & MF_FRIEND)
-	      if (actor->flags & MF_JUSTHIT)        // if recent action,
-		actor->flags &= ~MF_JUSTHIT;        // keep fighting
-	      else
-		if (P_LookForPlayers(actor, true))  // else return to player
-		  return;
 	  }
-  
-  if (actor->strafecount)
-    actor->strafecount--;
   
   // chase towards player
   if (--actor->movecount<0 || !P_SmartMove(actor))
@@ -1241,20 +1203,13 @@ void A_CPosRefire(mobj_t *actor)
   // keep firing unless target got out of sight
   A_FaceTarget(actor);
 
-  // killough 12/98: Stop firing if a friend has gotten in the way
-  if (actor->flags & MF_FRIEND && P_HitFriend(actor))
-    goto stop;
-
   // killough 11/98: prevent refiring on friends continuously
   if (P_Random(pr_cposrefire) < 40)
-    if (actor->target && actor->flags & actor->target->flags & MF_FRIEND)
-      goto stop;
-    else
       return;
 
   if (!actor->target || actor->target->health <= 0
       || !P_CheckSight(actor, actor->target))
-    stop: P_SetMobjState(actor, actor->info->seestate);
+    P_SetMobjState(actor, actor->info->seestate);
 }
 
 void A_SpidRefire(mobj_t* actor)
@@ -1262,18 +1217,13 @@ void A_SpidRefire(mobj_t* actor)
   // keep firing unless target got out of sight
   A_FaceTarget(actor);
 
-  // killough 12/98: Stop firing if a friend has gotten in the way
-  if (actor->flags & MF_FRIEND && P_HitFriend(actor))
-    goto stop;
-
   if (P_Random(pr_spidrefire) < 10)
     return;
 
   // killough 11/98: prevent refiring on friends continuously
   if (!actor->target || actor->target->health <= 0
-      || actor->flags & actor->target->flags & MF_FRIEND
       || !P_CheckSight(actor, actor->target))
-    stop: P_SetMobjState(actor, actor->info->seestate);
+    P_SetMobjState(actor, actor->info->seestate);
 }
 
 void A_BspiAttack(mobj_t *actor)
@@ -1521,17 +1471,26 @@ boolean PIT_VileCheck(mobj_t *thing)
     corpsehit = thing;
     corpsehit->momx = corpsehit->momy = 0;
     
-    int height,radius;
+    if (compatibility)                                              // phares
+      {                                                             //   |
+        corpsehit->height <<= 2;                                    //   V
+        check = P_CheckPosition(corpsehit,corpsehit->x,corpsehit->y);
+        corpsehit->height >>= 2;
+      }
+    else
+      {
+        int height,radius;
 
-    height = corpsehit->height; // save temporarily
-    radius = corpsehit->radius; // save temporarily
-    corpsehit->height = corpsehit->info->height;
-    corpsehit->radius = corpsehit->info->radius;
-    corpsehit->flags |= MF_SOLID;
-    check = P_CheckPosition(corpsehit,corpsehit->x,corpsehit->y);
-    corpsehit->height = height; // restore
-    corpsehit->radius = radius; // restore                      //   ^
-    corpsehit->flags &= ~MF_SOLID;
+        height = corpsehit->height; // save temporarily
+        radius = corpsehit->radius; // save temporarily
+        corpsehit->height = corpsehit->info->height;
+        corpsehit->radius = corpsehit->info->radius;
+        corpsehit->flags |= MF_SOLID;
+        check = P_CheckPosition(corpsehit,corpsehit->x,corpsehit->y);
+        corpsehit->height = height; // restore
+        corpsehit->radius = radius; // restore                      //   ^
+        corpsehit->flags &= ~MF_SOLID;
+      } 
 
     if (!check)
       return true;              // doesn't fit here
@@ -1586,25 +1545,16 @@ void A_VileChase(mobj_t* actor)
 
                   P_SetMobjState(corpsehit,info->raisestate);
 
-                  corpsehit->height = info->height; // fix Ghost bug
-                  corpsehit->radius = info->radius; // fix Ghost bug
-
-		  // killough 7/18/98: 
-		  // friendliness is transferred from AV to raised corpse
-		  corpsehit->flags = 
-		    (info->flags & ~MF_FRIEND) | (actor->flags & MF_FRIEND);
-		  
+                  if (compatibility)                                // phares
+                    corpsehit->height <<= 2;                        //   |
+                  else
+                    {
+                      corpsehit->height = info->height; // fix Ghost bug
+                      corpsehit->radius = info->radius; // fix Ghost bug
+                    }
+                  corpsehit->flags = info->flags;
                   corpsehit->health = info->spawnhealth;
-		  P_SetTarget(&corpsehit->target, NULL);  // killough 11/98
-
-		  if (demo_version >= 203)
-		    {         // kilough 9/9/98
-		      P_SetTarget(&corpsehit->lastenemy, NULL);
-		      corpsehit->flags &= ~MF_JUSTHIT;
-		    }
-
-		  // killough 8/29/98: add to appropriate thread
-		  P_UpdateThinker(&corpsehit->thinker);
+                  corpsehit->target = NULL;
 
                   return;
                 }
@@ -1899,12 +1849,6 @@ void A_PainShootSkull(mobj_t *actor, angle_t angle)
           P_DamageMobj(newmobj,actor,actor,10000);
           return;
         }
-
-  // killough 7/20/98: PEs shoot lost souls with the same friendliness
-  newmobj->flags = (newmobj->flags & ~MF_FRIEND) | (actor->flags & MF_FRIEND);
-
-  // killough 8/29/98: add to appropriate thread
-  P_UpdateThinker(&newmobj->thinker);
 
   // Check for movements.
   // killough 3/15/98: don't jump over dropoffs:
@@ -2326,9 +2270,6 @@ void A_BrainSpit(mobj_t *mo)
   P_SetTarget(&newmobj->target, targ);
   newmobj->reactiontime = (short)(((targ->y-mo->y)/newmobj->momy)/newmobj->state->tics);
 
-  // killough 7/18/98: brain friendliness is transferred
-  newmobj->flags = (newmobj->flags & ~MF_FRIEND) | (mo->flags & MF_FRIEND);
-
   // killough 8/29/98: add to appropriate thread
   P_UpdateThinker(&newmobj->thinker);
 
@@ -2392,8 +2333,7 @@ void A_SpawnFly(mobj_t *mo)
 
   newmobj = P_SpawnMobj(targ->x, targ->y, targ->z, type);
 
-  // killough 7/18/98: brain friendliness is transferred
-  newmobj->flags = (newmobj->flags & ~MF_FRIEND) | (mo->flags & MF_FRIEND);
+
 
   // killough 8/29/98: add to appropriate thread
   P_UpdateThinker(&newmobj->thinker);

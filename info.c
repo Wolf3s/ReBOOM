@@ -127,7 +127,6 @@ void A_Chase();
 void A_FaceTarget();
 void A_PosAttack();
 void A_Scream();
-void A_Die();
 void A_SPosAttack();
 void A_VileChase();
 void A_VileStart();
@@ -170,8 +169,6 @@ void A_SpawnSound();
 void A_SpawnFly();
 void A_BrainExplode();
 void A_FireOldBFG();      // killough 7/19/98: classic BFG firing function
-void A_Detonate();        // killough 8/9/98: detonate a bomb or other device
-void A_Mushroom();        // killough 10/98: mushroom effect
 void A_BetaSkullAttack(); // killough 10/98: beta lost souls attacked different
 
 // ********************************************************************
@@ -1173,12 +1170,8 @@ state_t states[NUMSTATES] = {
 
   {SPR_TNT1,0,-1,NULL,S_TNT1},          // S_TNT1    // phares 3/8/98
 
-  // killough 8/9/98: grenade
-  {SPR_MISL,32768,1000,A_Die,S_GRENADE},      // S_GRENADE
-
   // killough 8/10/98: variable damage explosion
   {SPR_MISL,32769,4,A_Scream,S_DETONATE2},    // S_DETONATE
-  {SPR_MISL,32770,6,A_Detonate,S_DETONATE3},  // S_DETONATE2
   {SPR_MISL,32771,10,NULL,S_NULL},            // S_DETONATE3
 
 #ifdef BETA
@@ -1256,9 +1249,6 @@ state_t states[NUMSTATES] = {
   {SPR_SKUL,16,5,A_Stop,S_BSKUL_DIE8},   // S_BSKUL_DIE8
 
 #endif
-
-  // killough 10/98: mushroom effect
-  {SPR_MISL,32769,8,A_Mushroom,S_EXPLODE2},  // S_MUSHROOM
 };
 
 // ********************************************************************
