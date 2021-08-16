@@ -76,7 +76,6 @@ static void cheat_ammo();
 static void cheat_ammox();
 static void cheat_smart();
 static void cheat_pitch();
-static void cheat_nuke();
 
 #ifdef BETA
 static void cheat_autoaim();      // killough 7/19/98
@@ -231,9 +230,6 @@ struct cheat_s cheat[] = {
 
   {"push",    NULL,                   not_net | not_demo, 
    cheat_pushers    },   // phares 3/10/98: toggle pushers
-
-  {"nuke",    NULL,                   not_net | not_demo,
-   cheat_nuke       },   // killough 12/98: disable nukage damage
 
 #ifdef BETA
   {"aim",        NULL,                not_net | not_demo | beta_only,
@@ -650,13 +646,6 @@ static void cheat_pitch()
   extern int pitched_sounds;  // Ty 03/27/98 - *not* externalized
   plyr->message=(pitched_sounds = !pitched_sounds) ? "Pitch Effects Enabled" :
     "Pitch Effects Disabled";
-}
-
-static void cheat_nuke()
-{
-  extern int disable_nuke;
-  plyr->message = (disable_nuke = !disable_nuke) ? "Nukage Disabled" :
-    "Nukage Enabled";
 }
 
 //-----------------------------------------------------------------------------

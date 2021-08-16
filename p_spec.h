@@ -913,8 +913,6 @@ int EV_TurnTagLightsOff(line_t *line);
 
 int EV_LightTurnOn(line_t *line, int bright);
 
-int EV_LightTurnOnPartway(line_t *line, fixed_t level);  // killough 10/10/98
-
 // p_floor
 
 int EV_DoChange(line_t *line, change_e changetype);
