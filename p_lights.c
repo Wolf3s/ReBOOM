@@ -3,6 +3,7 @@
 //
 // $Id: p_lights.c,v 1.11 1998/05/18 09:04:41 jim Exp $
 //
+//  BOOM, a modified and improved DOOM engine
 //  Copyright (C) 1999 by
 //  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
 //
@@ -28,8 +29,6 @@
 //
 //-----------------------------------------------------------------------------
 
-//static const char rcsid[] = "$Id: p_lights.c,v 1.11 1998/05/18 09:04:41 jim Exp $";
-
 #include "doomstat.h" //jff 5/18/98
 #include "doomdef.h"
 #include "m_random.h"
@@ -51,11 +50,6 @@
 // Passed a fireflicker_t structure containing light levels and timing
 // Returns nothing
 //
-#if defined ACCESSIBILITY
-void T_FireFlicker (fireflicker_t* flick)
-{
-}
-#else
 void T_FireFlicker (fireflicker_t* flick)
 {
   int amount;
@@ -72,7 +66,6 @@ void T_FireFlicker (fireflicker_t* flick)
 
   flick->count = 4;
 }
-#endif
 //
 // T_LightFlash()
 //
@@ -81,11 +74,6 @@ void T_FireFlicker (fireflicker_t* flick)
 // Passed a lightflash_t structure containing light levels and timing
 // Returns nothing
 //
-#if defined ACCESSIBILITY
-void T_LightFlash (lightflash_t* flash)
-{
-}
-#else
 void T_LightFlash (lightflash_t* flash)
 {
   if (--flash->count)
@@ -102,7 +90,6 @@ void T_LightFlash (lightflash_t* flash)
     flash->count = (P_Random(pr_lights)&flash->maxtime)+1;
   }
 }
-#endif
 //
 // T_StrobeFlash()
 //
@@ -111,11 +98,6 @@ void T_LightFlash (lightflash_t* flash)
 // Passed a strobe_t structure containing light levels and timing
 // Returns nothing
 //
-#if defined ACCESSIBILITY
-void T_StrobeFlash (strobe_t*   flash)
-{
-}
-#else
 void T_StrobeFlash (strobe_t*   flash)
 {
   if (--flash->count)
@@ -132,7 +114,6 @@ void T_StrobeFlash (strobe_t*   flash)
     flash->count =flash->darktime;
   }
 }
-#endif
 //
 // T_Glow()
 //
@@ -141,11 +122,6 @@ void T_StrobeFlash (strobe_t*   flash)
 // Passed a glow_t structure containing light levels and timing
 // Returns nothing
 //
-#if defined ACCESSIBILITY
-void T_Glow(glow_t* g)
-{
-}
-#else
 void T_Glow(glow_t* g)
 {
   switch(g->direction)
@@ -171,7 +147,6 @@ void T_Glow(glow_t* g)
       break;
   }
 }
-#endif
 //////////////////////////////////////////////////////////
 //
 // Sector lighting type spawners
@@ -189,11 +164,6 @@ void T_Glow(glow_t* g)
 // Passed the sector that spawned the thinker
 // Returns nothing
 //
-#if defined ACCESSIBILITY
-void P_SpawnFireFlicker (sector_t*  sector)
-{
-}
-#else
 void P_SpawnFireFlicker (sector_t*  sector)
 {
   fireflicker_t*  flick;
@@ -212,7 +182,6 @@ void P_SpawnFireFlicker (sector_t*  sector)
   flick->minlight = P_FindMinSurroundingLight(sector,sector->lightlevel)+16;
   flick->count = 4;
 }
-#endif
 //
 // P_SpawnLightFlash()
 //
@@ -221,11 +190,6 @@ void P_SpawnFireFlicker (sector_t*  sector)
 // Passed the sector that spawned the thinker
 // Returns nothing
 //
-#if defined ACCESSIBILITY
-void P_SpawnLightFlash (sector_t* sector)
-{
-}
-#else
 void P_SpawnLightFlash (sector_t* sector)
 {
   lightflash_t* flash;
@@ -246,7 +210,6 @@ void P_SpawnLightFlash (sector_t* sector)
   flash->mintime = 7;
   flash->count = (P_Random(pr_lights)&flash->maxtime)+1;
 }
-#endif
 //
 // P_SpawnStrobeFlash
 //
@@ -257,11 +220,6 @@ void P_SpawnLightFlash (sector_t* sector)
 //
 // Returns nothing
 //
-#if defined ACCESSIBILITY
-void P_SpawnStrobeFlash(sector_t* sector, int fastOrSlow, int inSync)
-{
-}
-#else
 void P_SpawnStrobeFlash(sector_t* sector, int fastOrSlow, int inSync)
 {
   strobe_t* flash;
@@ -288,7 +246,6 @@ void P_SpawnStrobeFlash(sector_t* sector, int fastOrSlow, int inSync)
   else
     flash->count = 1;
 }
-#endif
 //
 // P_SpawnGlowingLight()
 //
@@ -297,11 +254,6 @@ void P_SpawnStrobeFlash(sector_t* sector, int fastOrSlow, int inSync)
 // Passed the sector that spawned the thinker
 // Returns nothing
 //
-#if defined ACCESSIBILITY
-void P_SpawnGlowingLight(sector_t*  sector)
-{
-}
-#else
 void P_SpawnGlowingLight(sector_t*  sector)
 {
   glow_t* g;
@@ -318,7 +270,6 @@ void P_SpawnGlowingLight(sector_t*  sector)
 
   sector->special &= ~31; //jff 3/14/98 clear non-generalized sector type
 }
-#endif
 //////////////////////////////////////////////////////////
 //
 // Linedef lighting function handlers
@@ -335,11 +286,6 @@ void P_SpawnGlowingLight(sector_t*  sector)
 //
 // jff 2/12/98 added int return value, fixed return
 //
-#if defined ACCESSIBILITY
-int EV_StartLightStrobing(line_t* line)
-{
-}
-#else
 int EV_StartLightStrobing(line_t* line)
 {
   int   secnum;
@@ -358,7 +304,6 @@ int EV_StartLightStrobing(line_t* line)
   }
   return 1;
 }
-#endif
 //
 // EV_TurnTagLightsOff()
 //
@@ -369,32 +314,36 @@ int EV_StartLightStrobing(line_t* line)
 //
 // jff 2/12/98 added int return value, fixed return
 //
-#if defined ACCESSIBILITY
 int EV_TurnTagLightsOff(line_t* line)
 {
-}
-#else
-int EV_TurnTagLightsOff(line_t* line)
-{
-  int j;
+  int     i;
+  int     j;
+  int     min;
+  sector_t*   sector;
+  sector_t*   tsec;
+  line_t*   templine;
   
   // search sectors for those with same tag as activating line
-
-  // killough 10/98: replaced inefficient search with fast search
-  for (j = -1; (j = P_FindSectorFromLineTag(line,j)) >= 0;)
+  for (j = 0;j < numsectors; j++, sector++)
+  {
+    if (sector->tag == line->tag)
     {
-      sector_t *sector = sectors + j, *tsec;
-      int i, min = sector->lightlevel;
+      min = sector->lightlevel;
       // find min neighbor light level
       for (i = 0;i < sector->linecount; i++)
-	if ((tsec = getNextSector(sector->lines[i], sector)) &&
-	    tsec->lightlevel < min)
-	  min = tsec->lightlevel;
+      {
+        templine = sector->lines[i];
+        tsec = getNextSector(templine,sector);
+        if (!tsec)
+          continue;
+        if (tsec->lightlevel < min)
+          min = tsec->lightlevel;
+      }
       sector->lightlevel = min;
     }
+  }
   return 1;
 }
-#endif
 //
 // EV_LightTurnOn()
 //
@@ -406,11 +355,6 @@ int EV_TurnTagLightsOff(line_t* line)
 //
 // jff 2/12/98 added int return value, fixed return
 //
-#if defined ACCESSIBILITY
-int EV_LightTurnOn(line_t *line, int bright)
-{
-}
-#else
 int EV_LightTurnOn(line_t *line, int bright)
 {
   int i;
@@ -432,56 +376,15 @@ int EV_LightTurnOn(line_t *line, int bright)
 	    tbright = temp->lightlevel;
 
       sector->lightlevel = tbright;
+      
+      //jff 5/17/98 unless compatibility optioned 
+      //then maximum near ANY tagged sector
+      if (compatibility)
+	bright = tbright;
     }
   return 1;
 }
-#endif
-// killough 10/98:
-//
-// EV_LightTurnOnPartway()
-//
-// Turn sectors tagged to line lights on to specified or max neighbor level
-//
-// Passed the activating line, and a light level fraction between 0 and 1.
-// Sets the light to min on 0, max on 1, and interpolates in-between.
-// Used for doors with gradual lighting effects.
-//
-// Returns true
-#if defined ACCESSIBILITY
-int EV_LightTurnOnPartway(line_t *line, fixed_t level)
-{
-}
-#else
-int EV_LightTurnOnPartway(line_t *line, fixed_t level)
-{
-  int i;
 
-  if (level < 0)          // clip at extremes 
-    level = 0;
-  if (level > FRACUNIT)
-    level = FRACUNIT;
-
-  // search all sectors for ones with same tag as activating line
-  for (i = -1; (i = P_FindSectorFromLineTag(line,i)) >= 0;)
-    {
-      sector_t *temp, *sector = sectors+i;
-      int j, bright = 0, min = sector->lightlevel;
-
-      for (j = 0; j < sector->linecount; j++)
-	if ((temp = getNextSector(sector->lines[j],sector)))
-	  {
-	    if (temp->lightlevel > bright)
-	      bright = temp->lightlevel;
-	    if (temp->lightlevel < min)
-	      min = temp->lightlevel;
-	  }
-
-      sector->lightlevel =   // Set level in-between extremes
-	(level * bright + (FRACUNIT-level) * min) >> FRACBITS;
-    }
-  return 1;
-}
-#endif
 //----------------------------------------------------------------------------
 //
 // $Log: p_lights.c,v $
