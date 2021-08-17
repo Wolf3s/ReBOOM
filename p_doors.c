@@ -62,7 +62,7 @@ void T_VerticalDoor (vldoor_t *door)
     case 0:
       // Door is waiting
       if (!--door->topcountdown)  // downcount and check
-        {
+      {
         switch(door->type)
           {
           case blazeRaise:
@@ -97,6 +97,7 @@ void T_VerticalDoor (vldoor_t *door)
     case 2:
       // Special case for sector type door that opens in 5 mins
       if (!--door->topcountdown)  // 5 minutes up?
+      {
         switch(door->type)
           {
           case raiseIn5Mins:
@@ -108,6 +109,7 @@ void T_VerticalDoor (vldoor_t *door)
           default:
             break;
           }
+        }
       break;
 
     case -1:
@@ -124,6 +126,7 @@ void T_VerticalDoor (vldoor_t *door)
 
       // handle door reaching bottom
       if (res == pastdest)
+      {
         switch(door->type)
           {
             // regular open and close doors are all done, remove them
@@ -134,7 +137,7 @@ void T_VerticalDoor (vldoor_t *door)
             door->sector->ceilingdata = NULL;  //jff 2/22/98
             P_RemoveThinker (&door->thinker);  // unlink and free
             // killough 4/15/98: remove double-closing sound of blazing doors
-            if (compatibility)
+            if (comp[comp_blazing])
               S_StartSound((mobj_t *)&door->sector->soundorg,sfx_bdcls);
             break;
 
@@ -163,26 +166,8 @@ void T_VerticalDoor (vldoor_t *door)
           }
 
       //jff 1/31/98 turn lighting off in tagged sectors of manual doors
-        if (!compatibility && door->line && door->line->tag)
-        {
-          if (door->line->special > GenLockedBase &&
-              (door->line->special&6)==6)       //jff 3/9/98 all manual doors
-            EV_TurnTagLightsOff(door->line);
-          else
-            switch (door->line->special)
-            {
-              case 1: case 31:
-              case 26:
-              case 27: case 28:
-              case 32: case 33:
-              case 34: case 117:
-              case 118:
-                EV_TurnTagLightsOff(door->line);
-              default:
-              break;
-            }
-        }
-      else if (res == crushed) // handle door meeting obstruction on way down
+      // killough 10/98: replaced with gradual lighting code
+        if (res == crushed) // handle door meeting obstruction on way down
         {
           switch(door->type)
             {
@@ -198,6 +183,23 @@ void T_VerticalDoor (vldoor_t *door)
               break;
             }
         }
+      }
+      else if (res == crushed) // handle door meeting obstruction on way down
+      {
+        switch(door->type)
+        {
+          case genClose:
+          case genBlazeClose:
+          case blazeClose:
+          case doorClose:          // Close types do not bounce, merely wait
+            break;
+
+          default:             // other types bounce off the obstruction
+            door->direction = 1;
+            S_StartSound((mobj_t *)&door->sector->soundorg,sfx_doropn);
+            break;
+        }
+      }
       break;
 
     case 1:
@@ -214,6 +216,7 @@ void T_VerticalDoor (vldoor_t *door)
 
       // handle door reaching the top
       if (res == pastdest)
+      {
         switch(door->type)
           {
           case blazeRaise:       // regular open/close doors start waiting
@@ -258,6 +261,7 @@ void T_VerticalDoor (vldoor_t *door)
               default:
                 break;
             }
+        }
       }
       break;
     }

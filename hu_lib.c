@@ -202,7 +202,7 @@ void HUlib_eraseTextLine(hu_textline_t* l)
 {
   // killough 11/98: trick to shadow variables
   int x = viewwindowx, y = viewwindowy; 
-  int viewwindowx = x, viewwindowy = y;  // killough 11/98
+  int viewwindowx = x, viewwindowy = y;
 
   // Only erases when NOT in automap and the screen is reduced,
   // and the text must either need updating or refreshing
@@ -519,7 +519,7 @@ static void HUlib_eraseMBg(hu_mtext_t *m)
 {
   // killough 11/98: trick to shadow variables
   int x = viewwindowx, y = viewwindowy; 
-  int viewwindowx = x, viewwindowy = y;  // killough 11/98
+  int viewwindowx = x, viewwindowy = y;
 
   // Only erases when NOT in automap and the screen is reduced,
   // and the text must either need updating or refreshing

@@ -239,16 +239,16 @@ void V_CopyRect(int srcx, int srcy, int srcscrn, int width,
 #endif
 
   V_MarkRect (destx, desty, width, height);
-  
+
   src = screens[srcscrn]+SCREENWIDTH*srcy+srcx;
   dest = screens[destscrn]+SCREENWIDTH*desty+destx;
-  
+
   for ( ; height>0 ; height--)
-  {
-  	memcpy (dest, src, width);
-  	src += SCREENWIDTH;
-  	dest += SCREENWIDTH;
-  }
+	{
+	  memcpy (dest, src, width);
+	  src += SCREENWIDTH;
+	  dest += SCREENWIDTH;
+	}
 }
 
 //
@@ -335,7 +335,7 @@ void V_DrawPatchGeneral(int x, int y, int scrn, patch_t *patch,
 		while (--count);
 	      column = (column_t *)(source+1); //killough 2/21/98 even faster
 	    }
-	}
+    }
 }
 
 //
@@ -380,7 +380,7 @@ void V_DrawPatchTranslated(int x, int y, int scrn, patch_t *patch,
 
   col = 0;
   w = SHORT(patch->width);
-
+  
       byte *desttop = screens[scrn]+y*SCREENWIDTH+x;
 
       for ( ; col<w ; col++, desttop++)
@@ -431,7 +431,8 @@ void V_DrawPatchTranslated(int x, int y, int scrn, patch_t *patch,
 		while (--count);
 	      column = (column_t *)(source+1);
 	    }
-	}
+
+    }
 }
 
 //
@@ -459,14 +460,15 @@ void V_DrawBlock(int x, int y, int scrn, int width, int height, byte *src)
 #endif
 
   V_MarkRect(x, y, width, height);
-  
-  byte *dest = screens[scrn] + y*SCREENWIDTH+x;
-  while (height--)
-    {
-    	memcpy (dest, src, width);
-    	src += width;
-    	dest += SCREENWIDTH;
-    }
+
+      byte *dest = screens[scrn] + y*SCREENWIDTH+x;
+
+      while (height--)
+	{
+	  memcpy (dest, src, width);
+	  src += width;
+	  dest += SCREENWIDTH;
+	}
 }
 
 //
@@ -506,11 +508,10 @@ void V_GetBlock(int x, int y, int scrn, int width, int height, byte *dest)
 //
 // Allocates the 4 full screen buffers in low DOS memory
 // No return value
-//
 
 void V_Init(void)
 {
-   // haleyjd
+   // Gibbon - removed stupid hires completely
    int size = SCREENWIDTH*SCREENHEIGHT;
    static byte *s;
    

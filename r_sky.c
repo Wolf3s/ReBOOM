@@ -3,6 +3,7 @@
 //
 // $Id: r_sky.c,v 1.6 1998/05/03 23:01:06 killough Exp $
 //
+//  BOOM, a modified and improved DOOM engine
 //  Copyright (C) 1999 by
 //  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
 //
@@ -21,7 +22,6 @@
 //  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
 //  02111-1307, USA.
 //
-//
 // DESCRIPTION:
 //  Sky rendering. The DOOM sky is a texture map like any
 //  wall, wrapping around. A 1024 columns equal 360 degrees.
@@ -29,8 +29,6 @@
 //  on a 320 screen?
 //
 //-----------------------------------------------------------------------------
-
-//static const char rcsid[] = "$Id: r_sky.c,v 1.6 1998/05/03 23:01:06 killough Exp $";
 
 #include "r_sky.h"
 

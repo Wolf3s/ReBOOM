@@ -129,9 +129,10 @@ void T_PlatRaise(plat_t* plat)
 
         //jff 1/26/98 remove the plat if it bounced so it can be tried again
         //only affects plats that raise and bounce
+        //killough 1/31/98: relax compatibility to demo_compatibility
 
         // remove the plat if its a pure raise type
-        if (demo_version<203 || !demo_compatibility)
+        if (demo_version<203 ? !demo_compatibility : !comp[comp_floors])
         {
           switch(plat->type)
           {

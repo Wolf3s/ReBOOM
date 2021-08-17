@@ -108,9 +108,9 @@ void R_DrawColumn (void)
     return; 
                                  
 #ifdef RANGECHECK 
-  if ((unsigned)dc_x >= SCREENWIDTH
+  if ((unsigned)dc_x >= MAX_SCREENWIDTH
       || dc_yl < 0
-      || dc_yh >= SCREENHEIGHT) 
+      || dc_yh >= MAX_SCREENHEIGHT) 
     I_Error ("R_DrawColumn: %i to %i at %i", dc_yl, dc_yh, dc_x); 
 #endif 
 
@@ -207,9 +207,9 @@ void R_DrawTLColumn (void)
     return; 
                                  
 #ifdef RANGECHECK 
-  if ((unsigned)dc_x >= SCREENWIDTH
+  if ((unsigned)dc_x >= MAX_SCREENWIDTH
       || dc_yl < 0
-      || dc_yh >= SCREENHEIGHT) 
+      || dc_yh >= MAX_SCREENHEIGHT) 
     I_Error ("R_DrawColumn: %i to %i at %i", dc_yl, dc_yh, dc_x); 
 #endif 
 
@@ -232,9 +232,9 @@ void R_DrawTLColumn (void)
   // killough 2/1/98, 2/21/98: more performance tuning
   
   {
-    const byte *source = dc_source;            
-    const lighttable_t *colormap = dc_colormap; 
-    int heightmask = dc_texheight-1;
+    register const byte *source = dc_source;            
+    register const lighttable_t *colormap = dc_colormap; 
+    register int heightmask = dc_texheight-1;
     if (dc_texheight & heightmask)   // not a power of 2 -- killough
       {
         heightmask++;
@@ -284,17 +284,18 @@ void R_DrawTLColumn (void)
 //
 
 #define FUZZTABLE 50 
-#define FUZZOFF (SCREENWIDTH)
 
+/*
+// killough 11/98: convert fuzzoffset to be screenwidth-independent
 static const int fuzzoffset[FUZZTABLE] = {
-  FUZZOFF,-FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,
-  FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,
-  FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,-FUZZOFF,-FUZZOFF,-FUZZOFF,
-  FUZZOFF,-FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,
-  FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,-FUZZOFF,FUZZOFF,
-  FUZZOFF,-FUZZOFF,-FUZZOFF,-FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,
-  FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF 
-};
+  0,-1,0,-1,0,0,-1,
+  0,0,-1,0,0,0,-1,
+  0,0,0,-1,-1,-1,-1,
+  0,-1,-1,0,0,0,0,-1,
+  0,-1,0,0,-1,-1,0,
+  0,-1,-1,-1,-1,0,0,
+  0,0,-1,0,0,-1,0 
+}; 
 
 static int fuzzpos = 0; 
 
@@ -306,6 +307,94 @@ static int fuzzpos = 0;
 //  could create the SHADOW effect,
 //  i.e. spectres and invisible players.
 //
+
+void R_DrawFuzzColumn(void) 
+{ 
+  int      count; 
+  byte     *dest; 
+
+  // Adjust borders. Low... 
+  if (!dc_yl) 
+    dc_yl = 1;
+
+  // .. and high.
+  if (dc_yh == viewheight-1) 
+    dc_yh = viewheight - 2; 
+                 
+  count = dc_yh - dc_yl; 
+
+  // Zero length.
+  if (count < 0) 
+    return; 
+    
+#ifdef RANGECHECK 
+  if ((unsigned) dc_x >= MAX_SCREENWIDTH
+      || dc_yl < 0 
+      || dc_yh >= MAX_SCREENHEIGHT)
+    I_Error ("R_DrawFuzzColumn: %i to %i at %i",
+             dc_yl, dc_yh, dc_x);
+#endif
+
+  // Keep till detailshift bug in blocky mode fixed,
+  //  or blocky mode removed.
+
+  // Does not work with blocky mode.
+  dest = ylookup[dc_yl] + columnofs[dc_x];
+  
+  // Looks like an attempt at dithering,
+  // using the colormap #6 (of 0-31, a bit brighter than average).
+
+  count++;        // killough 1/99: minor tuning
+
+  do 
+    {
+      // Lookup framebuffer, and retrieve
+      // a pixel that is either one row
+      // above or below the current one.
+      // Add index from colormap to index.
+      // killough 3/20/98: use fullcolormap instead of colormaps
+      // killough 11/98: use linesize
+
+      *dest = fullcolormap[6*256+dest[fuzzoffset[fuzzpos] ^ linesize]]; 
+
+      dest += linesize;             // killough 11/98
+
+      // Clamp table lookup index.
+      fuzzpos &= (fuzzpos - FUZZTABLE) >> (8*sizeof fuzzpos-1); //killough 1/99
+    } 
+  while (--count);
+}
+*/
+
+static const int fuzzoffset[FUZZTABLE] = {
+  1,0,1,0,1,1,0,
+  1,1,0,1,1,1,0,
+  1,1,1,0,0,0,0,
+  1,0,0,1,1,1,1,0,
+  1,0,1,1,0,0,1,
+  1,0,0,0,0,1,1,
+  1,1,0,1,1,0,1 
+}; 
+
+static int fuzzpos = 0; 
+
+//
+// Framebuffer postprocessing.
+// Creates a fuzzy image by copying pixels
+//  from adjacent ones to left and right.
+// Used with an all black colormap, this
+//  could create the SHADOW effect,
+//  i.e. spectres and invisible players.
+//
+
+// haleyjd: 03/24/09: from SMMU v3.10 source. Lee Killough released a patch
+// for this problem along with his "Why I Quit Doom" message, but that patch
+// was NOT applied to the archived source code on /idgames, and the patch
+// itself appears to be forever lost. I have no idea if this code from SMMU
+// matches the patch, or if fraggle just wrote it himself without knowledge
+// of the existing fix.
+
+// sf: restored original fuzz effect (changed in mbf)
 
 void R_DrawFuzzColumn(void) 
 { 
@@ -329,9 +418,9 @@ void R_DrawFuzzColumn(void)
     return; 
     
 #ifdef RANGECHECK 
-  if ((unsigned) dc_x >= SCREENWIDTH
+  if ((unsigned) dc_x >= MAX_SCREENWIDTH
       || dc_yl < 0 
-      || dc_yh >= SCREENHEIGHT)
+      || dc_yh >= MAX_SCREENHEIGHT)
     I_Error ("R_DrawFuzzColumn: %i to %i at %i",
              dc_yl, dc_yh, dc_x);
 #endif
@@ -356,7 +445,6 @@ void R_DrawFuzzColumn(void)
      //  left or right of the current one.
      // Add index from colormap to index.
      // killough 3/20/98: use fullcolormap instead of colormaps
-
      *dest = fullcolormap[6*256+
                           dest[fuzzoffset[fuzzpos] ?   SCREENWIDTH 
                                                    : -(SCREENWIDTH)]];
@@ -397,9 +485,9 @@ void R_DrawTranslatedColumn (void)
     return; 
                                  
 #ifdef RANGECHECK 
-  if ((unsigned)dc_x >= SCREENWIDTH
+  if ((unsigned)dc_x >= MAX_SCREENWIDTH
       || dc_yl < 0
-      || dc_yh >= SCREENHEIGHT)
+      || dc_yh >= MAX_SCREENHEIGHT)
     I_Error ( "R_DrawColumn: %i to %i at %i",
               dc_yl, dc_yh, dc_x);
 #endif 
@@ -572,12 +660,6 @@ void R_InitBuffer(int width, int height)
 
   linesize = SCREENWIDTH;    // killough 11/98
 
-  // Handle resize,
-  //  e.g. smaller view windows
-  //  with border and/or status bar.
-
-  viewwindowx = (SCREENWIDTH-width);  // killough 11/98
-
   // Column offset. For windows.
 
   for (i = width ; i--; )   // killough 11/98
@@ -670,6 +752,9 @@ void R_VideoErase(unsigned ofs, int count)
 // Draws the border around the view
 //  for different size windows?
 //
+// killough 11/98: 
+// Rewritten to avoid relying on screen wraparound, so that it
+//
 
 void R_DrawViewBorder(void) 
 { 
@@ -690,6 +775,10 @@ void R_DrawViewBorder(void)
       R_VideoErase(ofs - side, side); 
     } 
 
+  // copy bottom 
+  for (i = viewwindowy; i--; ofs += SCREENWIDTH)
+    R_VideoErase(ofs, SCREENWIDTH); 
+ 
   V_MarkRect (0,0,SCREENWIDTH, SCREENHEIGHT-SBARHEIGHT); 
 } 
 

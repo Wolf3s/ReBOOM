@@ -208,9 +208,9 @@ boolean P_TeleportMove(mobj_t *thing, fixed_t x, fixed_t y, boolean boss)
   int xl, xh, yl, yh, bx, by;
   subsector_t *newsubsec;
 
-  // killough 8/9/98: make telefragging more consistent
+  // killough 8/9/98: make telefragging more consistent, preserve compatibility
   telefrag = thing->player || 
-    (demo_version < 203 ? gamemap==30 : boss);
+    (comp[comp_telefrag] || demo_version < 203 ? gamemap==30 : boss);
 
   // kill anything occupying the position
 
@@ -731,17 +731,12 @@ boolean P_TryMove(mobj_t *thing, fixed_t x, fixed_t y, boolean dropoff)
       // killough 11/98: Improve symmetry of clipping on stairs
 
       if (!(thing->flags & (MF_DROPOFF|MF_FLOAT)))
-	  if (!dropoff || (dropoff==2 &&
-			   (tmfloorz-tmdropoffz > 128*FRACUNIT || 
-			    !thing->target || thing->target->z >tmdropoffz)))
-	    {
-	      if (!monkeys || demo_version < 203 ?
-		  tmfloorz - tmdropoffz > 24*FRACUNIT :
-		  thing->floorz  - tmfloorz > 24*FRACUNIT ||
-		  thing->dropoffz - tmdropoffz > 24*FRACUNIT)
-		return false;
-	    }
-	  else  // dropoff allowed -- check for whether it fell more than 24
+	if (comp[comp_dropoff])
+	  {
+	    if (tmfloorz - tmdropoffz > 24*FRACUNIT)
+	      return false;                      // don't stand over a dropoff
+	  }
+	else
 	    felldown = !(thing->flags & MF_NOGRAVITY) &&
 	      thing->z - tmfloorz > 24*FRACUNIT;
 
@@ -1782,7 +1777,7 @@ boolean P_CheckSector(sector_t *sector,boolean crunch)
   msecnode_t *n;
 
   // killough 10/98: sometimes use Doom's method
-  if ((demo_version >= 203 || demo_compatibility))
+  if (comp[comp_floors] && (demo_version >= 203 || demo_compatibility))
     return P_ChangeSector(sector,crunch);
 
   nofit = false;

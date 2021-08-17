@@ -86,6 +86,34 @@ extern int general_translucency;
 extern int demo_insurance, default_demo_insurance;      // killough 4/5/98
 
 // -------------------------------------------
+// killough 10/98: compatibility vector
+
+enum {
+  comp_telefrag,
+  comp_dropoff,
+  comp_vile,
+  comp_pain,
+  comp_skull,
+  comp_blazing,
+  comp_doorlight,
+  comp_model,
+  comp_god,
+  comp_falloff,
+  comp_floors,
+  comp_skymap,
+  comp_pursuit,
+  comp_doorstuck,
+  comp_staylift,
+  comp_zombie,
+  comp_stairs,
+  comp_infcheat,
+  comp_zerotags,
+  COMP_TOTAL=32  // Some extra room for additional variables
+};
+
+extern int comp[COMP_TOTAL], default_comp[COMP_TOTAL];
+
+// -------------------------------------------
 // Language.
 extern  Language_t   language;
 
@@ -301,6 +329,9 @@ extern int classic_bfg, default_classic_bfg;
 extern int beta_emulation;
 #endif
 
+// killough 8/8/98: distance friendly monsters tend to stay from player
+extern int distfriend, default_distfriend;
+
 // killough 9/8/98: whether monsters are allowed to strafe or retreat
 extern int monster_backing, default_monster_backing;
 
@@ -309,6 +340,9 @@ extern int monster_avoid_hazards, default_monster_avoid_hazards;
 
 // killough 10/98: whether monsters are affected by friction
 extern int monster_friction, default_monster_friction;
+
+// killough 9/9/98: whether monsters help friends
+extern int help_friends, default_help_friends;
 
 extern int flashing_hom; // killough 10/98
 

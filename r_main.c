@@ -348,8 +348,8 @@ void R_ExecuteSetViewSize (void)
       scaledviewheight = (setblocks*168/10) & ~7;        // killough 11/98
     }
 
-  viewwidth = scaledviewwidth;                  // killough 11/98
-  viewheight = scaledviewheight;                // killough 11/98
+  viewwidth = scaledviewwidth;
+  viewheight = scaledviewheight;
 
   centery = viewheight/2;
   centerx = viewwidth/2;

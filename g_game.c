@@ -959,6 +959,7 @@ static void G_DoPlayDemo(void)
   if (demover < 200)     // Autodetect old demos
     {
       compatibility = true;
+      memset(comp, 0xff, sizeof comp);  // killough 10/98: a vector now
 
       // killough 3/2/98: force these variables to be 0 in demo_compatibility
 
@@ -970,16 +971,12 @@ static void G_DoPlayDemo(void)
 
       monster_infighting = 1;           // killough 7/19/98
 
-#ifdef BETA
-      classic_bfg = 0;                  // killough 7/19/98
-      beta_emulation = 0;               // killough 7/24/98
-#endif
-
       monster_backing = 0;              // killough 9/8/98
       
       monster_avoid_hazards = 0;        // killough 9/9/98
 
       monster_friction = 0;             // killough 10/98
+      help_friends = 0;                 // killough 9/9/98
       monkeys = 0;
 
       // killough 3/6/98: rearrange to fix savegame bugs (moved fastparm,
@@ -1820,18 +1817,17 @@ void G_ReloadDefaults(void)
 
   monster_infighting = default_monster_infighting; // killough 7/19/98
 
+  distfriend = default_distfriend;                 // killough 8/8/98
+
   monster_backing = default_monster_backing;     // killough 9/8/98
 
   monster_avoid_hazards = default_monster_avoid_hazards; // killough 9/9/98
 
   monster_friction = default_monster_friction;     // killough 10/98
 
-  monkeys = default_monkeys;
+  help_friends = default_help_friends;             // killough 9/9/98
 
-#ifdef BETA
-  classic_bfg = default_classic_bfg;               // killough 7/19/98
-  beta_emulation = !!M_CheckParm("-beta");         // killough 7/24/98
-#endif
+  monkeys = default_monkeys;
 
   // jff 1/24/98 reset play mode to command line spec'd version
   // killough 3/1/98: moved to here
@@ -1853,7 +1849,8 @@ void G_ReloadDefaults(void)
 
   consoleplayer = 0;
 
-  compatibility = false;     // killough 10/98
+  compatibility = false;     // killough 10/98: replaced by comp[] vector
+  memcpy(comp, default_comp, sizeof comp);
 
   demo_version = VERSION;     // killough 7/19/98: use this version's id
 
@@ -2039,13 +2036,11 @@ byte *G_WriteOptions(byte *demo_p)
 
   *demo_p++ = 0;
 
-#ifdef BETA
-  *demo_p++ = classic_bfg;          // killough 7/19/98
-  *demo_p++ = beta_emulation;       // killough 7/24/98
-#else
   *demo_p++ = 0;
   *demo_p++ = 0;
-#endif 
+
+  *demo_p++ = (distfriend >> 8) & 0xff;  // killough 8/8/98  
+  *demo_p++ =  distfriend       & 0xff;  // killough 8/8/98  
 
   *demo_p++ = monster_backing;         // killough 9/8/98
 
@@ -2053,9 +2048,17 @@ byte *G_WriteOptions(byte *demo_p)
 
   *demo_p++ = monster_friction;         // killough 10/98
 
+  *demo_p++ = help_friends;             // killough 9/9/98
+  
   *demo_p++ = 0;
-
+  
   *demo_p++ = monkeys;
+
+  {   // killough 10/98: a compatibility vector now
+    int i;
+    for (i=0; i < COMP_TOTAL; i++)
+      *demo_p++ = comp[i] != 0;
+  }
 
   //----------------
   // Padding at end
@@ -2115,16 +2118,10 @@ byte *G_ReadOptions(byte *demo_p)
 
       demo_p++;
 
-#ifdef BETA
-      classic_bfg = *demo_p++;          // killough 7/19/98
-      beta_emulation = *demo_p++;       // killough 7/24/98
-      
-      if (beta_emulation && !M_CheckParm("-beta"))
-	I_Error("The -beta option is required to play "
-		"back beta emulation demos");
-#else
       demo_p += 2;
-#endif
+
+      distfriend = *demo_p++ << 8;      // killough 8/8/98
+      distfriend+= *demo_p++;
 
       monster_backing = *demo_p++;     // killough 9/8/98
 
@@ -2132,9 +2129,17 @@ byte *G_ReadOptions(byte *demo_p)
 
       monster_friction = *demo_p++;      // killough 10/98
 
+      help_friends = *demo_p++;          // killough 9/9/98
+
       demo_p++;
 
       monkeys = *demo_p++;
+
+      {   // killough 10/98: a compatibility vector now
+	int i;
+	for (i=0; i < COMP_TOTAL; i++)
+	  comp[i] = *demo_p++;
+      }
 
       // Options new to v2.04, etc.
       if (demo_version >= 204)
@@ -2142,6 +2147,9 @@ byte *G_ReadOptions(byte *demo_p)
     }
   else  // defaults for versions < 2.02
     {
+      int i;  // killough 10/98: a compatibility vector now
+      for (i=0; i < COMP_TOTAL; i++)
+	comp[i] = compatibility;
 
       monster_infighting = 1;           // killough 7/19/98
 
@@ -2151,10 +2159,8 @@ byte *G_ReadOptions(byte *demo_p)
 
       monster_friction = 0;             // killough 10/98
 
-#ifdef BETA
-      classic_bfg = 0;                  // killough 7/19/98
-      beta_emulation = 0;               // killough 7/24/98
-#endif
+      help_friends = 0;                 // killough 9/9/98
+
       monkeys = 0;
     }
 

@@ -545,12 +545,10 @@ void I_FinishUpdate(void)
       lasttic = i;
       if (tics > 20)
          tics = 20;
-      {
          for (i=0 ; i<tics*2 ; i+=2)
             s[(SCREENHEIGHT-1)*SCREENWIDTH + i] = 0xff;
          for ( ; i<20*2 ; i+=2)
             s[(SCREENHEIGHT-1)*SCREENWIDTH + i] = 0x0;
-      }
    }
 
    SDL_BlitSurface(sdlscreen, NULL, argbbuffer, NULL);
@@ -714,7 +712,6 @@ static void I_InitGraphicsMode(void)
    pixel_format = SDL_GetWindowPixelFormat(screen);
    video_display = SDL_GetWindowDisplayIndex(screen);
 
-   // [FG] renderer flags
    flags = 0;
 
    if (SDL_GetCurrentDisplayMode(video_display, &mode) != 0)
@@ -723,15 +720,9 @@ static void I_InitGraphicsMode(void)
               video_display, SDL_GetError());
    }
 
-   if (use_vsync && !singletics && mode.refresh_rate > 0)
-   {
-      flags |= SDL_RENDERER_PRESENTVSYNC;
-   }
-
       flags |= SDL_RENDERER_SOFTWARE;
       flags &= ~SDL_RENDERER_PRESENTVSYNC;
-
-   // [FG] create renderer
+      use_vsync = false;
 
    if (renderer != NULL)
    {

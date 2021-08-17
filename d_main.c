@@ -354,6 +354,8 @@ void D_PageTicker(void)
 
 void D_PageDrawer(void)
 {
+  if (pagename)
+    {
       int l = W_CheckNumForName(pagename);
       byte *t = W_CacheLumpNum(l, PU_CACHE);
       size_t s = W_LumpLength(l);
@@ -361,6 +363,7 @@ void D_PageDrawer(void)
       while (s--)
 	c = c*3 + t[s];
       V_DrawPatch(0, 0, 0, (patch_t *) t);
+    }
 }
 
 //

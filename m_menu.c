@@ -289,6 +289,8 @@ extern int hudcolor_xyco; // color range of new coords on automap
 extern int hudcolor_mesg; // color range of scrolling messages
 extern int hudcolor_chat; // color range of chat lines
 extern int hudcolor_list; // color of list of past messages
+
+extern int mapcolor_frnd;  // friends colors  // killough 8/8/98
 extern int default_monsters_remember;                     
 extern int monsters_remember;                            
 
@@ -578,7 +580,8 @@ void M_DrawReadThis1(void)
 void M_DrawReadThis2(void)
 {
   inhelpscreens = true;
-  V_DrawPatchDirect (0,0,0,W_CacheLumpName("CREDIT",PU_CACHE));
+  if (gamemode == shareware)
+    V_DrawPatchDirect (0,0,0,W_CacheLumpName("CREDIT",PU_CACHE));
 }
 
 /////////////////////////////
@@ -1520,7 +1523,6 @@ void M_SizeDisplay(int choice)
 //    Messages
 //    Chat Strings
 //
-// killough 10/98: added Compatibility menus
 //
 
 /////////////////////////////
@@ -1542,7 +1544,6 @@ boolean setup_select      = false; // changing an item
 boolean setup_gather      = false; // gathering keys for value
 boolean colorbox_active   = false; // color palette being shown
 boolean default_verify    = false; // verify reset defaults decision
-boolean set_compat_active = false;
 
 /////////////////////////////
 //
@@ -1567,7 +1568,6 @@ static char menu_buffer[64];
 
 enum
 {
-  set_compat,
   set_key_bindings,                                     
   set_weapons,                                           
   set_statbar,                                           
@@ -1722,20 +1722,10 @@ menu_t ChatStrDef =                                         // phares 4/10/98
   0
 };
 
-menu_t CompatDef =                                           // killough 10/98
-{
-  generic_setup_end,
-  &SetupDef,
-  Generic_Setup,
-  34,5,      // skull drawn here
-  0
-};
-
 /////////////////////////////
 //
 // M_DrawBackground tiles a 64x64 patch over the entire screen, providing the
 // background for the Help and Setup screens.
-//
 
 void M_DrawBackground(char* patchname, byte *back_dest)
 {
@@ -2732,6 +2722,8 @@ setup_menu_t auto_settings2[] =  // 2nd AutoMap Settings screen
   {"player 3 arrow"                 ,S_COLOR ,m_null,AU_X,AU_Y+10*8, {"mapcolor_ply3"}},
   {"player 4 arrow"                 ,S_COLOR ,m_null,AU_X,AU_Y+11*8, {"mapcolor_ply4"}},
 
+  {"friends"                        ,S_COLOR ,m_null,AU_X,AU_Y+12*8, {"mapcolor_frnd"}},        // killough 8/8/98
+
   {"<- PREV",S_SKIP|S_PREV,m_null,AU_PREV,AU_Y+20*8, {auto_settings1}},
 
   // Final entry
@@ -2849,6 +2841,9 @@ enum {
   enem_monkeys,
   enem_avoid_hazards,
   enem_friction,
+  enem_help_friends,
+  enem_distfriend,
+
   enem_end
 };
 
@@ -2869,6 +2864,8 @@ setup_menu_t enem_settings1[] =  // Enemy Settings screen
 
   // killough 10/98
   {"Affected by Friction",S_YESNO,m_null,E_X,E_Y+ enem_friction*8, {"monster_friction"}},
+
+  {"Rescue Dying Friends",S_YESNO,m_null,E_X,E_Y+ enem_help_friends*8, {"help_friends"}},
 
   // Button for resetting to defaults
   {0,S_RESET,m_null,X_BUTTON,Y_BUTTON},
@@ -2919,6 +2916,12 @@ void M_DrawEnemy(void)
 
   if (default_verify)
     M_DrawDefVerify();
+}
+
+void M_Trans(void) // To reset translucency after setting it in menu
+{
+  if (general_translucency)
+    R_InitTranMap(0);
 }
 
 /////////////////////////////
@@ -3643,6 +3646,8 @@ void M_DrawHelp (void)
 // End of Dynamic HELP screen                // phares 3/2/98
 //
 ////////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////////////
 //
 // M_Responder
 //
@@ -4385,7 +4390,7 @@ boolean M_Responder (event_t* ev)
       // killough 10/98: consolidate handling into one place:
       if (setup_select &&
 	  set_enemy_active | set_chat_active | 
-	  set_mess_active | set_status_active | set_compat_active)
+	  set_mess_active | set_status_active)
 	{
 	  if (ptr1->m_flags & S_STRING) // creating/editing a string?
 	    {
@@ -4561,7 +4566,6 @@ boolean M_Responder (event_t* ev)
 	  set_chat_active = false;
 	  colorbox_active = false;
 	  default_verify = false;       // phares 4/19/98
-          set_compat_active = false;    // killough 10/98
 	  HU_Start();    // catch any message changes // phares 4/19/98
 	  S_StartSound(NULL,sfx_swtchx);
 	  return true;

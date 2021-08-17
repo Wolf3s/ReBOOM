@@ -264,6 +264,13 @@ default_t defaults[] = {
     "1 to enable monsters to be affected by friction"
   },
 
+  { //killough 9/9/98:
+    "help_friends",
+    (config_t *) &default_help_friends, (config_t *) &help_friends,
+    {1}, {0,1}, number, ss_enem, wad_yes,
+    "1 to enable monsters to help dying friends"
+  },
+
   { // no color changes on status bar
     "sts_always_red",
     (config_t *) &sts_always_red, NULL,
@@ -353,6 +360,34 @@ default_t defaults[] = {
     (config_t *) &usegamma, NULL,
     {0}, {0,4}, number, ss_none, wad_no,
     "screen brightness (gamma correction)"
+  },
+
+  { // killough 10/98: preloaded files
+    "wadfile_1",
+    (config_t *) &wad_files[0], NULL,
+    {.s = ""}, {0}, string, ss_none, wad_no,
+    "WAD file preloaded at program startup"
+  },
+
+  {
+    "wadfile_2",
+    (config_t *) &wad_files[1], NULL,
+    {.s = ""}, {0}, string, ss_none, wad_no,
+    "WAD file preloaded at program startup"
+  },
+
+  {
+    "dehfile_1",
+    (config_t *) &deh_files[0], NULL,
+    {.s = ""}, {0}, string, ss_none, wad_no,
+    "DEH/BEX file preloaded at program startup"
+  },
+
+  {
+    "dehfile_2",
+    (config_t *) &deh_files[1], NULL,
+    {.s = ""}, {0}, string, ss_none, wad_no,
+    "DEH/BEX file preloaded at program startup"
   },
 
   // For key bindings, the values stored in the key_* variables       // phares
@@ -1127,6 +1162,13 @@ default_t defaults[] = {
     "color used for the red player arrow"
   },
 
+  {  // purple                     // killough 8/8/98
+    "mapcolor_frnd",
+    (config_t *) &mapcolor_frnd, NULL,
+    {252}, {0,255}, number, ss_auto, wad_yes,
+    "color used for friends"
+  },
+
   {
     "map_point_coord",
     (config_t *) &map_point_coordinates, NULL,
@@ -1732,6 +1774,8 @@ void M_LoadOptions(void)
       free(buf);
       Z_ChangeTag(options, PU_CACHE);
     }
+
+  M_Trans();           // reset translucency in case of change
   M_ResetMenu();       // reset menu in case of change
 }
 

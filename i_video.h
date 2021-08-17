@@ -29,7 +29,7 @@
 #ifndef __I_VIDEO__
 #define __I_VIDEO__
 
-#define BOOM_WINDOW_TEXT "ReBOOM - Version 1.0"
+#define BOOM_WINDOW_TEXT "ReBOOM"
 
 #include "doomtype.h"
 

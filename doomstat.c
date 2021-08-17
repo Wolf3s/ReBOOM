@@ -43,6 +43,8 @@ boolean modifiedgame;
 // compatibility with old engines (monster behavior, metrics, etc.)
 int compatibility, default_compatibility;          // killough 1/31/98
 
+int comp[COMP_TOTAL], default_comp[COMP_TOTAL];    // killough 10/98
+
 int demo_version;           // killough 7/19/98: Boom version of demo
 
 // v1.1-like pitched sounds
@@ -79,11 +81,17 @@ int classic_bfg, default_classic_bfg;
 int beta_emulation;
 #endif
 
+// killough 8/8/98: distance friends tend to move towards players
+int distfriend = 128, default_distfriend = 128;
+
 // killough 9/8/98: whether monsters are allowed to strafe or retreat
 int monster_backing, default_monster_backing;
 
 // killough 9/9/98: whether monsters are able to avoid hazards (e.g. crushers)
 int monster_avoid_hazards, default_monster_avoid_hazards;
+
+// killough 9/9/98: whether monsters help friends
+int help_friends, default_help_friends;
 
 int flashing_hom;     // killough 10/98
 

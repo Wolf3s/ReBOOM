@@ -1,9 +1,8 @@
 // Emacs style mode select   -*- C++ -*-
 //-----------------------------------------------------------------------------
 //
-// $Id: p_spec.c,v 1.57 1998/08/14 11:27:27 jim Exp $
+// $Id: p_spec.c,v 1.56 1998/05/25 10:40:30 killough Exp $
 //
-//  BOOM, a modified and improved DOOM engine
 //  Copyright (C) 1999 by
 //  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
 //
@@ -34,6 +33,8 @@
 //     Wind/Current
 //
 //-----------------------------------------------------------------------------
+
+//static const char rcsid[] = "$Id: p_spec.c,v 1.56 1998/05/25 10:40:30 killough Exp $";
 
 #include "doomstat.h"
 #include "p_spec.h"
@@ -217,16 +218,16 @@ sector_t *getSector(int currentSector, int line, int side)
 //
 // modified to return actual two-sidedness rather than presence
 // of 2S flag unless compatibility optioned
+//
+// killough 11/98: reformatted
 
 int twoSided(int sector, int line)
 {
   //jff 1/26/98 return what is actually needed, whether the line
   //has two sidedefs, rather than whether the 2S flag is set
 
-  return compatibility?
-    (sectors[sector].lines[line])->flags & ML_TWOSIDED
-    :
-    (sectors[sector].lines[line])->sidenum[1] != -1;
+  return comp[comp_model] ? sectors[sector].lines[line]->flags & ML_TWOSIDED :
+    sectors[sector].lines[line]->sidenum[1] != -1;
 }
 
 //
@@ -235,25 +236,22 @@ int twoSided(int sector, int line)
 // Return sector_t * of sector next to current across line.
 //
 // Note: returns NULL if not two-sided line, or both sides refer to sector
+//
+// killough 11/98: reformatted
 
 sector_t *getNextSector(line_t *line, sector_t *sec)
 {
   //jff 1/26/98 check unneeded since line->backsector already
   //returns NULL if the line is not two sided, and does so from
   //the actual two-sidedness of the line, rather than its 2S flag
+  //
+  //jff 5/3/98 don't retn sec unless compatibility
+  // fixes an intra-sector line breaking functions
+  // like floor->highest floor
 
-  if (compatibility)
-  {
-    if (!(line->flags & ML_TWOSIDED))
-      return NULL;
-  }
-
-  if (line->frontsector == sec)
-    if (compatibility || line->backsector!=sec)
-      return line->backsector; //jff 5/3/98 don't retn sec unless compatibility
-    else                       // fixes an intra-sector line breaking functions
-      return NULL;             // like floor->highest floor
-  return line->frontsector;
+  return comp[comp_model] && !(line->flags & ML_TWOSIDED) ? NULL :
+    line->frontsector == sec ? comp[comp_model] || line->backsector != sec ?
+    line->backsector : NULL : line->frontsector;
 }
 
 //
@@ -298,8 +296,9 @@ fixed_t P_FindHighestFloorSurrounding(sector_t *sec)
   //jff 1/26/98 Fix initial value for floor to not act differently
   //in sections of wad that are below -500 units
 
-  if (!compatibility)          //jff 3/12/98 avoid ovf
-    floor = -32000*FRACUNIT;   // in height calculations
+  if (!comp[comp_model])          //jff 3/12/98 avoid ovf
+    floor = -32000*FRACUNIT;      // in height calculations
+
   for (i=0 ;i < sec->linecount ; i++)
     if ((other = getNextSector(sec->lines[i],sec)) &&
         other->floorheight > floor)
@@ -446,9 +445,8 @@ fixed_t P_FindLowestCeilingSurrounding(sector_t* sec)
   fixed_t height = D_MAXINT;
   int i;
 
-  if (!compatibility)
+  if (!comp[comp_model])
     height = 32000*FRACUNIT; //jff 3/12/98 avoid ovf in
-                             // height calculations
 
   // height calculations
   for (i=0; i < sec->linecount; i++)
@@ -479,9 +477,8 @@ fixed_t P_FindHighestCeilingSurrounding(sector_t* sec)
   //jff 1/26/98 Fix initial value for floor to not act differently
   //in sections of wad that are below 0 units
 
-  if (!compatibility)
-        height = -32000*FRACUNIT; //jff 3/12/98 avoid ovf in
-                                  // height calculations
+  if (!comp[comp_model])
+    height = -32000*FRACUNIT; //jff 3/12/98 avoid ovf in
 
   // height calculations
   for (i=0 ;i < sec->linecount ; i++)
@@ -510,7 +507,7 @@ fixed_t P_FindShortestTextureAround(int secnum)
   const sector_t *sec = &sectors[secnum];
   int i, minsize = D_MAXINT;
 
-  if (!compatibility)
+  if (!comp[comp_model])
     minsize = 32000<<FRACBITS; //jff 3/13/98 prevent overflow in height calcs
 
   for (i = 0; i < sec->linecount; i++)
@@ -546,9 +543,10 @@ fixed_t P_FindShortestUpperAround(int secnum)
   const sector_t *sec = &sectors[secnum];
   int i, minsize = D_MAXINT;
 
-  if (!compatibility)
+  if (!comp[comp_model])
     minsize = 32000<<FRACBITS; //jff 3/13/98 prevent overflow
-                               // in height calcs
+
+  // in height calcs
   for (i = 0; i < sec->linecount; i++)
     if (twoSided(secnum, i))
       {
@@ -809,22 +807,16 @@ boolean P_CanUnlockGenDoor(line_t *line, player_t *player)
            !player->cards[it_bluecard] ||
            !player->cards[it_blueskull] ||
            !player->cards[it_yellowcard] ||
-           !player->cards[it_yellowskull]
-        ))
+           !player->cards[it_yellowskull]))
         {
           player->message = s_PD_ALL6; // Ty 03/27/98 - externalized
           S_StartSound(player->mo,sfx_oof);             // killough 3/20/98
           return false;
         }
       if (skulliscard &&
-        (
-          (!player->cards[it_redcard] &&
-            !player->cards[it_redskull]) ||
-          (!player->cards[it_bluecard] &&
-            !player->cards[it_blueskull]) ||
-          (!player->cards[it_yellowcard] &&
-            !player->cards[it_yellowskull])
-        ))
+          (!(player->cards[it_redcard] | player->cards[it_redskull]) ||
+           !(player->cards[it_bluecard] | player->cards[it_blueskull]) ||
+           !(player->cards[it_yellowcard] | !player->cards[it_yellowskull])))
         {
           player->message = s_PD_ALL3; // Ty 03/27/98 - externalized
           S_StartSound(player->mo,sfx_oof);             // killough 3/20/98
@@ -850,19 +842,12 @@ boolean P_CanUnlockGenDoor(line_t *line, player_t *player)
 
 int P_SectorActive(special_e t,sector_t *sec)
 {
-  if (demo_compatibility)  // return whether any thinker is active
-    return sec->floordata || sec->ceilingdata || sec->lightingdata;
-  else
-    switch (t)             // return whether thinker of same type is active
-    {
-      case floor_special:
-        return sec->floordata;
-      case ceiling_special:
-        return sec->ceilingdata;
-      case lighting_special:
-        return sec->lightingdata;
-    }
-  return 1; // don't know which special, must be active, shouldn't be here
+  return demo_compatibility ?  // return whether any thinker is active
+    sec->floordata || sec->ceilingdata || sec->lightingdata :
+    t == floor_special ? !!sec->floordata :        // return whether
+    t == ceiling_special ? !!sec->ceilingdata :    // thinker of same
+    t == lighting_special ? !!sec->lightingdata :  // type is active
+    1; // don't know which special, must be active, shouldn't be here
 }
 
 //
@@ -879,11 +864,9 @@ int P_SectorActive(special_e t,sector_t *sec)
 
 int P_CheckTag(line_t *line)
 {
+  // killough 11/98: compatibility option:
 
-  if (compatibility)        // killough: allow zero tags in compatibility mode
-    return 1;
-
-  if (line->tag)
+  if (comp[comp_zerotags] || line->tag)
     return 1;
 
   switch (line->special)
@@ -937,10 +920,8 @@ int P_CheckTag(line_t *line)
     case 48:  // Scrolling walls
     case 85:
       return 1;
+    }
 
-    default:
-      break;
-  }
   return 0;
 }
 
@@ -1002,7 +983,6 @@ void P_CrossSpecialLine(line_t *line, int side, mobj_t *thing)
 
   //  Things that should never trigger lines
   if (!thing->player)
-    {
     switch(thing->type)    // Things that should NOT trigger specials...
       {
       case MT_ROCKET:
@@ -1011,12 +991,14 @@ void P_CrossSpecialLine(line_t *line, int side, mobj_t *thing)
       case MT_TROOPSHOT:
       case MT_HEADSHOT:
       case MT_BRUISERSHOT:
+#ifdef BETA
+      case MT_PLASMA1:    // killough 8/28/98: exclude beta fireballs
+      case MT_PLASMA2:
+#endif
         return;
+      default:
         break;
-
-      default: break;
       }
-    }
 
   //jff 02/04/98 add check here for generalized lindef types
   if (!demo_compatibility) // generalized types not recognized if old demo
@@ -1293,7 +1275,10 @@ void P_CrossSpecialLine(line_t *line, int side, mobj_t *thing)
 
     case 52:
       // EXIT!
-      G_ExitLevel ();
+
+      // killough 10/98: prevent zombies from exiting levels
+      if (!(thing->player && thing->player->health <= 0 && !comp[comp_zombie]))
+        G_ExitLevel ();
       break;
 
     case 53:
@@ -1376,7 +1361,10 @@ void P_CrossSpecialLine(line_t *line, int side, mobj_t *thing)
 
     case 124:
       // Secret EXIT
-      G_SecretExitLevel ();
+
+      // killough 10/98: prevent zombies from exiting levels
+      if (!(thing->player && thing->player->health <= 0 && !comp[comp_zombie]))
+        G_SecretExitLevel ();
       break;
 
     case 125:
@@ -2036,12 +2024,20 @@ void P_ShootSpecialLine(mobj_t *thing, line_t *line)
           {
           case 197:
             // Exit to next level
+
+            // killough 10/98: prevent zombies from exiting levels
+            if(thing->player && thing->player->health<=0 && !comp[comp_zombie])
+              break;
             P_ChangeSwitchTexture(line,0);
             G_ExitLevel();
             break;
 
           case 198:
             // Exit to secret level
+
+            // killough 10/98: prevent zombies from exiting levels
+            if(thing->player && thing->player->health<=0 && !comp[comp_zombie])
+              break;
             P_ChangeSwitchTexture(line,0);
             G_SecretExitLevel();
             break;
@@ -2050,6 +2046,8 @@ void P_ShootSpecialLine(mobj_t *thing, line_t *line)
       break;
     }
 }
+
+int disable_nuke;  // killough 12/98: nukage disabling cheat
 
 //
 // P_PlayerInSpecialSector()
@@ -2073,6 +2071,14 @@ void P_PlayerInSpecialSector (player_t *player)
   //jff add if to handle old vs generalized types
   if (sector->special<32) // regular sector specials
     {
+      if (sector->special==9)     // killough 12/98
+	{
+          // Tally player in secret sector, clear secret special
+          player->secretcount++;
+          sector->special = 0;
+	}
+      else
+	if (!disable_nuke)  // killough 12/98: nukage disabling cheat
 	  switch (sector->special)
 	    {
 	    case 5:
@@ -2100,30 +2106,27 @@ void P_PlayerInSpecialSector (player_t *player)
 		    P_DamageMobj (player->mo, NULL, NULL, 20);
 		}
 	      break;
-        case 9:
-        // Tally player in secret sector, clear secret special
-        player->secretcount++;
-        sector->special = 0;
-        break;
-      case 11:
-        // Exit on health < 11, take 10/20 damage per 31 ticks
-        if (compatibility)     // killough 2/21/98: add compatibility switch
-          player->cheats &= ~CF_GODMODE; // on godmode cheat clearing
-                                         // does not affect invulnerability
-        if (!(leveltime&0x1f))
-          P_DamageMobj (player->mo, NULL, NULL, 20);
 
-        if (player->health <= 10)
-          G_ExitLevel();
-        break;
+	    case 11:
+	      // Exit on health < 11, take 10/20 damage per 31 ticks
+	      if (comp[comp_god])   // killough 2/21/98: add compatibility switch
+		player->cheats &= ~CF_GODMODE; // on godmode cheat clearing
+	      // does not affect invulnerability
+	      if (!(leveltime&0x1f))
+		P_DamageMobj (player->mo, NULL, NULL, 20);
 
-      default:
-        //jff 1/24/98 Don't exit as DOOM2 did, just ignore
-        break;
-      };
-  }
+	      if (player->health <= 10)
+		G_ExitLevel();
+	      break;
+
+	    default:
+	      //jff 1/24/98 Don't exit as DOOM2 did, just ignore
+	      break;
+	    }
+    }
   else //jff 3/14/98 handle extended sector types for secrets and damage
     {
+      if (!disable_nuke)  // killough 12/98: nukage disabling cheat
 	switch ((sector->special&DAMAGE_MASK)>>DAMAGE_SHIFT)
 	  {
 	  case 0: // no damage
@@ -2188,12 +2191,8 @@ void P_UpdateSpecials (void)
   int         i;
 
   // Downcount level timer, exit level if elapsed
-  if (levelTimer == true)
-  {
-    levelTimeCount--;
-    if (!levelTimeCount)
-      G_ExitLevel();
-  }
+  if (levelTimer == true && --levelTimeCount)
+    G_ExitLevel();
 
   // Check frag counters, if frag limit reached, exit level // Ty 03/18/98
   //  Seems like the total frags should be kept in a simple
@@ -2429,6 +2428,21 @@ void P_SpawnSpecials (void)
         for (s = -1; (s = P_FindSectorFromLineTag(lines+i,s)) >= 0;)
           sectors[s].ceilinglightsec = sec;
         break;
+
+        // killough 10/98:
+        //
+        // Support for sky textures being transferred from sidedefs.
+        // Allows scrolling and other effects (but if scrolling is
+        // used, then the same sector tag needs to be used for the
+        // sky sector, the sky-transfer linedef, and the scroll-effect
+        // linedef). Still requires user to use F_SKY1 for the floor
+        // or ceiling texture, to distinguish floor and ceiling sky.
+
+      case 271:   // Regular sky
+      case 272:   // Same, only flipped
+        for (s = -1; (s = P_FindSectorFromLineTag(lines+i,s)) >= 0;)
+          sectors[s].sky = i | PL_SKYFLAT;
+        break;
       }
 }
 
@@ -2514,6 +2528,9 @@ void T_Scroll(scroll_t *s)
         sectors[sec->heightsec].floorheight > height ?
         sectors[sec->heightsec].floorheight : D_MININT;
 
+      // Move objects only if on floor or underwater,
+      // non-floating, and clipped.
+
       for (node = sec->touching_thinglist; node; node = node->m_snext)
         if (!((thing = node->m_thing)->flags & MF_NOCLIP) &&
             (!(thing->flags & MF_NOGRAVITY || thing->z > height) ||
@@ -2567,8 +2584,11 @@ static void Add_Scroller(int type, fixed_t dx, fixed_t dy,
 // the wall in a parallel direction is translated into horizontal motion.
 //
 // killough 5/25/98: cleaned up arithmetic to avoid drift due to roundoff
+//
+// killough 10/98:
+// fix scrolling aliasing problems, caused by long linedefs causing overflowing
 
-static void Add_WallScroller(fixed_t dx, fixed_t dy, const line_t *l,
+static void Add_WallScroller(Long64 dx, Long64 dy, const line_t *l,
                              int control, int accel)
 {
   fixed_t x = abs(l->dx), y = abs(l->dy), d;
@@ -2577,8 +2597,8 @@ static void Add_WallScroller(fixed_t dx, fixed_t dy, const line_t *l,
   d = FixedDiv(x, finesine[(tantoangle[FixedDiv(y,x) >> DBITS] + ANG90)
                           >> ANGLETOFINESHIFT]);
 
-  x = -FixedDiv(FixedMul(dy, l->dy) + FixedMul(dx, l->dx), d);
-  y = -FixedDiv(FixedMul(dx, l->dy) - FixedMul(dy, l->dx), d);
+  x = (fixed_t)((dy * -l->dy - dx * l->dx) / d);  // killough 10/98:
+  y = (fixed_t)((dy * l->dx - dx * l->dy) / d);   // Use long long arithmetic
   Add_Scroller(sc_side, x, y, control, *l->sidenum, accel);
 }
 
@@ -2678,7 +2698,7 @@ static void P_SpawnScrollers(void)
 // FRICTION EFFECTS
 //
 // phares 3/12/98: Start of friction effects
-
+//
 // As the player moves, friction is applied by decreasing the x and y
 // momentum values on each tic. By varying the percentage of decrease,
 // we can simulate muddy or icy conditions. In mud, the player slows
@@ -2861,14 +2881,17 @@ static void Add_Pusher(int type, int x_mag, int y_mag,
 //
 // tmpusher belongs to the point source (MT_PUSH/MT_PULL).
 //
+// killough 10/98: allow to affect things besides players
 
 pusher_t* tmpusher; // pusher structure for blockmap searches
 
 boolean PIT_PushThing(mobj_t* thing)
 {
-    if (thing->player &&
-        !(thing->flags & (MF_NOGRAVITY | MF_NOCLIP)))
-        {
+  if (demo_version < 203  ?     // killough 10/98: made more general
+      thing->player && !(thing->flags & (MF_NOCLIP | MF_NOGRAVITY)) :
+      (sentient(thing) || thing->flags & MF_SHOOTABLE) &&
+      !(thing->flags & MF_NOCLIP))
+    {
       angle_t pushangle;
       fixed_t speed;
       fixed_t sx = tmpusher->x;
@@ -2878,20 +2901,35 @@ boolean PIT_PushThing(mobj_t* thing)
                ((P_AproxDistance(thing->x - sx,thing->y - sy)
                  >>FRACBITS)>>1))<<(FRACBITS-PUSH_FACTOR-1);
 
-        // If speed <= 0, you're outside the effective radius. You also have
-        // to be able to see the push/pull source point.
+      // killough 10/98: make magnitude decrease with square
+      // of distance, making it more in line with real nature,
+      // so long as it's still in range with original formula.
+      //
+      // Removes angular distortion, and makes effort required
+      // to stay close to source, grow increasingly hard as you
+      // get closer, as expected. Still, it doesn't consider z :(
 
-        if ((speed > 0) && (P_CheckSight(thing,tmpusher->source)))
-            {
-            pushangle = R_PointToAngle2(thing->x,thing->y,sx,sy);
-            if (tmpusher->source->type == MT_PUSH)
-                pushangle += ANG180;    // away
-            pushangle >>= ANGLETOFINESHIFT;
-            thing->momx += FixedMul(speed,finecosine[pushangle]);
-            thing->momy += FixedMul(speed,finesine[pushangle]);
-            }
+      if (speed > 0 && demo_version >= 203)
+        {
+          int x = (thing->x-sx) >> FRACBITS;
+          int y = (thing->y-sy) >> FRACBITS;
+          speed = (fixed_t)(((Long64) tmpusher->magnitude << 23) / (x*x+y*y+1));
         }
-    return true;
+
+      // If speed <= 0, you're outside the effective radius. You also have
+      // to be able to see the push/pull source point.
+
+      if (speed > 0 && P_CheckSight(thing,tmpusher->source))
+        {
+          pushangle = R_PointToAngle2(thing->x,thing->y,sx,sy);
+          if (tmpusher->source->type == MT_PUSH)
+            pushangle += ANG180;    // away
+          pushangle >>= ANGLETOFINESHIFT;
+          thing->momx += FixedMul(speed,finecosine[pushangle]);
+          thing->momy += FixedMul(speed,finesine[pushangle]);
+        }
+    }
+  return true;
 }
 
 /////////////////////////////
@@ -3091,9 +3129,6 @@ static void P_SpawnPushers(void)
 //----------------------------------------------------------------------------
 //
 // $Log: p_spec.c,v $
-// Revision 1.57  1998/08/14  11:27:27  jim
-// Fixed raise shortest texture linedefs
-//
 // Revision 1.56  1998/05/25  10:40:30  killough
 // Fix wall scrolling bug
 //
