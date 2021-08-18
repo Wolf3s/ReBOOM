@@ -294,8 +294,6 @@ extern int mapcolor_frnd;  // friends colors  // killough 8/8/98
 extern int default_monsters_remember;                     
 extern int monsters_remember;                            
 
-extern int map_point_coordinates; // killough 10/98
-
 extern char* chat_macros[];  // chat macros
 extern char *wad_files[], *deh_files[]; // killough 10/98
 extern const char* shiftxform;
@@ -2694,8 +2692,6 @@ setup_menu_t auto_settings1[] =  // 1st AutoMap Settings screen
 
   {"Show Secrets only after entering",S_YESNO,m_null,AU_X,AU_Y+15*8, {"map_secret_after"}},
 
-  {"Show coordinates of automap pointer",S_YESNO,m_null,AU_X,AU_Y+16*8, {"map_point_coord"}},  // killough 10/98
-
   // Button for resetting to defaults
   {0,S_RESET,m_null,X_BUTTON,Y_BUTTON},
 
@@ -2721,9 +2717,7 @@ setup_menu_t auto_settings2[] =  // 2nd AutoMap Settings screen
   {"player 2 arrow"                 ,S_COLOR ,m_null,AU_X,AU_Y+ 9*8, {"mapcolor_ply2"}},
   {"player 3 arrow"                 ,S_COLOR ,m_null,AU_X,AU_Y+10*8, {"mapcolor_ply3"}},
   {"player 4 arrow"                 ,S_COLOR ,m_null,AU_X,AU_Y+11*8, {"mapcolor_ply4"}},
-
-  {"friends"                        ,S_COLOR ,m_null,AU_X,AU_Y+12*8, {"mapcolor_frnd"}},        // killough 8/8/98
-
+  
   {"<- PREV",S_SKIP|S_PREV,m_null,AU_PREV,AU_Y+20*8, {auto_settings1}},
 
   // Final entry
@@ -2959,29 +2953,14 @@ setup_menu_t mess_settings1[] =  // Messages screen
   {"Message Color During Play", S_CRITEM, m_null, M_X,
    M_Y + mess_color_play*8, {"hudcolor_mesg"}},
 
-  {"Message Duration During Play (ms)", S_NUM, m_null, M_X,
-   M_Y  + mess_timer*8, {"message_timer"}},
-
   {"Chat Message Color", S_CRITEM, m_null, M_X,
    M_Y + mess_color_chat*8, {"hudcolor_chat"}},
-
-  {"Chat Message Duration (ms)", S_NUM, m_null, M_X,
-   M_Y  + mess_chat_timer*8, {"chat_msg_timer"}},
 
   {"Message Review Color", S_CRITEM, m_null, M_X,
    M_Y + mess_color_review*8, {"hudcolor_list"}},
 
-  {"Message Listing Review is Temporary",  S_YESNO,  m_null,  M_X,
-   M_Y + mess_timed*8, {"hud_msg_timed"}},
-
-  {"Message Review Duration (ms)", S_NUM, m_null, M_X,
-   M_Y  + mess_hud_timer*8, {"hud_msg_timer"}},
-
   {"Number of Review Message Lines", S_NUM, m_null,  M_X,
    M_Y + mess_lines*8, {"hud_msg_lines"}},
-
-  {"Message Listing Scrolls Upwards",  S_YESNO,  m_null,  M_X,
-   M_Y + mess_scrollup*8, {"hud_msg_scrollup"}},
 
   {"Message Background",  S_YESNO,  m_null,  M_X,  
    M_Y + mess_background*8, {"hud_list_bgon"}},

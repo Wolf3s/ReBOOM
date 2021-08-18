@@ -62,7 +62,6 @@ int mapcolor_sprt;    // general sprite color
 int mapcolor_hair;    // crosshair color
 int mapcolor_sngl;    // single player arrow color
 int mapcolor_plyr[4]; // colors for player arrows in multiplayer
-int mapcolor_frnd;    // colors for friends of player
 
 //jff 3/9/98 add option to not show secret sectors until entered
 int map_secret_after;
@@ -170,10 +169,11 @@ mline_t cheat_player_arrow[] =
 
 mline_t triangle_guy[] =
 {
-{ { (fixed_t)(-.867*R), (fixed_t)(-.5*R) }, { (fixed_t)( .867*R), (fixed_t)(-.5*R) } },
-{ { (fixed_t)( .867*R), (fixed_t)(-.5*R) }, { (fixed_t)(0      ), (fixed_t)(    R) } },
-{ { (fixed_t)(0      ), (fixed_t)(    R) }, { (fixed_t)(-.867*R), (fixed_t)(-.5*R) } }
-}; 
+  { { -.867*R, -.5*R }, { .867*R, -.5*R } },
+  { { .867*R, -.5*R } , { 0, R } },
+  { { 0, R }, { -.867*R, -.5*R } }
+};
+#undef R
 
 #define NUMTRIANGLEGUYLINES (sizeof(triangle_guy)/sizeof(mline_t))
 
@@ -189,15 +189,11 @@ mline_t cross_mark[] =
 //jff 1/5/98 end of new symbol
 
 #define R (FRACUNIT)
-#define np5R (int)(-.5*R)
-#define np7R (int)(-.7*R)
-#define p7R  (int)(.7*R)
-
 mline_t thintriangle_guy[] =
 {
-{ { (fixed_t)(-.5*R), (fixed_t)(-.7*R) }, { (fixed_t)(    R), (fixed_t)(    0) } },
-{ { (fixed_t)(    R), (fixed_t)(    0) }, { (fixed_t)(-.5*R), (fixed_t)( .7*R) } },
-{ { (fixed_t)(-.5*R), (fixed_t)( .7*R) }, { (fixed_t)(-.5*R), (fixed_t)(-.7*R) } }
+  { { -.5*R, -.7*R }, { R, 0 } },
+  { { R, 0 }, { -.5*R, .7*R } },
+  { { -.5*R, .7*R }, { -.5*R, -.7*R } }
 };
 #undef R
 #define NUMTHINTRIANGLEGUYLINES (sizeof(thintriangle_guy)/sizeof(mline_t))
@@ -205,6 +201,8 @@ mline_t thintriangle_guy[] =
 int ddt_cheating = 0;         // killough 2/7/98: make global, rename to ddt_*
 
 int automap_grid = 0;
+
+static int leveljuststarted = 1;       // kluge until AM_LevelInit() is called
 
 boolean automapactive = false;
 
@@ -358,8 +356,8 @@ void AM_restoreScaleAndLoc(void)
   }
   else
   {
-    m_x = (plr->mo->x >> FRACTOMAPBITS) - m_w/2;//e6y
-    m_y = (plr->mo->y >> FRACTOMAPBITS) - m_h/2;//e6y
+    m_x = plr->mo->x - m_w/2;
+    m_y = plr->mo->y - m_h/2;
   }
   m_x2 = m_x + m_w;
   m_y2 = m_y + m_h;
@@ -422,8 +420,8 @@ void AM_findMinMaxBoundaries(void)
       max_y = vertexes[i].y;
   }
 
-  max_w = (max_x >>= FRACTOMAPBITS) - (min_x >>= FRACTOMAPBITS);//e6y
-  max_h = (max_y >>= FRACTOMAPBITS) - (min_y >>= FRACTOMAPBITS);//e6y
+  max_w = max_x - min_x;
+  max_h = max_y - min_y;
 
   min_w = 2*PLAYERRADIUS; // const? never changed?
   min_h = 2*PLAYERRADIUS;
@@ -503,8 +501,8 @@ void AM_initVariables(void)
   break;
 
   plr = &players[pnum];
-  m_x = (plr->mo->x >> FRACTOMAPBITS) - m_w/2;//e6y
-  m_y = (plr->mo->y >> FRACTOMAPBITS) - m_h/2;//e6y
+  m_x = plr->mo->x - m_w/2;
+  m_y = plr->mo->y - m_h/2;
   AM_changeWindowLoc();
 
   // for saving & restoring
@@ -582,13 +580,12 @@ void AM_clearMarks(void)
 //
 void AM_LevelInit(void)
 {
+
+  leveljuststarted = 0;
+
   f_x = f_y = 0;
-
-  // killough 2/7/98: get rid of finit_ vars
-  // to allow runtime setting of width/height
-
-  f_w = (SCREENWIDTH);
-  f_h = (SCREENHEIGHT-ST_HEIGHT);
+  f_w = SCREENWIDTH;           // killough 2/7/98: get rid of finit_ vars
+  f_h = SCREENHEIGHT-32;       // to allow runtime setting of width/height
 
   AM_findMinMaxBoundaries();
   scale_mtof = FixedDiv(min_scale_mtof, (int) (0.7*FRACUNIT));
@@ -843,26 +840,13 @@ void AM_doFollowPlayer(void)
 {
   if (f_oldloc.x != plr->mo->x || f_oldloc.y != plr->mo->y)
   {
-    m_x = FTOM(MTOF(plr->mo->x >> FRACTOMAPBITS)) - m_w/2;//e6y
-    m_y = FTOM(MTOF(plr->mo->y >> FRACTOMAPBITS)) - m_h/2;//e6y
+    m_x = FTOM(MTOF(plr->mo->x)) - m_w/2;
+    m_y = FTOM(MTOF(plr->mo->y)) - m_h/2;
     m_x2 = m_x + m_w;
     m_y2 = m_y + m_h;
     f_oldloc.x = plr->mo->x;
     f_oldloc.y = plr->mo->y;
   }
-}
-
-//
-// killough 10/98: return coordinates, to allow use of a non-follow-mode
-// pointer. Allows map inspection without moving player to the location.
-//
-
-int map_point_coordinates;
-
-void AM_Coordinates(const mobj_t *mo, fixed_t *x, fixed_t *y, fixed_t *z)
-{
-  *z = followplayer || !map_point_coordinates ? *x = mo->x, *y = mo->y, mo->z :
-    R_PointInSubsector(*x = m_x+m_w/2, *y = m_y+m_h/2)->sector->floorheight;
 }
 
 //
@@ -1168,15 +1152,15 @@ void AM_drawGrid(int color)
 
   // Figure out start of vertical gridlines
   start = m_x;
-  if ((start-bmaporgx)%(MAPBLOCKUNITS<<MAPBITS))//e6y
-    start += (MAPBLOCKUNITS<<MAPBITS)//e6y
-      - ((start-bmaporgx)%(MAPBLOCKUNITS<<MAPBITS));//e6y
+  if ((start-bmaporgx)%(MAPBLOCKUNITS<<FRACBITS))
+    start += (MAPBLOCKUNITS<<FRACBITS)
+      - ((start-bmaporgx)%(MAPBLOCKUNITS<<FRACBITS));
   end = m_x + m_w;
 
   // draw vertical gridlines
   ml.a.y = m_y;
   ml.b.y = m_y+m_h;
-  for (x=start; x<end; x+=(MAPBLOCKUNITS<<MAPBITS))//e6y
+  for (x=start; x<end; x+=(MAPBLOCKUNITS<<FRACBITS))
   {
     ml.a.x = x;
     ml.b.x = x;
@@ -1185,15 +1169,15 @@ void AM_drawGrid(int color)
 
   // Figure out start of horizontal gridlines
   start = m_y;
-  if ((start-bmaporgy)%(MAPBLOCKUNITS<<MAPBITS))//e6y
-    start += (MAPBLOCKUNITS<<MAPBITS)//e6y
-      - ((start-bmaporgy)%(MAPBLOCKUNITS<<MAPBITS));//e6y
+  if ((start-bmaporgy)%(MAPBLOCKUNITS<<FRACBITS))
+    start += (MAPBLOCKUNITS<<FRACBITS)
+      - ((start-bmaporgy)%(MAPBLOCKUNITS<<FRACBITS));
   end = m_y + m_h;
 
   // draw horizontal gridlines
   ml.a.x = m_x;
   ml.b.x = m_x + m_w;
-  for (y=start; y<end; y+=(MAPBLOCKUNITS<<MAPBITS))//e6y
+  for (y=start; y<end; y+=(MAPBLOCKUNITS<<FRACBITS))
   {
     ml.a.y = y;
     ml.b.y = y;
@@ -1239,6 +1223,7 @@ static int AM_DoorColor(int type)
     default:
       return -1; //not a keyed door
   }
+  return -1;     //not a keyed door
 }
 
 //
@@ -1265,10 +1250,10 @@ void AM_drawWalls(void)
   // draw the unclipped visible portions of all lines
   for (i=0;i<numlines;i++)
   {
-    l.a.x = lines[i].v1->x >> FRACTOMAPBITS;//e6y
-    l.a.y = lines[i].v1->y >> FRACTOMAPBITS;//e6y
-    l.b.x = lines[i].v2->x >> FRACTOMAPBITS;//e6y
-    l.b.y = lines[i].v2->y >> FRACTOMAPBITS;//e6y
+    l.a.x = lines[i].v1->x;
+    l.a.y = lines[i].v1->y;
+    l.b.x = lines[i].v2->x;
+    l.b.y = lines[i].v2->y;
     // if line has been seen or IDDT has been used
     if (ddt_cheating || (lines[i].flags & ML_MAPPED))
     {
@@ -1558,8 +1543,8 @@ void AM_drawPlayers(void)
         0,
         plr->mo->angle,
         mapcolor_sngl,      //jff color
-        plr->mo->x >> FRACTOMAPBITS,//e6y
-        plr->mo->y >> FRACTOMAPBITS//e6y
+        plr->mo->x,
+        plr->mo->y
       ); 
     else
       AM_drawLineCharacter
@@ -1569,8 +1554,8 @@ void AM_drawPlayers(void)
         0,
         plr->mo->angle,
         mapcolor_sngl,      //jff color
-        plr->mo->x >> FRACTOMAPBITS,//e6y
-        plr->mo->y >> FRACTOMAPBITS);//e6y      
+        plr->mo->x,
+        plr->mo->y);        
     return;
   }
 
@@ -1579,8 +1564,7 @@ void AM_drawPlayers(void)
     their_color++;
     p = &players[i];
 
-    // killough 9/29/98: use !demoplayback so internal demos are no different
-    if ( (deathmatch && !demoplayback) && p != plr)
+    if ( (deathmatch && !singledemo) && p != plr)
       continue;
 
     if (!playeringame[i])
@@ -1682,8 +1666,7 @@ void AM_drawThings
         NUMTHINTRIANGLEGUYLINES,
         16<<FRACBITS,
         t->angle,
-	// killough 8/8/98: mark friends specially
-	t->flags & MF_FRIEND && !t->player ? mapcolor_frnd : mapcolor_sprt,
+        mapcolor_sprt,
         t->x,
         t->y
       );
@@ -1701,35 +1684,32 @@ void AM_drawThings
 //
 // killough 2/22/98:
 // Rewrote AM_drawMarks(). Removed limit on marks.
-
+//
 void AM_drawMarks(void)
 {
   int i;
   for (i=0;i<markpointnum;i++) // killough 2/22/98: remove automap mark limit
     if (markpoints[i].x != -1)
+    {
+      int w = 5;
+      int h = 6;
+      int fx = CXMTOF(markpoints[i].x);
+      int fy = CYMTOF(markpoints[i].y);
+      int j = i;
+
+      do
       {
-	int w = 5;
-	int h = 6;
-	int fx = CXMTOF(markpoints[i].x);
-	int fy = CYMTOF(markpoints[i].y);
-	int j = i;
+        int d = j % 10;
+        if (d==1)           // killough 2/22/98: less spacing for '1'
+          fx++;
 
-	do
-	  {
-	    int d = j % 10;
-
-	    if (d==1)           // killough 2/22/98: less spacing for '1'
-	      fx += 1;
-
-	    if (fx >= f_x && fx < f_w - w && fy >= f_y && fy < f_h - h)
-	      V_DrawPatch(fx, fy, FB, marknums[d]);
-
-	    fx -= w - 1;     // killough 2/22/98: 1 space backwards
-
-	    j /= 10;
-	  }
-	while (j>0);
+        if (fx >= f_x && fx < f_w - w && fy >= f_y && fy < f_h - h)
+          V_DrawPatch(fx, fy, FB, marknums[d]);
+        fx -= w-1;          // killough 2/22/98: 1 space backwards
+        j /= 10;
       }
+      while (j>0);
+    }
 }
 
 //

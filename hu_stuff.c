@@ -180,17 +180,10 @@ static boolean    always_off = false;
 static char       chat_dest[MAXPLAYERS];
 boolean           chat_on;
 static boolean    message_on;
-static boolean    message_list_on;   // killough 11/98
-static boolean    has_message;       // killough 12/98
-static boolean    reviewing_message; // killough 11/98
+static boolean    message_list; //2/26/98 enable showing list of messages
 boolean           message_dontfuckwithme;
 static boolean    message_nottobefuckedwith;
 static int        message_counter;
-static int        message_list_counter;         // killough 11/98
-static int        hud_msg_count;     // killough 11/98
-static int        message_count;     // killough 11/98
-static int        chat_count;        // killough 11/98
-
 extern int        showMessages;
 extern boolean    automapactive;
 static boolean    headsupactive = false;
@@ -205,14 +198,6 @@ int hud_msg_lines;  // number of message lines in window
 //jff 2/26/98 hud text colors, controls added
 int hudcolor_list;  // list of messages color
 int hud_list_bgon;  // enable for solid window background for message list
-
-int hud_msg_scrollup;  // killough 11/98: allow messages to scroll upwards
-int hud_msg_timed;     // killough 11/98: allow > 1 messages to time out
-int message_list;      // killough 11/98: made global
-
-int hud_msg_timer  = HU_MSGTIMEOUT * (1000/TICRATE);     // killough 11/98
-int message_timer  = HU_MSGTIMEOUT * (1000/TICRATE);     // killough 11/98
-int chat_msg_timer = HU_MSGTIMEOUT * (1000/TICRATE);     // killough 11/98
 
 //jff 2/16/98 initialization strings for ammo, health, armor widgets
 static char hud_coordstrx[32];
@@ -433,83 +418,145 @@ void HU_Start(void)
   message_nottobefuckedwith = false;
   chat_on = false;
 
-  // killough 11/98:
-  reviewing_message = message_list_on = false;
-  message_counter = message_list_counter = 0;
-  hud_msg_count = (hud_msg_timer  * TICRATE) / 1000 + 1;
-  message_count = (message_timer  * TICRATE) / 1000 + 1;
-  chat_count    = (chat_msg_timer * TICRATE) / 1000 + 1;
-
   // create the message widget
   // messages to player in upper-left of screen
-  HUlib_initSText(&w_message, HU_MSGX, HU_MSGY, HU_MSGHEIGHT, hu_font,
-		  HU_FONTSTART, colrngs[hudcolor_mesg], &message_on);
+  HUlib_initSText
+  (
+    &w_message,
+    HU_MSGX,
+    HU_MSGY,
+    HU_MSGHEIGHT,
+    hu_font,
+    HU_FONTSTART,
+    colrngs[hudcolor_mesg],
+    &message_on
+  );
 
   //jff 2/16/98 added some HUD widgets
   // create the map title widget - map title display in lower left of automap
-  HUlib_initTextLine(&w_title, HU_TITLEX, HU_TITLEY, hu_font,
-		     HU_FONTSTART, colrngs[hudcolor_titl]);
+  HUlib_initTextLine
+  (
+    &w_title,
+    HU_TITLEX,
+    HU_TITLEY,
+    hu_font,
+    HU_FONTSTART,
+    colrngs[hudcolor_titl]
+  );
 
   // create the hud health widget
   // bargraph and number for amount of health, 
   // lower left or upper right of screen
-  HUlib_initTextLine(&w_health, hud_distributed ? HU_HEALTHX_D : HU_HEALTHX,
-		     hud_distributed ? HU_HEALTHY_D : HU_HEALTHY, hu_font2,
-		     HU_FONTSTART, colrngs[CR_GREEN]);
+  HUlib_initTextLine
+  (
+    &w_health,
+    hud_distributed? HU_HEALTHX_D : HU_HEALTHX,  //3/4/98 distribute
+    hud_distributed? HU_HEALTHY_D : HU_HEALTHY,
+    hu_font2,
+    HU_FONTSTART,
+    colrngs[CR_GREEN]
+  );
 
   // create the hud armor widget
   // bargraph and number for amount of armor, 
   // lower left or upper right of screen
-  HUlib_initTextLine(&w_armor, hud_distributed? HU_ARMORX_D : HU_ARMORX,
-		     hud_distributed ? HU_ARMORY_D : HU_ARMORY, hu_font2,
-		     HU_FONTSTART, colrngs[CR_GREEN]);
+  HUlib_initTextLine
+  (
+    &w_armor,
+    hud_distributed? HU_ARMORX_D : HU_ARMORX,    //3/4/98 distribute
+    hud_distributed? HU_ARMORY_D : HU_ARMORY,
+    hu_font2,
+    HU_FONTSTART,
+    colrngs[CR_GREEN]
+  );
 
   // create the hud ammo widget
   // bargraph and number for amount of ammo for current weapon, 
   // lower left or lower right of screen
-  HUlib_initTextLine(&w_ammo, hud_distributed ? HU_AMMOX_D : HU_AMMOX,
-		     hud_distributed ? HU_AMMOY_D : HU_AMMOY, hu_font2,
-		     HU_FONTSTART, colrngs[CR_GOLD]);
+  HUlib_initTextLine
+  (
+    &w_ammo,
+    hud_distributed? HU_AMMOX_D : HU_AMMOX,      //3/4/98 distribute
+    hud_distributed? HU_AMMOY_D : HU_AMMOY,
+    hu_font2,
+    HU_FONTSTART,
+    colrngs[CR_GOLD]
+  );
 
   // create the hud weapons widget
   // list of numbers of weapons possessed
   // lower left or lower right of screen
-  HUlib_initTextLine(&w_weapon, hud_distributed ? HU_WEAPX_D : HU_WEAPX,
-		     hud_distributed ? HU_WEAPY_D : HU_WEAPY, hu_font2, 
-		     HU_FONTSTART, colrngs[CR_GRAY]);
+  HUlib_initTextLine
+  (
+    &w_weapon,
+    hud_distributed? HU_WEAPX_D : HU_WEAPX,      //3/4/98 distribute
+    hud_distributed? HU_WEAPY_D : HU_WEAPY,
+    hu_font2,
+    HU_FONTSTART,
+    colrngs[CR_GRAY]
+  );
 
   // create the hud keys widget
   // display of key letters possessed
   // lower left of screen
-  HUlib_initTextLine(&w_keys, hud_distributed ? HU_KEYSX_D : HU_KEYSX,
-		     hud_distributed ? HU_KEYSY_D : HU_KEYSY, hu_font2,
-		     HU_FONTSTART, colrngs[CR_GRAY]);
+  HUlib_initTextLine
+  (
+    &w_keys,
+    hud_distributed? HU_KEYSX_D : HU_KEYSX,      //3/4/98 distribute
+    hud_distributed? HU_KEYSY_D : HU_KEYSY,
+    hu_font2,
+    HU_FONTSTART,
+    colrngs[CR_GRAY]
+  );
 
   // create the hud graphic keys widget
   // display of key graphics possessed
   // lower left of screen
-  HUlib_initTextLine(&w_gkeys, hud_distributed ? HU_KEYSGX_D : HU_KEYSGX,
-		     hud_distributed? HU_KEYSY_D : HU_KEYSY, hu_fontk,
-		     HU_FONTSTART, colrngs[CR_RED]);
+  HUlib_initTextLine
+  (
+    &w_gkeys,
+    hud_distributed? HU_KEYSGX_D : HU_KEYSGX,    //3/4/98 distribute
+    hud_distributed? HU_KEYSY_D : HU_KEYSY,
+    hu_fontk,
+    HU_FONTSTART,
+    colrngs[CR_RED]
+  );
 
   // create the hud monster/secret widget
   // totals and current values for kills, items, secrets
   // lower left of screen
-  HUlib_initTextLine(&w_monsec, hud_distributed ? HU_MONSECX_D : HU_MONSECX,
-		     hud_distributed? HU_MONSECY_D : HU_MONSECY, hu_font2,
-		     HU_FONTSTART, colrngs[CR_GRAY]);
+  HUlib_initTextLine
+  (
+    &w_monsec,
+    hud_distributed? HU_MONSECX_D : HU_MONSECX,  //3/4/98 distribute
+    hud_distributed? HU_MONSECY_D : HU_MONSECY,
+    hu_font2,
+    HU_FONTSTART,
+    colrngs[CR_GRAY]
+  );
 
   // create the hud text refresh widget
   // scrolling display of last hud_msg_lines messages received
 
   if (hud_msg_lines>HU_MAXMESSAGES)
     hud_msg_lines=HU_MAXMESSAGES;
-
+  //jff 4/21/98 if setup has disabled message list while active, turn it off
+  if (hud_msg_lines<=1)
+    message_list=false;
   //jff 2/26/98 add the text refresh widget initialization
-  HUlib_initMText(&w_rtext, 0, 0, SCREENWIDTH,
-		  (hud_msg_lines+2)*HU_REFRESHSPACING, hu_font,
-		  HU_FONTSTART, colrngs[hudcolor_list],
-		  hu_msgbg, &message_list_on);      // killough 11/98
+  HUlib_initMText
+  (
+    &w_rtext,
+    0,
+    0,
+    SCREENWIDTH,
+    (hud_msg_lines+2)*HU_REFRESHSPACING,
+    hu_font,
+    HU_FONTSTART,
+    colrngs[hudcolor_list],
+    hu_msgbg,
+    &message_list
+  );
 
   // initialize the automap's level title widget
 	
@@ -527,13 +574,34 @@ void HU_Start(void)
 
   // create the automaps coordinate widget
   // jff 3/3/98 split coord widget into three lines: x,y,z
-
-  HUlib_initTextLine(&w_coordx, HU_COORDX, HU_COORDX_Y, hu_font,
-		     HU_FONTSTART, colrngs[hudcolor_xyco]);
-  HUlib_initTextLine(&w_coordy, HU_COORDX, HU_COORDY_Y, hu_font,
-		     HU_FONTSTART, colrngs[hudcolor_xyco]);
-  HUlib_initTextLine(&w_coordz, HU_COORDX, HU_COORDZ_Y, hu_font,
-		     HU_FONTSTART, colrngs[hudcolor_xyco]);
+  // jff 2/16/98 added
+  HUlib_initTextLine
+  (
+    &w_coordx,
+    HU_COORDX,
+    HU_COORDX_Y,
+    hu_font,
+    HU_FONTSTART,
+    colrngs[hudcolor_xyco]
+  );
+  HUlib_initTextLine
+  (
+    &w_coordy,
+    HU_COORDX,
+    HU_COORDY_Y,
+    hu_font,
+    HU_FONTSTART,
+    colrngs[hudcolor_xyco]
+  );
+  HUlib_initTextLine
+  (
+    &w_coordz,
+    HU_COORDX,
+    HU_COORDZ_Y,
+    hu_font,
+    HU_FONTSTART,
+    colrngs[hudcolor_xyco]
+  );
   
   // initialize the automaps coordinate widget
   //jff 3/3/98 split coordstr widget into 3 parts
@@ -609,8 +677,16 @@ void HU_Start(void)
 
   // create the inputbuffer widgets, one per player
   for (i=0 ; i<MAXPLAYERS ; i++)
-    HUlib_initIText(&w_inputbuffer[i], 0, 0, 0, 0, colrngs[hudcolor_chat],
-		    &always_off);
+    HUlib_initIText
+    (
+      &w_inputbuffer[i],
+      0,
+      0,
+      0,
+      0,
+      colrngs[hudcolor_chat],
+      &always_off
+    );
 
   // now allow the heads-up display to run
   headsupactive = true;
@@ -632,41 +708,23 @@ void HU_MoveHud(void)
 
   //jff 3/4/98 move displays around on F5 changing hud_distributed
   if (hud_distributed!=ohud_distributed)
-    {
-      w_ammo.x =    hud_distributed? HU_AMMOX_D   : HU_AMMOX; 
-      w_ammo.y =    hud_distributed? HU_AMMOY_D   : HU_AMMOY;
-      w_weapon.x =  hud_distributed? HU_WEAPX_D   : HU_WEAPX; 
-      w_weapon.y =  hud_distributed? HU_WEAPY_D   : HU_WEAPY;
-      w_keys.x =    hud_distributed? HU_KEYSX_D   : HU_KEYSX; 
-      w_keys.y =    hud_distributed? HU_KEYSY_D   : HU_KEYSY;
-      w_gkeys.x =   hud_distributed? HU_KEYSGX_D  : HU_KEYSGX; 
-      w_gkeys.y =   hud_distributed? HU_KEYSY_D   : HU_KEYSY;
-      w_monsec.x =  hud_distributed? HU_MONSECX_D : HU_MONSECX; 
-      w_monsec.y =  hud_distributed? HU_MONSECY_D : HU_MONSECY;
-      w_health.x =  hud_distributed? HU_HEALTHX_D : HU_HEALTHX; 
-      w_health.y =  hud_distributed? HU_HEALTHY_D : HU_HEALTHY;
-      w_armor.x =   hud_distributed? HU_ARMORX_D  : HU_ARMORX; 
-      w_armor.y =   hud_distributed? HU_ARMORY_D  : HU_ARMORY;
-    }
+  {
+    w_ammo.x =    hud_distributed? HU_AMMOX_D   : HU_AMMOX; 
+    w_ammo.y =    hud_distributed? HU_AMMOY_D   : HU_AMMOY;
+    w_weapon.x =  hud_distributed? HU_WEAPX_D   : HU_WEAPX; 
+    w_weapon.y =  hud_distributed? HU_WEAPY_D   : HU_WEAPY;
+    w_keys.x =    hud_distributed? HU_KEYSX_D   : HU_KEYSX; 
+    w_keys.y =    hud_distributed? HU_KEYSY_D   : HU_KEYSY;
+    w_gkeys.x =   hud_distributed? HU_KEYSGX_D  : HU_KEYSGX; 
+    w_gkeys.y =   hud_distributed? HU_KEYSY_D   : HU_KEYSY;
+    w_monsec.x =  hud_distributed? HU_MONSECX_D : HU_MONSECX; 
+    w_monsec.y =  hud_distributed? HU_MONSECY_D : HU_MONSECY;
+    w_health.x =  hud_distributed? HU_HEALTHX_D : HU_HEALTHX; 
+    w_health.y =  hud_distributed? HU_HEALTHY_D : HU_HEALTHY;
+    w_armor.x =   hud_distributed? HU_ARMORX_D  : HU_ARMORX; 
+    w_armor.y =   hud_distributed? HU_ARMORY_D  : HU_ARMORY;
+  }
   ohud_distributed = hud_distributed;
-}
-
-static int HU_top(int i, int idx1, int top1)
-{
-  if (idx1 > -1)
-    {
-      char numbuf[32], *s;
-
-      sprintf(numbuf,"%5d",top1);
-      // make frag count in player's color via escape code
-
-      hud_keysstr[i++] = '\x1b'; //jff 3/26/98 use ESC not '\' for paths
-      hud_keysstr[i++] = '0' + plyrcoltran[idx1 & 3];
-      s = numbuf;
-      while (*s)
-	hud_keysstr[i++] = *s++;
-    }
-  return i;
 }
 
 //
@@ -690,13 +748,9 @@ void HU_Drawer(void)
   if (automapactive)
     {
       fixed_t x,y,z;   // killough 10/98:
-      void AM_Coordinates(const mobj_t *, fixed_t *, fixed_t *, fixed_t *);
 
       // map title
       HUlib_drawTextLine(&w_title, false);
-
-      // killough 10/98: allow coordinates to display non-following pointer 
-      AM_Coordinates(plr->mo, &x, &y, &z);
 
       //jff 2/16/98 output new coord display
       // x-coord
@@ -1044,24 +1098,6 @@ void HU_Drawer(void)
                               }
                     }
 
-		  // killough 11/98: replaced cut-and-pasted code with function
-
-                  // if the biggest number exists,
-		  // put it in the init string
-		  i = HU_top(i, idx1, top1);
-
-                  // if the second biggest number exists,
-		  // put it in the init string
-		  i = HU_top(i, idx2, top2);
-
-                  // if the third biggest number exists,
-		  // put it in the init string
-		  i = HU_top(i, idx3, top3);
-
-                  // if the fourth biggest number exists,
-		  // put it in the init string
-		  i = HU_top(i, idx4, top4);
-
                   hud_keysstr[i] = '\0';
                 } //jff 3/17/98 end of deathmatch clause
               else // build alphabetical key display (not used currently)
@@ -1221,26 +1257,23 @@ void HU_Erase(void)
 //
 void HU_Ticker(void)
 {
-  // killough 11/98: support counter for message list as well as regular msg
-  if (message_list_counter && !--message_list_counter)
-    {
-      reviewing_message = message_list_on = false;
-      if (hud_list_bgon && scaledviewheight<200)  // killough 11/98
-	R_FillBackScreen();
-    }
 
   // tick down message counter if message is up
   if (message_counter && !--message_counter)
-    reviewing_message = message_on = message_nottobefuckedwith = false;
+  {
+    message_on = false;
+    message_nottobefuckedwith = false;
+  }
 
   // if messages on, or "Messages Off" is being displayed
   // this allows the notification of turning messages off to be seen
-  // display message if necessary
-
-  if ((showMessages || message_dontfuckwithme) && plr->message &&
-      (!message_nottobefuckedwith || message_dontfuckwithme))
+  if (showMessages || message_dontfuckwithme)
+  {
+    // display message if necessary
+    if ((plr->message && !message_nottobefuckedwith)
+        || (plr->message && message_dontfuckwithme))
     {
-      //post the message to the message widget
+     //post the message to the message widget
       HUlib_addMessageToSText(&w_message, 0, plr->message);
 
       //jff 2/26/98 add message to refresh text widget too
@@ -1248,22 +1281,10 @@ void HU_Ticker(void)
 
       // clear the message to avoid posting multiple times
       plr->message = 0;
-	  
-      // killough 11/98: display message list, possibly timed
-      if (message_list)
-	{
-	  if (hud_msg_timed || message_dontfuckwithme) // Messages Off => timed
-	    message_list_counter = hud_msg_count;
-	  message_list_on = true;
-	}
-      else
-	{
+
 	  message_on = true;       // note a message is displayed
 	  // start the message persistence counter	      
-	  message_counter = message_count;
-	}
-
-      has_message = true;        // killough 12/98
+	  message_counter = HU_MSGTIMEOUT;
 
       // transfer "Messages Off" exception to the "being displayed" variable
       message_nottobefuckedwith = message_dontfuckwithme;
@@ -1271,6 +1292,7 @@ void HU_Ticker(void)
       // clear the flag that "Messages Off" is being posted
       message_dontfuckwithme = 0;
     }
+  }
 
   // check for incoming chat characters
   if (netgame)
@@ -1302,10 +1324,9 @@ void HU_Ticker(void)
                                                   player_names[i],
                                                   w_inputbuffer[i].l.l);
 
-			  has_message = true;        // killough 12/98
                           message_nottobefuckedwith = true;
                           message_on = true;
-                          message_counter = chat_count;  // killough 11/98
+                          message_counter = HU_MSGTIMEOUT;
 			  S_StartSound(0, gamemode == commercial ?
 				       sfx_radio : sfx_tink);
                         }
@@ -1407,43 +1428,6 @@ boolean HU_Responder(event_t *ev)
       if (ev->data1 == key_enter)                                 // phares
         {
 	  //jff 2/26/98 toggle list of messages
-
-	  // killough 11/98:
-	  // Toggle message list only if a message is actively being reviewed.
-	  if (has_message)
-	    {
-	      if (message_list ? message_list_on && 
-		  (reviewing_message || !hud_msg_timed) :
-		  message_on && reviewing_message)
-		if (!(message_list = !message_list))
-		  {
-		    extern boolean setsizeneeded;
-
-		    // killough 12/98:
-		    // fix crash at startup if key_enter held down
-		    if (gametic && gamestate == GS_LEVEL)
-		      HU_Erase(); //jff 4/28/98 erase behind messages
-
-		    message_list_on = false;
-		    // killough 11/98: fix background for smaller screens:
-		    if (hud_list_bgon && scaledviewheight<200)
-		      setsizeneeded = true;
-		  }
-
-	      // killough 11/98: Support timed or continuous message lists
-
-	      if (!message_list)      // if not message list, refresh message
-		{
-		  message_counter = message_count;
-		  reviewing_message = message_on = true;
-		}
-	      else
-		{                     // message list, possibly timed
-		  if (hud_msg_timed)
-		    message_list_counter = hud_msg_count;
-		  reviewing_message = message_list_on = true;
-		}
-	    }
           eatkey = true;
         }  //jff 2/26/98 no chat if message review is displayed
       else // killough 10/02/98: no chat if demo playback

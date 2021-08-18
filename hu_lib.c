@@ -496,9 +496,6 @@ void HUlib_drawMText(hu_mtext_t* m)
       if (idx < 0)
 	idx += m->nl; // handle queue of lines
 
-      m->l[idx].x = m->x;       // killough 11/98: optional scroll up/down:
-      m->l[idx].y = m->y+(hud_msg_scrollup ? m->nl-1-i : i)*HU_REFRESHSPACING;
-
       if (hud_list_bgon)
 	m->l[idx].x += 4, m->l[idx].y += HU_REFRESHSPACING;
 

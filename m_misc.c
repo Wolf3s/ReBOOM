@@ -1161,21 +1161,7 @@ default_t defaults[] = {
     {176}, {0,255}, number, ss_auto, wad_yes,
     "color used for the red player arrow"
   },
-
-  {  // purple                     // killough 8/8/98
-    "mapcolor_frnd",
-    (config_t *) &mapcolor_frnd, NULL,
-    {252}, {0,255}, number, ss_auto, wad_yes,
-    "color used for friends"
-  },
-
-  {
-    "map_point_coord",
-    (config_t *) &map_point_coordinates, NULL,
-    {1}, {0,1}, number, ss_auto, wad_yes,
-    "1 to show automap pointer coordinates in non-follow mode"
-  },
-
+  
   //jff 3/9/98 add option to not show secrets til after found
   // killough change default, to avoid spoilers and preserve Doom mystery
   { // show secret after gotten
@@ -1217,13 +1203,6 @@ default_t defaults[] = {
     "color range used for chat messages and entry"
   },
 
-  { // killough 11/98
-    "chat_msg_timer",
-    (config_t *) &chat_msg_timer, NULL,
-    {4000}, {0,UL}, 0, ss_mess, wad_yes,
-    "Duration of chat messages (ms)"
-  },
-
   { // gold range  //jff 2/26/98
     "hudcolor_list",
     (config_t *) &hudcolor_list, NULL,
@@ -1236,41 +1215,6 @@ default_t defaults[] = {
     (config_t *) &hud_msg_lines, NULL,
     {1}, {1,16}, number, ss_mess, wad_yes,
     "number of lines in review display"
-  },
-
-  { // killough 11/98
-    "hud_msg_scrollup",
-    (config_t *) &hud_msg_scrollup, NULL,
-    {1}, {0,1}, number, ss_mess, wad_yes,
-    "1 enables message review list scrolling upward"
-  },
-
-  { // killough 11/98
-    "hud_msg_timed",
-    (config_t *) &hud_msg_timed, NULL,
-    {1}, {0,1}, 0, ss_mess, wad_yes,
-    "1 enables temporary message review list"
-  },
-
-  { // killough 11/98
-    "hud_msg_timer",
-    (config_t *) &hud_msg_timer, NULL,
-    {4000}, {0,UL}, 0, ss_mess, wad_yes,
-    "Duration of temporary message review list (ms)"
-  },
-
-  { // killough 11/98
-    "message_list",
-    (config_t *) &message_list, NULL,
-    {0}, {0,1}, number, ss_mess, wad_yes,
-    "1 means multiline message list is active"
-  },
-
-  { // killough 11/98
-    "message_timer",
-    (config_t *) &message_timer, NULL,
-    {4000}, {0,UL}, 0, ss_mess, wad_yes,
-    "Duration of normal Doom messages (ms)"
   },
 
   { // solid window bg ena //jff 2/26/98

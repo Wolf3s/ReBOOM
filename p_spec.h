@@ -363,10 +363,10 @@ typedef enum
 
 typedef enum
 {
-  doorNormal, // haleyjd
+  normal,
   close30ThenOpen,
-  doorClose, // haleyjd
-  doorOpen,  // haleyjd
+  doorClose,
+  open,
   raiseIn5Mins,
   blazeRaise,
   blazeOpen,
