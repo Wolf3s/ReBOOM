@@ -1,8 +1,9 @@
 // Emacs style mode select   -*- C++ -*-
 //-----------------------------------------------------------------------------
 //
-// $Id: i_main.c,v 1.8 1998/05/15 00:34:03 killough Exp $
+// $Id: i_main.c,v 1.9 1998/09/07 20:10:02 jim Exp $
 //
+//  BOOM, a modified and improved DOOM engine
 //  Copyright (C) 1999 by
 //  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
 //
@@ -25,8 +26,6 @@
 //      Main program, simply calls D_DoomMain high level loop.
 //
 //-----------------------------------------------------------------------------
-
-//static const char rcsid[] = "$Id: i_main.c,v 1.8 1998/05/15 00:34:03 killough Exp $";
 
 #ifdef UNIX
 #include "SDL2/SDL.h" //Gibbon
@@ -53,8 +52,8 @@ void I_Quit(void);
 
 int main(int argc, char **argv)
 {
-   myargc = argc;
-   myargv = argv;
+  myargc = argc;
+  myargv = argv;
 
    // haleyjd: init SDL
    if(SDL_Init(INIT_FLAGS) == -1)
@@ -62,13 +61,13 @@ int main(int argc, char **argv)
       puts("Failed to initialize SDL library.\n");
       return -1;
    }
-      
-   /*
+
+  /*
      killough 1/98:
-   
+
      This fixes some problems with exit handling
      during abnormal situations.
-    
+
      The old code called I_Quit() to end program,
      while now I_Quit() is installed as an exit
      handler and exit() is called to exit, either
@@ -77,8 +76,8 @@ int main(int argc, char **argv)
      being left in graphics mode or having very
      loud SFX noise because the sound card is
      left in an unstable state.
-   */
-   
+  */
+
    atexit(I_Quit);
    
    // 2/2/98 Stan
@@ -93,6 +92,9 @@ int main(int argc, char **argv)
 //----------------------------------------------------------------------------
 //
 // $Log: i_main.c,v $
+// Revision 1.9  1998/09/07  20:10:02  jim
+// Logical output routine added
+//
 // Revision 1.8  1998/05/15  00:34:03  killough
 // Remove unnecessary crash hack
 //

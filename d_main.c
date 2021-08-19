@@ -1,8 +1,9 @@
 // Emacs style mode select   -*- C++ -*-
 //-----------------------------------------------------------------------------
 //
-// $Id: d_main.c,v 1.47 1998/05/16 09:16:51 killough Exp $
+// $Id: d_main.c,v 1.54 1998/10/04 13:20:32 thldrmn Exp $
 //
+//  BOOM, a modified and improved DOOM engine
 //  Copyright (C) 1999 by
 //  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
 //
@@ -22,14 +23,12 @@
 //  02111-1307, USA.
 //
 // DESCRIPTION:
-//  DOOM main program (D_DoomMain) and game loop, plus functions to
-//  determine game mode (shareware, registered), parse command line
-//  parameters, configure game parameters (turbo), and call the startup
-//  functions.
+//  DOOM main program (D_DoomMain) and game loop (D_DoomLoop),
+//  plus functions to determine game mode (shareware, registered),
+//  parse command line parameters, configure game parameters (turbo),
+//  and call the startup functions.
 //
 //-----------------------------------------------------------------------------
-
-//static const char rcsid[] = "$Id: d_main.c,v 1.47 1998/05/16 09:16:51 killough Exp $";
 
 #include "d_io.h" // haleyjd
 

@@ -1,8 +1,9 @@
 // Emacs style mode select   -*- C++ -*-
 //-----------------------------------------------------------------------------
 //
-// $Id: i_system.c,v 1.14 1998/05/03 22:33:13 killough Exp $
+// $Id: i_system.c,v 1.15 1998/09/07 20:06:44 jim Exp $
 //
+//  BOOM, a modified and improved DOOM engine
 //  Copyright (C) 1999 by
 //  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
 //
@@ -24,8 +25,6 @@
 // DESCRIPTION:
 //
 //-----------------------------------------------------------------------------
-
-//static const char rcsid[] = "$Id: i_system.c,v 1.14 1998/05/03 22:33:13 killough Exp $";
 
 // haleyjd
 #ifdef _MSC_VER
@@ -59,6 +58,14 @@ void I_WaitVBL(int count)
 {
    // haleyjd
    SDL_Delay((count*500)/TICRATE);
+}
+
+void I_BeginRead(void)
+{
+}
+
+void I_EndRead(void)
+{
 }
 
 // Most of the following has been rewritten by Lee Killough
@@ -316,7 +323,8 @@ void I_Error(const char *error, ...) // killough 3/20/98: add const
 
 void I_EndDoom(void)
 {
-   puts("\nexiting.\n");
+   // Gibbon
+   puts("\nReBOOM exiting.\n");
 }
 
 //----------------------------------------------------------------------------

@@ -1,8 +1,9 @@
 // Emacs style mode select   -*- C++ -*-
 //-----------------------------------------------------------------------------
 //
-// $Id: d_main.h,v 1.7 1998/05/06 15:32:19 jim Exp $
+// $Id: d_main.h,v 1.8 1998/08/29 22:58:49 thldrmn Exp $
 //
+//  BOOM, a modified and improved DOOM engine
 //  Copyright (C) 1999 by
 //  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
 //
@@ -20,7 +21,6 @@
 //  along with this program; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
 //  02111-1307, USA.
-//
 //
 // DESCRIPTION:
 //      System specific interface stuff.
