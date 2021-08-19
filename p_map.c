@@ -1,7 +1,7 @@
 // Emacs style mode select   -*- C++ -*-
 //-----------------------------------------------------------------------------
 //
-// $Id: r_things.c,v 1.22 1998/05/03 22:46:41 killough Exp $
+// $Id: p_map.c,v 1.40 1998/09/10 20:12:48 phares Exp $
 //
 //  BOOM, a modified and improved DOOM engine
 //  Copyright (C) 1999 by
@@ -23,7 +23,8 @@
 //  02111-1307, USA.
 //
 // DESCRIPTION:
-//  Refresh of things, i.e. objects represented by sprites.
+//  Movement, collision handling.
+//  Shooting and aiming.
 //
 //-----------------------------------------------------------------------------
 
