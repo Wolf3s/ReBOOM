@@ -59,6 +59,18 @@ typedef enum {
   NUMDIRS
 } dirtype_t;
 
+//
+// P_NewChaseDir related LUT.
+//
+dirtype_t opposite[] = {
+  DI_WEST, DI_SOUTHWEST, DI_SOUTH, DI_SOUTHEAST,
+  DI_EAST, DI_NORTHEAST, DI_NORTH, DI_NORTHWEST, DI_NODIR
+};
+
+dirtype_t diags[] = {
+  DI_NORTHWEST, DI_NORTHEAST, DI_SOUTHWEST, DI_SOUTHEAST
+};
+
 void A_Fall(mobj_t *actor);
 void A_FaceTarget(mobj_t *actor);
 static void P_NewChaseDir(mobj_t *actor);
@@ -78,8 +90,7 @@ static void P_NewChaseDir(mobj_t *actor);
 //
 // killough 5/5/98: reformatted, cleaned up
 
-static void P_RecursiveSound(sector_t *sec, int soundblocks,
-			     mobj_t *soundtarget)
+void P_RecursiveSound(sector_t *sec, int soundblocks, mobj_t *soundtarget)
 {
   int i;
 
@@ -291,102 +302,115 @@ boolean P_TryWalk(mobj_t *actor)
   return true;
 }
 
-//
-// P_DoNewChaseDir
-//
-// killough 9/8/98:
-//
-// Most of P_NewChaseDir(), except for what
-// determines the new direction to take
-//
-
-static void P_DoNewChaseDir(mobj_t *actor)
+void P_NewChaseDir(mobj_t *actor)
 {
   fixed_t     deltax;
   fixed_t     deltay;
-  dirtype_t xdir, ydir, tdir;
-  dirtype_t olddir = actor->movedir;
-  dirtype_t turnaround = olddir;
+  dirtype_t   d[3];
+  dirtype_t   olddir;
+  int         tdir;
+  dirtype_t   turnaround;
 
   if (!actor->target)
     I_Error ("P_NewChaseDir: called with no target");
 
-  if (turnaround != DI_NODIR)         // find reverse direction
-    turnaround ^= 4;
+  olddir = actor->movedir;
+  turnaround=opposite[olddir];
 
-  xdir = 
-    deltax >  10*FRACUNIT ? DI_EAST :
-    deltax < -10*FRACUNIT ? DI_WEST : DI_NODIR;
+  deltax = actor->target->x - actor->x;
+  deltay = actor->target->y - actor->y;
 
-  ydir = 
-    deltay < -10*FRACUNIT ? DI_SOUTH :
-    deltay >  10*FRACUNIT ? DI_NORTH : DI_NODIR;
+  if (deltax>10*FRACUNIT)
+    d[1]= DI_EAST;
+  else
+    if (deltax<-10*FRACUNIT)
+      d[1]= DI_WEST;
+    else
+      d[1]=DI_NODIR;
+
+  if (deltay<-10*FRACUNIT)
+    d[2]= DI_SOUTH;
+  else
+    if (deltay>10*FRACUNIT)
+      d[2]= DI_NORTH;
+    else
+      d[2]=DI_NODIR;
 
   // try direct route
-  if (xdir != DI_NODIR && ydir != DI_NODIR && turnaround != 
-      (actor->movedir = deltay < 0 ? deltax > 0 ? DI_SOUTHEAST : DI_SOUTHWEST :
-       deltax > 0 ? DI_NORTHEAST : DI_NORTHWEST) && P_TryWalk(actor))
-    return;
+  if (d[1] != DI_NODIR && d[2] != DI_NODIR)
+    {
+      actor->movedir = diags[((deltay<0)<<1)+(deltax>0)];
+      if (actor->movedir != turnaround && P_TryWalk(actor))
+        return;
+    }
 
   // try other directions
   if (P_Random(pr_newchase) > 200 || abs(deltay)>abs(deltax))
-    tdir = xdir, xdir = ydir, ydir = tdir;
+    {
+      tdir=d[1];
+      d[1]=d[2];
+      d[2]=tdir;
+    }
 
-  if ((xdir == turnaround ? xdir = DI_NODIR : xdir) != DI_NODIR &&
-      (actor->movedir = xdir, P_TryWalk(actor)))
-    return;         // either moved forward or attacked
+  if (d[1]==turnaround)
+    d[1]=DI_NODIR;
+  if (d[2]==turnaround)
+    d[2]=DI_NODIR;
 
-  if ((ydir == turnaround ? ydir = DI_NODIR : ydir) != DI_NODIR &&
-      (actor->movedir = ydir, P_TryWalk(actor)))
-    return;
+  if (d[1]!=DI_NODIR)
+    {
+      actor->movedir = d[1];
+      if (P_TryWalk(actor))         // either moved forward or attacked
+        return;
+    }
+
+  if (d[2]!=DI_NODIR)
+    {
+      actor->movedir = d[2];
+      if (P_TryWalk(actor))
+        return;
+    }
 
   // there is no direct path to the player, so pick another direction.
-  if (olddir != DI_NODIR && (actor->movedir = olddir, P_TryWalk(actor)))
-    return;
+
+  if (olddir!=DI_NODIR)
+    {
+      actor->movedir = olddir;
+      if (P_TryWalk(actor))
+        return;
+    }
 
   // randomly determine direction of search
-  if (P_Random(pr_newchasedir) & 1)
+
+  if (P_Random(pr_newchasedir)&1)
     {
-      for (tdir = DI_EAST; tdir <= DI_SOUTHEAST; tdir++)
-        if (tdir != turnaround && (actor->movedir = tdir, P_TryWalk(actor)))
-	  return;
+      for (tdir=DI_EAST; tdir<=DI_SOUTHEAST; tdir++)
+        if (tdir!=turnaround)
+          {
+            actor->movedir =tdir;
+            if (P_TryWalk(actor))
+              return;
+          }
     }
   else
-    for (tdir = DI_SOUTHEAST; tdir != DI_EAST-1; tdir--)
-      if (tdir != turnaround && (actor->movedir = tdir, P_TryWalk(actor)))
-	return;
-  
-  if ((actor->movedir = turnaround) != DI_NODIR && !P_TryWalk(actor))
-    actor->movedir = DI_NODIR;
-}
+    {
+      for (tdir=DI_SOUTHEAST; tdir != DI_EAST-1; tdir--)
+        if (tdir!=turnaround)
+          {
+            actor->movedir =tdir;
+            if (P_TryWalk(actor))
+              return;
+          }
+    }
 
+  if (turnaround != DI_NODIR)
+    {
+      actor->movedir =turnaround;
+      if (P_TryWalk(actor))
+        return;
+    }
 
-//
-// P_NewChaseDir
-//
-// killough 9/8/98: Split into two functions
-//
-
-static void P_NewChaseDir(mobj_t *actor)
-{
-  mobj_t *target = actor->target;
-  fixed_t deltax = target->x - actor->x;
-  fixed_t deltay = target->y - actor->y;
-
-  // killough 8/8/98: sometimes move away from target, keeping distance
-  //
-  // 1) Stay a certain distance away from a friend, to avoid being in their way
-  // 2) Take advantage over an enemy without missiles, by keeping distance
-
-  actor->strafecount = 0;
-
-  P_DoNewChaseDir(actor);
-
-  // If strafing, set movecount to strafecount so that old Doom
-  // logic still works the same, except in the strafing part
-
-  if (actor->strafecount)
-    actor->movecount = actor->strafecount;
+  actor->movedir = DI_NODIR;    // can not move
 }
 
 //
@@ -454,6 +478,33 @@ static boolean P_LookForPlayers(mobj_t *actor, boolean allaround)
       }
 
   return false;
+}
+
+
+//
+// A_KeenDie
+// DOOM II special, map 32.
+// Uses special tag 666.
+//
+void A_KeenDie(mobj_t* mo)
+{
+  thinker_t *th;
+  line_t   junk;
+
+  A_Fall(mo);
+
+  // scan the remaining thinkers to see if all Keens are dead
+
+  for (th = thinkercap.next ; th != &thinkercap ; th=th->next)
+    if (th->function == P_MobjThinker)
+      {
+        mobj_t *mo2 = (mobj_t *) th;
+        if (mo2 != mo && mo2->type == mo->type && mo2->health > 0)
+          return;                           // other Keen not dead
+      }
+
+  junk.tag = 666;
+  EV_DoDoor(&junk,open);
 }
 
 //
@@ -789,7 +840,7 @@ void A_SkelMissile(mobj_t *actor)
 
   mo->x += mo->momx;
   mo->y += mo->momy;
-  P_SetTarget(&mo->tracer, actor->target);  // killough 11/98
+  mo->tracer = actor->target;
 }
 
 #define TRACEANGLE 0xc000000   /* killough 9/9/98: change to #define */
@@ -809,7 +860,7 @@ void A_Tracer(mobj_t *actor)
   // killough 3/6/98: fix revenant internal demo bug by subtracting
   // levelstarttic from gametic.
 
-  if ((gametic-basetic) & 3)
+  if ((gametic-levelstarttic) & 3)
     return;
 
   // spawn a puff of smoke behind the rocket
@@ -967,6 +1018,8 @@ void A_VileChase(mobj_t* actor)
   int xl, xh;
   int yl, yh;
   int bx, by;
+  mobjinfo_t *info;
+  mobj_t *temp;
 
   if (actor->movedir != DI_NODIR)
     {
@@ -991,9 +1044,8 @@ void A_VileChase(mobj_t* actor)
               // that canbe raised.
               if (!P_BlockThingsIterator(bx,by,PIT_VileCheck))
                 {
-                  mobjinfo_t *info;
                   // got one!
-                  mobj_t *temp = actor->target;
+                  temp = actor->target;
                   actor->target = corpsehit;
                   A_FaceTarget(actor);
                   actor->target = temp;
@@ -1085,14 +1137,13 @@ void A_VileTarget(mobj_t *actor)
 
   A_FaceTarget(actor);
 
-  // killough 12/98: fix Vile fog coordinates
   fog = P_SpawnMobj(actor->target->x,
                     actor->target->x, // huh? this is correct!
                     actor->target->z,MT_FIRE);
 
-  P_SetTarget(&actor->tracer, fog);   // killough 11/98
-  P_SetTarget(&fog->target, actor);
-  P_SetTarget(&fog->tracer, actor->target);
+  actor->tracer = fog;
+  fog->target = actor;
+  fog->tracer = actor->target;
   A_Fire(fog);
 }
 
@@ -1315,7 +1366,7 @@ void A_PainShootSkull(mobj_t *actor, angle_t angle)
       return;
     }
 
-  P_SetTarget(&newmobj->target, actor->target);
+  newmobj->target = actor->target;
   A_SkullAttack(newmobj);
 }
 
@@ -1394,24 +1445,7 @@ void A_Fall(mobj_t *actor)
 //
 void A_Explode(mobj_t *thingy)
 {
-}
-
-//
-// A_Detonate
-// killough 8/9/98: same as A_Explode, except that the damage is variable
-//
-
-void A_Detonate(mobj_t *mo)
-{
-}
-
-//
-// killough 9/98: a mushroom explosion effect, sorta :)
-// Original idea: Linguica
-//
-
-void A_Mushroom(mobj_t *actor)
-{
+  P_RadiusAttack( thingy, thingy->target, 128 );
 }
 
 //
@@ -1614,7 +1648,9 @@ void P_SpawnBrainTargets(void)  // killough 3/26/98: renamed old function
   brain.targeton = 0;
   brain.easy = 0;           // killough 3/26/98: always init easy to 0
 
-  for (thinker=thinkercap.next; thinker != &thinkercap; thinker=thinker->next)
+  for (thinker = thinkercap.next ;
+       thinker != &thinkercap ;
+       thinker = thinker->next)
     if (thinker->function == P_MobjThinker)
       {
         mobj_t *m = (mobj_t *) thinker;
@@ -1710,12 +1746,11 @@ void A_SpawnSound(mobj_t *mo)
 
 void A_SpawnFly(mobj_t *mo)
 {
-  mobj_t *newmobj;  // killough 8/9/98
-  int    r;
-  mobjtype_t type;
-
+  mobj_t *newmobj;
   mobj_t *fog;
   mobj_t *targ;
+  int    r;
+  mobjtype_t type;
 
   if (--mo->reactiontime)
     return;     // still flying
@@ -1772,31 +1807,6 @@ void A_PlayerScream(mobj_t *mo)
   S_StartSound(mo, sound);
 }
 
-//
-// A_KeenDie
-// DOOM II special, map 32.
-// Uses special tag 666.
-//
-void A_KeenDie(mobj_t* mo)
-{
-  thinker_t *th;
-  line_t   junk;
-
-  A_Fall(mo);
-
-  // scan the remaining thinkers to see if all Keens are dead
-
-  for (th = thinkercap.next ; th != &thinkercap ; th=th->next)
-    if (th->function == P_MobjThinker)
-      {
-        mobj_t *mo2 = (mobj_t *) th;
-        if (mo2 != mo && mo2->type == mo->type && mo2->health > 0)
-          return;                           // other Keen not dead
-      }
-
-  junk.tag = 666;
-  EV_DoDoor(&junk,open);
-}
 
 //----------------------------------------------------------------------------
 //

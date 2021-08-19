@@ -1167,11 +1167,8 @@ state_t states[NUMSTATES] = {
 
   // killough 8/10/98: variable damage explosion
   {SPR_MISL,32769,4,A_Scream,S_DETONATE2},    // S_DETONATE
-  {SPR_MISL,32770,6,A_Detonate,S_DETONATE3},  // S_DETONATE2
   {SPR_MISL,32771,10,NULL,S_NULL},            // S_DETONATE3
 
-  // killough 10/98: mushroom effect
-  {SPR_MISL,32769,8,A_Mushroom,S_EXPLODE2},  // S_MUSHROOM
 };
 
 // ********************************************************************
