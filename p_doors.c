@@ -231,7 +231,7 @@ void T_VerticalDoor (vldoor_t *door)
 
           case close30ThenOpen:  // close and close/open doors are done
           case blazeOpen:
-          case open:
+          case doorOpen:
           case genBlazeOpen:
           case genOpen:
           case genCdO:
@@ -399,7 +399,7 @@ int EV_DoDoor(line_t *line, vldoor_e type)
           break;
 
         case normal:
-        case open:
+        case doorOpen:
           door->direction = 1;
           door->topheight = P_FindLowestCeilingSurrounding(sec);
           door->topheight -= 4*FRACUNIT;
@@ -556,7 +556,7 @@ int EV_VerticalDoor(line_t *line, mobj_t *thing)
     case 32:
     case 33:
     case 34:
-      door->type = open;
+      door->type = doorOpen;
       line->special = 0;
       break;
 

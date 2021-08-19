@@ -529,7 +529,11 @@ void WritePredefinedLumpWad(const char *filename)
 
   // The following code writes a PWAD from the predefined lumps array
   // How to write a PWAD will not be explained here.
-  if ( (handle = open (filenam, O_RDWR | O_CREAT | O_BINARY, S_IWUSR|S_IRUSR)) != -1)
+#ifdef _WIN64
+  if ((handle = open (filenam, O_RDWR | O_CREAT | O_BINARY)) != -1)
+#else
+  if ((handle = open(filenam, O_RDWR | O_CREAT | O_BINARY, S_IWUSR | S_IRUSR)) != -1)
+#endif
   {
     wadinfo_t header = {"PWAD"};
     size_t filepos = sizeof(wadinfo_t) + num_predefined_lumps * sizeof(filelump_t);

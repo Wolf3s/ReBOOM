@@ -361,7 +361,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>C:\Users\Ad4m\Downloads\SDL2_net-2.0.1\include;C:\Users\Ad4m\Downloads\SDL2_mixer-2.0.4\include;C:\Users\Ad4m\Downloads\SDL2-2.0.14\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\sdl2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_DEBUG;_CRT_SECURE_NO_WARNINGS;INSTRUMENTED;RANGECHECK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\Debug\</AssemblerListingLocation>
       <PrecompiledHeaderOutputFile>.\Debug\ReBOOM.pch</PrecompiledHeaderOutputFile>
@@ -386,7 +386,7 @@
       <SubSystem>Console</SubSystem>
       <OutputFile>.\Debug\ReBOOM.exe</OutputFile>
       <AdditionalDependencies>odbc32.lib;odbccp32.lib;sdl2.lib;sdl2main.lib;sdl2_mixer.lib;sdl2_net.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\Users\Ad4m\Downloads\SDL2_net-2.0.1\lib\x64;C:\Users\Ad4m\Downloads\SDL2_mixer-2.0.4\lib\x64;C:\Users\Ad4m\Downloads\SDL2-2.0.14\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\sdl2;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_Acc|x64'">

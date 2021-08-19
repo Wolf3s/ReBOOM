@@ -503,7 +503,7 @@ P_UseSpecialLine
         
     case 103:
       // Open Door
-      if (EV_DoDoor(line,open))
+      if (EV_DoDoor(line, doorOpen))
         P_ChangeSwitchTexture(line,0);
       break;
         
@@ -1016,7 +1016,7 @@ P_UseSpecialLine
         
     case 61:
       // Open Door
-      if (EV_DoDoor(line,open))
+      if (EV_DoDoor(line, doorOpen))
         P_ChangeSwitchTexture(line,1);
       break;
         
