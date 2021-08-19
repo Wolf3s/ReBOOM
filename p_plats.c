@@ -3,6 +3,7 @@
 //
 // $Id: p_plats.c,v 1.16 1998/05/08 17:44:18 jim Exp $
 //
+//  BOOM, a modified and improved DOOM engine
 //  Copyright (C) 1999 by
 //  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
 //
@@ -25,8 +26,6 @@
 //  Plats (i.e. elevator platforms) code, raising/lowering.
 //
 //-----------------------------------------------------------------------------
-
-//static const char rcsid[] = "$Id: p_plats.c,v 1.16 1998/05/08 17:44:18 jim Exp $";
 
 #include "doomstat.h"
 #include "m_random.h"
@@ -132,7 +131,7 @@ void T_PlatRaise(plat_t* plat)
         //killough 1/31/98: relax compatibility to demo_compatibility
 
         // remove the plat if its a pure raise type
-        if (demo_version<203 ? !demo_compatibility : !comp[comp_floors])
+        if (!demo_compatibility)
         {
           switch(plat->type)
           {
