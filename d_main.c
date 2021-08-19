@@ -338,11 +338,7 @@ static char *pagename;
 //
 void D_PageTicker(void)
 {
-  // killough 12/98: don't advance internal demos if a single one is 
-  // being played. The only time this matters is when using -loadgame with
-  // -fastdemo, -playdemo, or -timedemo, and a consistency error occurs.
-
-  if (!singledemo && --pagetic < 0)
+  if (--pagetic < 0)
     D_AdvanceDemo();
 }
 
@@ -552,40 +548,19 @@ void D_AddFile (char *file, int source)
   wadfilesource[numwadfiles-1] = source; // Ty 08/29/98
 
 }
-
 // Return the path where the executable lies -- Lee Killough
 char *D_DoomExeDir(void)
 {
-   // haleyjd: modified to prevent returning empty string
-   static char *base;
-   if(!base)        // cache multiple requests
-   {
-      size_t len = strlen(*myargv) + 1;
-      char *p;
-
-      base = malloc(len);
-      memset(base, 0, len);
-
-      p = base + len - 1;
-      
-      strncpy(base, *myargv, len);
-      
-      while(p >= base)
-      {
-         if(*p == '/' || *p == '\\')
-         {
-            *p = '\0';
-            break;
-         }
-         *p = '\0';
-         p--;
-      }
-   }
-
-   if(*base == '\0')
-      *base = '.';
-
-   return base;
+  static char *base;
+  if (!base)        // cache multiple requests
+    {
+      size_t len = strlen(*myargv);
+      char *p = (base = malloc(len+1)) + len;
+      strcpy(base,*myargv);
+      while (p > base && *p!='/' && *p!='\\')
+        *p--=0;
+    }
+  return base;
 }
 
 // killough 10/98: return the name of the program the exe was invoked as
@@ -686,10 +661,10 @@ boolean WadFileStatus(char *filename,boolean *isdir)
     return false;
 
   if (!stat(filename,&sbuf))      //check for existence
-    {
-      *isdir=S_ISDIR(sbuf.st_mode); //if it does, set whether a dir or not
-      return true;                  //return does exist
-    }
+  {
+    *isdir=S_ISDIR(sbuf.st_mode); //if it does, set whether a dir or not
+    return true;                  //return does exist
+  }
 
   i = strlen(filename);           //get length of path
   if (i>=4)
@@ -698,11 +673,11 @@ boolean WadFileStatus(char *filename,boolean *isdir)
 
   strcat(filename,".wad");        //try it with .wad added
   if (!stat(filename,&sbuf))      //if it exists then
-    {
-      if (S_ISDIR(sbuf.st_mode))  //but is a dir, then say we didn't find it
-        return false;
-      return true;                //otherwise return file found, w/ .wad added
-    }
+  {
+    if (S_ISDIR(sbuf.st_mode))    //but is a dir, then say we didn't find it
+      return false;
+    return true;                  //otherwise return file found, w/ .wad added
+  }
   filename[i]=0;                  //remove .wad
   return false;                   //and report doesn't exist
 }
@@ -761,8 +736,8 @@ char *FindIWADFile(void)
   *iwad = 0;       // default return filename to empty
   *customiwad = 0; // customiwad is blank
 
-  //jff 3/24/98 get -iwad parm if specified else use .
-  if ((i = M_CheckParm("-iwad")) && i < myargc-1)
+  i = M_CheckParm("-iwad"); //jff 3/24/98 get -iwad parm if specified else use .
+  if (i && i<myargc-1)
     {
       NormalizeSlashes(strcpy(baseiwad,myargv[i+1]));
       if (WadFileStatus(strcpy(iwad,baseiwad),&isdir))
@@ -901,7 +876,10 @@ void IdentifyVersion (void)
   if ((i=M_CheckParm("-save")) && i<myargc-1) //jff 3/24/98 if -save present
     {
       if (!stat(myargv[i+1],&sbuf) && S_ISDIR(sbuf.st_mode)) // and is a dir
+      {
         strcpy(basesavegame,myargv[i+1]);  //jff 3/24/98 use that for savegame
+        NormalizeSlashes(basesavegame);    //jff 9/22/98 fix c:\ not working
+      }
       else
         puts("Error: -save path does not exist, using current dir");  // killough 8/8/98
     }
@@ -913,11 +891,7 @@ void IdentifyVersion (void)
   if (iwad && *iwad)
     {
       printf("IWAD found: %s\n",iwad); //jff 4/20/98 print only if found
-
-      CheckIWAD(iwad,
-                &gamemode,
-                &gamemission,   // joel 10/16/98 gamemission added
-                &haswolflevels);
+      CheckIWAD(iwad,&gamemode,&gamemission,&haswolflevels);
 
       switch(gamemode)
         {
@@ -968,7 +942,6 @@ void IdentifyVersion (void)
 
       if (gamemode == indetermined)
         puts("Unknown Game Version, may not work");  // killough 8/8/98
-
       D_AddFile(iwad, source_iwad);
     }
   else
@@ -1327,15 +1300,9 @@ void D_DoomMain(void)
     {
       // the parms after p are wadfile/lump names,
       // until end of parms or another - preceded parm
-      // killough 11/98: allow multiple -file parameters
-
-      boolean file = modifiedgame = true;            // homebrew levels
-      while (++p < myargc)
-        if (*myargv[p] == '-')
-          file = !strcasecmp(myargv[p],"-file");
-        else
-          if (file)
-            D_AddFile(myargv[p], source_pwad);
+      modifiedgame = true;            // homebrew levels
+      while (++p != myargc && *myargv[p] != '-')
+        D_AddFile(myargv[p],source_pwad);
     }
 
   if (!(p = M_CheckParm("-playdemo")) || p >= myargc-1)    // killough
@@ -1379,6 +1346,7 @@ void D_DoomMain(void)
     }
 
   if ((p = M_CheckParm ("-avg")) && p < myargc-1 && deathmatch)
+    //jff 9/3/98 use logical output routine
     puts("Austin Virtual Gaming: Levels will end after 20 minutes");
 
   if (((p = M_CheckParm ("-warp")) ||      // killough 5/2/98
