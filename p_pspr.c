@@ -3,6 +3,7 @@
 //
 // $Id: p_pspr.c,v 1.13 1998/05/07 00:53:36 killough Exp $
 //
+//  BOOM, a modified and improved DOOM engine
 //  Copyright (C) 1999 by
 //  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
 //
@@ -27,8 +28,6 @@
 //
 //-----------------------------------------------------------------------------
 
-//static const char rcsid[] = "$Id: p_pspr.c,v 1.13 1998/05/07 00:53:36 killough Exp $";
-
 #include "doomstat.h"
 #include "r_main.h"
 #include "p_map.h"
@@ -49,6 +48,7 @@
 #define BFGCELLS bfgcells        /* Ty 03/09/98 externalized in p_inter.c */
 
 extern void P_Thrust(player_t *, angle_t, fixed_t);
+int weapon_recoil;      // weapon recoil
 
 // The following array holds the recoil values         // phares
 
@@ -82,12 +82,6 @@ static void P_SetPsprite(player_t *player, int position, statenum_t stnum)
           psp->state = NULL;
           break;
         }
-
-#ifdef BETA
-      // killough 7/19/98: Pre-Beta BFG
-      if (stnum == S_BFG1 && (classic_bfg || beta_emulation))
-	stnum = S_OLDBFG1;                 // Skip to alternative weapon frame
-#endif
 
       state = &states[stnum];
       psp->state = state;
@@ -133,10 +127,7 @@ static void P_BringUpWeapon(player_t *player)
   newstate = weaponinfo[player->pendingweapon].upstate;
 
   player->pendingweapon = wp_nochange;
-
-  // killough 12/98: prevent pistol from starting visibly at bottom of screen:
-  player->psprites[ps_weapon].sy = demo_version >= 203 ? 
-    WEAPONBOTTOM+FRACUNIT*2 : WEAPONBOTTOM;
+  player->psprites[ps_weapon].sy = WEAPONBOTTOM;
 
   P_SetPsprite(player, ps_weapon, newstate);
 }
@@ -267,12 +258,6 @@ boolean P_CheckAmmo(player_t *player)
       // Now set appropriate weapon overlay.
       P_SetPsprite(player,ps_weapon,weaponinfo[player->readyweapon].downstate);
     }
-
-#if 0 /* PROBABLY UNSAFE */
-  else
-    if (demo_version >= 203)  // killough 9/5/98: force switch if out of ammo
-      P_SetPsprite(player,ps_weapon,weaponinfo[player->readyweapon].downstate);
-#endif
 
   return false;
 }
@@ -448,6 +433,7 @@ void A_Raise(player_t *player, pspdef_t *psp)
   P_SetPsprite(player, ps_weapon, newstate);
 }
 
+
 // Weapons now recoil, amount depending on the weapon.              // phares
 //                                                                  //   |
 // The P_SetPsprite call in each of the weapon firing routines      //   V
@@ -462,11 +448,10 @@ static void A_FireSomething(player_t* player,int adder)
 
   // killough 3/27/98: prevent recoil in no-clipping mode
   if (!(player->mo->flags & MF_NOCLIP))
-    if (weapon_recoil && (demo_version >= 203 || !compatibility))
+    if (!compatibility && weapon_recoil)
       P_Thrust(player, ANG180 + player->mo->angle,
-               2048*recoil_values[player->readyweapon]);          // phares
+               2048*recoil_values[player->readyweapon]);
 }
-
 //
 // A_GunFlash
 //
@@ -499,13 +484,7 @@ void A_Punch(player_t *player, pspdef_t *psp)
   // killough 5/5/98: remove dependence on order of evaluation:
   t = P_Random(pr_punchangle);
   angle += (t - P_Random(pr_punchangle))<<18;
-
-  // killough 8/2/98: make autoaiming prefer enemies
-  if (demo_version<203 ||
-      (slope = P_AimLineAttack(player->mo, angle, MELEERANGE, MF_FRIEND),
-       !linetarget))
-    slope = P_AimLineAttack(player->mo, angle, MELEERANGE, 0);
-
+  slope = P_AimLineAttack(player->mo, angle, MELEERANGE);
   P_LineAttack(player->mo, angle, MELEERANGE, slope, damage);
 
   if (!linetarget)
@@ -527,20 +506,12 @@ void A_Saw(player_t *player, pspdef_t *psp)
 {
   int slope, damage = 2*(P_Random(pr_saw)%10+1);
   angle_t angle = player->mo->angle;
-
   // killough 5/5/98: remove dependence on order of evaluation:
   int t = P_Random(pr_saw);
-
   angle += (t - P_Random(pr_saw))<<18;
 
   // Use meleerange + 1 so that the puff doesn't skip the flash
-
-  // killough 8/2/98: make autoaiming prefer enemies
-  if (demo_version<203 ||
-      (slope = P_AimLineAttack(player->mo, angle, MELEERANGE+1, MF_FRIEND),
-       !linetarget))
-    slope = P_AimLineAttack(player->mo, angle, MELEERANGE+1, 0);
-
+  slope = P_AimLineAttack(player->mo, angle, MELEERANGE+1);
   P_LineAttack(player->mo, angle, MELEERANGE+1, slope, damage);
 
   if (!linetarget)
@@ -590,85 +561,15 @@ void A_FireBFG(player_t *player, pspdef_t *psp)
 }
 
 //
-// A_FireOldBFG
-//
-// This function emulates Doom's Pre-Beta BFG
-// By Lee Killough 6/6/98, 7/11/98, 7/19/98, 8/20/98
-//
-// This code may not be used in other mods without appropriate credit given.
-// Code leeches will be telefragged.
-
-void A_FireOldBFG(player_t *player, pspdef_t *psp)
-{
-#ifdef BETA
-  int type = MT_PLASMA1;
-
-  if (weapon_recoil && !(player->mo->flags & MF_NOCLIP))
-    P_Thrust(player, ANG180 + player->mo->angle,
-	     512*recoil_values[wp_plasma]);
-
-  player->ammo[weaponinfo[player->readyweapon].ammo]--;
-
-  player->extralight = 2;
-
-  do
-    {
-      mobj_t *th, *mo = player->mo;
-      angle_t an = mo->angle;
-      angle_t an1 = ((P_Random(pr_bfg)&127) - 64) * (ANG90/768) + an;
-      angle_t an2 = ((P_Random(pr_bfg)&127) - 64) * (ANG90/640) + ANG90;
-      extern int autoaim;
-
-      if (autoaim || !beta_emulation)
-	{
-	  // killough 8/2/98: make autoaiming prefer enemies
-	  int mask = MF_FRIEND;
-	  fixed_t slope;
-	  do
-	    {
-	      slope = P_AimLineAttack(mo, an, 16*64*FRACUNIT, mask);
-	      if (!linetarget)
-		slope = P_AimLineAttack(mo, an += 1<<26, 16*64*FRACUNIT, mask);
-	      if (!linetarget)
-		slope = P_AimLineAttack(mo, an -= 2<<26, 16*64*FRACUNIT, mask);
-	      if (!linetarget)
-		slope = 0, an = mo->angle;
-	    }
-	  while (mask && (mask=0, !linetarget));     // killough 8/2/98
-	  an1 += an - mo->angle;
-	  an2 += tantoangle[slope >> DBITS];
-	}
-
-      th = P_SpawnMobj(mo->x, mo->y,
-		       mo->z + 62*FRACUNIT - player->psprites[ps_weapon].sy,
-		       type);
-      P_SetTarget(&th->target, mo);
-      th->angle = an1;
-      th->momx = finecosine[an1>>ANGLETOFINESHIFT] * 25;
-      th->momy = finesine[an1>>ANGLETOFINESHIFT] * 25;
-      th->momz = finetangent[an2>>ANGLETOFINESHIFT] * 25;
-      P_CheckMissileSpawn(th);
-    }
-  while ((type != MT_PLASMA2) && (type = MT_PLASMA2)); //killough: obfuscated!
-#endif
-}
-
-//
 // A_FirePlasma
 //
 
 void A_FirePlasma(player_t *player, pspdef_t *psp)
 {
   player->ammo[weaponinfo[player->readyweapon].ammo]--;
-  A_FireSomething(player, P_Random(pr_plasma) & 1);
 
-#ifdef BETA
-  // killough 7/11/98: emulate Doom's beta version, which alternated fireballs
-  P_SpawnPlayerMissile(player->mo, beta_emulation ?
-		       player->refire&1 ? MT_PLASMA2 : MT_PLASMA1 : MT_PLASMA);
-#else
+  A_FireSomething(player,P_Random(pr_plasma)&1);              // phares
   P_SpawnPlayerMissile(player->mo, MT_PLASMA);
-#endif
 }
 
 //
@@ -683,18 +584,18 @@ static void P_BulletSlope(mobj_t *mo)
 {
   angle_t an = mo->angle;    // see which target is to be aimed at
 
-  // killough 8/2/98: make autoaiming prefer enemies
-  int mask = demo_version < 203 ? 0 : MF_FRIEND;
+  bulletslope = P_AimLineAttack(mo, an, 16*64*FRACUNIT);
 
-  do
+  if (!linetarget)
     {
-      bulletslope = P_AimLineAttack(mo, an, 16*64*FRACUNIT, mask);
+      an += 1<<26;
+      bulletslope = P_AimLineAttack(mo, an, 16*64*FRACUNIT);
       if (!linetarget)
-	bulletslope = P_AimLineAttack(mo, an += 1<<26, 16*64*FRACUNIT, mask);
-      if (!linetarget)
-	bulletslope = P_AimLineAttack(mo, an -= 2<<26, 16*64*FRACUNIT, mask);
+        {
+          an -= 2<<26;
+          bulletslope = P_AimLineAttack(mo, an, 16*64*FRACUNIT);
+        }
     }
-  while (mask && (mask=0, !linetarget));  // killough 8/2/98
 }
 
 //
@@ -792,25 +693,11 @@ void A_FireCGun(player_t *player, pspdef_t *psp)
   if (!player->ammo[weaponinfo[player->readyweapon].ammo])
     return;
 
-  // killough 8/2/98: workaround for beta chaingun sprites missing at bottom
-  // The beta did not have fullscreen, and its chaingun sprites were chopped
-  // off at the bottom for some strange reason. So we lower the sprite if
-  // fullscreen is in use.
-#ifdef BETA
-  {
-    extern int screenblocks;
-    if (beta_emulation && screenblocks>=11)
-      player->psprites[ps_weapon].sy = FRACUNIT*48;
-  }
-#endif
-
   P_SetMobjState(player->mo, S_PLAY_ATK2);
   player->ammo[weaponinfo[player->readyweapon].ammo]--;
-#if defined ACCESSIBILITY
-  A_FireSomething(player,psp->state - &states[S_CHAIN]);           // Gibbon
-#else
+
   A_FireSomething(player,psp->state - &states[S_CHAIN1]);           // phares
-#endif
+
   P_BulletSlope(player->mo);
 
   P_GunShot(player->mo, !player->refire);
@@ -847,11 +734,7 @@ void A_BFGSpray(mobj_t *mo)
 
       // mo->target is the originator (player) of the missile
 
-      // killough 8/2/98: make autoaiming prefer enemies
-      if (demo_version < 203 || 
-	  (P_AimLineAttack(mo->target, an, 16*64*FRACUNIT, MF_FRIEND), 
-	   !linetarget))
-	P_AimLineAttack(mo->target, an, 16*64*FRACUNIT, 0);
+      P_AimLineAttack(mo->target, an, 16*64*FRACUNIT);
 
       if (!linetarget)
         continue;
