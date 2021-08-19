@@ -156,6 +156,7 @@ boolean P_GiveAmmo(player_t *player, ammotype_t ammo, int num)
 boolean P_GiveWeapon(player_t *player, weapontype_t weapon, boolean dropped)
 {
   boolean gaveammo;
+  boolean gaveweapon;
 
   if (netgame && deathmatch!=2 && !dropped)
     {
@@ -166,19 +167,37 @@ boolean P_GiveWeapon(player_t *player, weapontype_t weapon, boolean dropped)
       player->bonuscount += BONUSADD;
       player->weaponowned[weapon] = true;
 
-      P_GiveAmmo(player, weaponinfo[weapon].ammo, deathmatch ? 5 : 2);
+      if (deathmatch)
+        P_GiveAmmo(player, weaponinfo[weapon].ammo, 5);
+      else
+        P_GiveAmmo(player, weaponinfo[weapon].ammo, 2);
 
       player->pendingweapon = weapon;
-      S_StartSound(player->mo, sfx_wpnup); // killough 4/25/98, 12/98
+      S_StartSound (player->mo, sfx_wpnup); // killough 4/25/98
       return false;
     }
 
-  // give one clip with a dropped weapon, two clips with a found weapon
-  gaveammo = weaponinfo[weapon].ammo != am_noammo &&
-    P_GiveAmmo(player, weaponinfo[weapon].ammo, dropped ? 1 : 2);
+  if (weaponinfo[weapon].ammo != am_noammo)
+    {
+      // give one clip with a dropped weapon,
+      // two clips with a found weapon
+      if (dropped)
+        gaveammo = P_GiveAmmo (player, weaponinfo[weapon].ammo, 1);
+      else
+        gaveammo = P_GiveAmmo (player, weaponinfo[weapon].ammo, 2);
+    }
+  else
+    gaveammo = false;
 
-  return !player->weaponowned[weapon] ?
-    player->weaponowned[player->pendingweapon = weapon] = true : gaveammo;
+  if (player->weaponowned[weapon])
+    gaveweapon = false;
+  else
+    {
+      gaveweapon = true;
+      player->weaponowned[weapon] = true;
+      player->pendingweapon = weapon;
+    }
+  return gaveweapon || gaveammo;
 }
 
 //
@@ -447,8 +466,8 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher)
 
       if (!P_GivePower (player, pw_infrared))
         return;
-      sound = sfx_getpow;
       player->message = s_GOTVISOR; // Ty 03/22/98 - externalized
+      sound = sfx_getpow;
       break;
 
       // ammo
@@ -524,8 +543,7 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher)
     case SPR_BFUG:
       if (!P_GiveWeapon (player, wp_bfg, false) )
         return;
-      player->message = 
-	  s_GOTBFG9000; // Ty 03/22/98 - externalized
+      player->message = s_GOTBFG9000; // Ty 03/22/98 - externalized
       sound = sfx_wpnup;
       break;
 
@@ -572,8 +590,7 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher)
       break;
 
     default:
-      // I_Error("P_SpecialThing: Unknown gettable thing");
-      return;      // killough 12/98: suppress error message
+      I_Error ("P_SpecialThing: Unknown gettable thing");
     }
 
   if (special->flags & MF_COUNTITEM)
@@ -581,7 +598,7 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher)
   P_RemoveMobj (special);
   player->bonuscount += BONUSADD;
 
-  S_StartSound(player->mo, sound);   // killough 4/25/98, 12/98
+  S_StartSound (player->mo, sound);   // killough 4/25/98
 }
 
 //
@@ -602,16 +619,11 @@ static void P_KillMobj(mobj_t *source, mobj_t *target)
   target->flags |= MF_CORPSE|MF_DROPOFF;
   target->height >>= 2;
 
-  // killough 8/29/98: remove from threaded list
-  P_UpdateThinker(&target->thinker);
-
   if (source && source->player)
     {
       // count for intermission
-      // killough 7/20/98: don't count friends
-      if (!(target->flags & MF_FRIEND))
-	if (target->flags & MF_COUNTKILL)
-	  source->player->killcount++;
+      if (target->flags & MF_COUNTKILL)
+        source->player->killcount++;
       if (target->player)
         source->player->frags[target->player-players]++;
     }
@@ -620,9 +632,7 @@ static void P_KillMobj(mobj_t *source, mobj_t *target)
         {
           // count all monster deaths,
           // even those caused by other monsters
-	  // killough 7/20/98: don't count friends
-	  if (!(target->flags & MF_FRIEND))
-	    players->killcount++;
+	      players->killcount++;
         }
 
   if (target->player)
@@ -636,8 +646,7 @@ static void P_KillMobj(mobj_t *source, mobj_t *target)
       P_DropWeapon (target->player);
 
       if (target->player == &players[consoleplayer] && automapactive)
-	if (!demoplayback) // killough 11/98: don't switch out in demos, though
-	  AM_Stop();    // don't die in auto map; switch view prior to dying
+	    AM_Stop();    // don't die in auto map; switch view prior to dying
     }
 
   if (target->health < -target->info->spawnhealth && target->info->xdeathstate)
@@ -692,10 +701,8 @@ static void P_KillMobj(mobj_t *source, mobj_t *target)
 void P_DamageMobj(mobj_t *target,mobj_t *inflictor, mobj_t *source, int damage)
 {
   player_t *player;
-  boolean justhit;          // killough 11/98
 
-  // killough 8/31/98: allow bouncers to take damage
-  if (!(target->flags & (MF_SHOOTABLE | MF_BOUNCES)))
+  if (!(target->flags & MF_SHOOTABLE))
     return; // shouldn't happen...
 
   if (target->health <= 0)
@@ -733,15 +740,12 @@ void P_DamageMobj(mobj_t *target,mobj_t *inflictor, mobj_t *source, int damage)
       ang >>= ANGLETOFINESHIFT;
       target->momx += FixedMul (thrust, finecosine[ang]);
       target->momy += FixedMul (thrust, finesine[ang]);
-
-      // killough 11/98: thrust objects hanging off ledges
-      if (target->intflags & MIF_FALLING && target->gear >= MAXGEAR)
-	target->gear = 0;
     }
 
   // player specific
   if (player)
     {
+      int temp;
       // end of game hell hack
       if (target->subsector->sector->special == 11 && damage >= target->health)
         damage = target->health - 1;
@@ -777,88 +781,49 @@ void P_DamageMobj(mobj_t *target,mobj_t *inflictor, mobj_t *source, int damage)
       if (player->damagecount > 100)
         player->damagecount = 100;  // teleport stomp does 10k points...
 
-#if 0
-      // killough 11/98: 
-      // This is unused -- perhaps it was designed for
-      // a hand-connected input device or VR helmet,
-      // to pinch the player when they're hurt :)
+      temp = damage < 100 ? damage : 100;
 
-      {
-	int temp = damage < 100 ? damage : 100;
-	
-	if (player == &players[consoleplayer])
-	  I_Tactile (40,10,40+temp*2);
-      }
-#endif
-
+      if (player == &players[consoleplayer])
+        I_Tactile (40,10,40+temp*2);
     }
 
   // do the damage
-  if ((target->health -= damage) <= 0)
+  target->health -= damage;
+  if (target->health <= 0)
     {
-      P_KillMobj(source, target);
+      P_KillMobj (source, target);
       return;
     }
 
-  // killough 9/7/98: keep track of targets so that friends can help friends
-  if (demo_version >= 203)
+  if ((P_Random (pr_painchance) < target->info->painchance)
+      && !(target->flags&MF_SKULLFLY) )
     {
-      // If target is a player, set player's target to source,
-      // so that a friend can tell who's hurting a player
-      if (player)
-	P_SetTarget(&target->target, source);
-      
-      // killough 9/8/98:
-      // If target's health is less than 50%, move it to the front of its list.
-      // This will slightly increase the chances that enemies will choose to
-      // "finish it off", but its main purpose is to alert friends of danger.
-      if (target->health*2 < target->info->spawnhealth)
-	{
-	  thinker_t *cap = &thinkerclasscap[target->flags & MF_FRIEND ? 
-					   th_friends : th_enemies];
-	  (target->thinker.cprev->cnext = target->thinker.cnext)->cprev =
-	    target->thinker.cprev;
-	  (target->thinker.cnext = cap->cnext)->cprev = &target->thinker;
-	  (target->thinker.cprev = cap)->cnext = &target->thinker;
-	}
+      target->flags |= MF_JUSTHIT;    // fight back!
+      P_SetMobjState(target, target->info->painstate);
     }
-
-  if ((justhit = (P_Random (pr_painchance) < target->info->painchance &&
-		  !(target->flags & MF_SKULLFLY)))) //killough 11/98: see below
-    P_SetMobjState(target, target->info->painstate);
 
   target->reactiontime = 0;           // we're awake now...
 
-  // killough 9/9/98: cleaned up, made more consistent:
-
-  if (source && source != target && source->type != MT_VILE &&
-      (!target->threshold || target->type == MT_VILE) &&
-      ((source->flags ^ target->flags) & MF_FRIEND || 
-       monster_infighting || demo_version < 203))
+  if ((!target->threshold || target->type == MT_VILE)
+      && source && /*->*/ source != target /* <- suicide bugfix? killough */
+      && source->type != MT_VILE)
     {
       // if not intent on another player, chase after this one
-      //
+
       // killough 2/15/98: remember last enemy, to prevent
       // sleeping early; 2/21/98: Place priority on players
-      // killough 9/9/98: cleaned up, made more consistent:
 
-      if (!target->lastenemy || target->lastenemy->health <= 0 ||
-	  (demo_version < 203 ? !target->lastenemy->player :
-	   !((target->flags ^ target->lastenemy->flags) & MF_FRIEND) &&
-	   target->target != source)) // remember last enemy - killough
-	P_SetTarget(&target->lastenemy, target->target);
 
-      P_SetTarget(&target->target, source);       // killough 11/98
+      if (!target->lastenemy || !target->lastenemy->player ||
+          target->lastenemy->health <= 0)
+        target->lastenemy = target->target; // remember last enemy - killough
+
+      target->target = source;
       target->threshold = BASETHRESHOLD;
       if (target->state == &states[target->info->spawnstate]
           && target->info->seestate != S_NULL)
         P_SetMobjState (target, target->info->seestate);
     }
-
-  // killough 11/98: Don't attack a friend, unless hit by that friend.
-  if (justhit && (target->target == source || !target->target ||
-		  !(target->flags & target->target->flags)))
-    target->flags |= MF_JUSTHIT;    // fight back!
 }
 
 //----------------------------------------------------------------------------

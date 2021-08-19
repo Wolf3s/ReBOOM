@@ -1,8 +1,9 @@
 // Emacs style mode select   -*- C++ -*- 
 //-----------------------------------------------------------------------------
 //
-// $Id: p_genlin.c,v 1.18 1998/05/23 10:23:23 jim Exp $
+// $Id: p_genlin.c,v 1.19 1998/06/20 09:04:52 jim Exp $
 //
+//  BOOM, a modified and improved DOOM engine
 //  Copyright (C) 1999 by
 //  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
 //
@@ -26,8 +27,6 @@
 //  Floors, Ceilings, Doors, Locked Doors, Lifts, Stairs, Crushers
 //
 //-----------------------------------------------------------------------------
-
-//static const char rcsid[] = "$Id: p_genlin.c,v 1.18 1998/05/23 10:23:23 jim Exp $";
 
 #include "doomstat.h"
 #include "r_main.h"
@@ -757,18 +756,14 @@ manual_stair:
         if (!Igno && tsec->floorpic != texture)
           continue;
 
-	// jff 6/19/98 prevent double stepsize
-	// killough 10/98: corrected use of demo compatibility flag
-        if (demo_version < 202)
+        if (demo_compatibility) // jff 6/19/98 prevent double stepsize
           height += floor->direction * stairsize;
 
         //jff 2/26/98 special lockout condition for retriggering
         if (P_SectorActive(floor_special,tsec) || tsec->stairlock)
           continue;
 
-	// jff 6/19/98 increase height AFTER continue        
-	// killough 10/98: corrected use of demo compatibility flag
-        if (demo_version >= 202)
+        if (!demo_compatibility) // jff 6/19/98 increase height AFTER continue
           height += floor->direction * stairsize;
 
         // jff 2/26/98
@@ -972,10 +967,6 @@ manual_locked:
     door->topheight -= 4*FRACUNIT;
     door->direction = 1;
 
-    // killough 10/98: implement gradual lighting
-    door->lighttag = !comp[comp_doorlight] && (line->special&6) == 6 && 
-      line->special > GenLockedBase ? line->tag : 0;
-
     // setup speed of door motion
     switch(Sped)
     {
@@ -1111,10 +1102,6 @@ manual_door:
     }
     door->line = line; // jff 1/31/98 remember line that triggered us
 
-    // killough 10/98: implement gradual lighting
-    door->lighttag = !comp[comp_doorlight] && (line->special&6) == 6 && 
-      line->special > GenLockedBase ? line->tag : 0;
-
     // set kind of door, whether it opens then close, opens, closes etc.
     // assign target heights accordingly
     switch(Kind)
@@ -1161,6 +1148,9 @@ manual_door:
 //----------------------------------------------------------------------------
 //
 // $Log: p_genlin.c,v $
+// Revision 1.19  1998/06/20  09:04:52  jim
+// Fix bug in stairs re moving steps
+//
 // Revision 1.18  1998/05/23  10:23:23  jim
 // Fix numeric changer loop corruption
 //
