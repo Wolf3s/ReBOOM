@@ -1155,12 +1155,7 @@ state_t states[NUMSTATES] = {
   {SPR_TLP2,32769,4,NULL,S_TECH2LAMP3}, // S_TECH2LAMP2
   {SPR_TLP2,32770,4,NULL,S_TECH2LAMP4}, // S_TECH2LAMP3
   {SPR_TLP2,32771,4,NULL,S_TECH2LAMP},  // S_TECH2LAMP4
-
   {SPR_TNT1,0,-1,NULL,S_TNT1},          // S_TNT1    // phares 3/8/98
-
-  // killough 8/10/98: variable damage explosion
-  {SPR_MISL,32769,4,A_Scream,S_DETONATE2},    // S_DETONATE
-  {SPR_MISL,32771,10,NULL,S_NULL},            // S_DETONATE3
 
 };
 
