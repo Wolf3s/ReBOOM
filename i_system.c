@@ -60,11 +60,11 @@ void I_WaitVBL(int count)
    SDL_Delay((count*500)/TICRATE);
 }
 
-void I_BeginRead(void)
+static void I_BeginRead(void)
 {
 }
 
-void I_EndRead(void)
+static void I_EndRead(void)
 {
 }
 
