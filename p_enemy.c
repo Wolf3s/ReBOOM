@@ -672,7 +672,7 @@ void A_PosAttack(mobj_t *actor)
     return;
   A_FaceTarget(actor);
   angle = actor->angle;
-  slope = P_AimLineAttack(actor, angle, MISSILERANGE, 0); // killough 8/2/98
+  slope = P_AimLineAttack(actor, angle, MISSILERANGE); // killough 8/2/98
   S_StartSound(actor, sfx_pistol);
 
   // killough 5/5/98: remove dependence on order of evaluation:
@@ -691,7 +691,7 @@ void A_SPosAttack(mobj_t* actor)
   S_StartSound(actor, sfx_shotgn);
   A_FaceTarget(actor);
   bangle = actor->angle;
-  slope = P_AimLineAttack(actor, bangle, MISSILERANGE, 0); // killough 8/2/98
+  slope = P_AimLineAttack(actor, bangle, MISSILERANGE); // killough 8/2/98
   for (i=0; i<3; i++)
     {  // killough 5/5/98: remove dependence on order of evaluation:
       int t = P_Random(pr_sposattack);
@@ -710,7 +710,7 @@ void A_CPosAttack(mobj_t *actor)
   S_StartSound(actor, sfx_shotgn);
   A_FaceTarget(actor);
   bangle = actor->angle;
-  slope = P_AimLineAttack(actor, bangle, MISSILERANGE, 0); // killough 8/2/98
+  slope = P_AimLineAttack(actor, bangle, MISSILERANGE); // killough 8/2/98
 
   // killough 5/5/98: remove dependence on order of evaluation:
   t = P_Random(pr_cposattack);
@@ -1793,7 +1793,7 @@ void A_SpawnFly(mobj_t *mo)
   if (P_LookForPlayers(newmobj, true) )
     P_SetMobjState(newmobj, newmobj->info->seestate);
     // telefrag anything in this spot
-  P_TeleportMove(newmobj, newmobj->x, newmobj->y, true); // killough 8/9/98
+  P_TeleportMove(newmobj, newmobj->x, newmobj->y);
 
   // remove self (i.e., cube).
   P_RemoveMobj(mo);

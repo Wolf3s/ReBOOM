@@ -483,7 +483,7 @@ void A_Punch(player_t *player, pspdef_t *psp)
   // killough 5/5/98: remove dependence on order of evaluation:
   t = P_Random(pr_punchangle);
   angle += (t - P_Random(pr_punchangle))<<18;
-  slope = P_AimLineAttack(player->mo, angle, MELEERANGE, NULL);
+  slope = P_AimLineAttack(player->mo, angle, MELEERANGE);
   P_LineAttack(player->mo, angle, MELEERANGE, slope, damage);
 
   if (!linetarget)
@@ -510,7 +510,7 @@ void A_Saw(player_t *player, pspdef_t *psp)
   angle += (t - P_Random(pr_saw))<<18;
 
   // Use meleerange + 1 so that the puff doesn't skip the flash
-  slope = P_AimLineAttack(player->mo, angle, MELEERANGE+1, NULL);
+  slope = P_AimLineAttack(player->mo, angle, MELEERANGE+1);
   P_LineAttack(player->mo, angle, MELEERANGE+1, slope, damage);
 
   if (!linetarget)
@@ -583,16 +583,16 @@ static void P_BulletSlope(mobj_t *mo)
 {
   angle_t an = mo->angle;    // see which target is to be aimed at
 
-  bulletslope = P_AimLineAttack(mo, an, 16*64*FRACUNIT, NULL);
+  bulletslope = P_AimLineAttack(mo, an, 16*64*FRACUNIT);
 
   if (!linetarget)
     {
       an += 1<<26;
-      bulletslope = P_AimLineAttack(mo, an, 16*64*FRACUNIT, NULL);
+      bulletslope = P_AimLineAttack(mo, an, 16*64*FRACUNIT);
       if (!linetarget)
         {
           an -= 2<<26;
-          bulletslope = P_AimLineAttack(mo, an, 16*64*FRACUNIT, NULL);
+          bulletslope = P_AimLineAttack(mo, an, 16*64*FRACUNIT);
         }
     }
 }
@@ -733,7 +733,7 @@ void A_BFGSpray(mobj_t *mo)
 
       // mo->target is the originator (player) of the missile
 
-      P_AimLineAttack(mo->target, an, 16*64*FRACUNIT, NULL);
+      P_AimLineAttack(mo->target, an, 16*64*FRACUNIT);
 
       if (!linetarget)
         continue;

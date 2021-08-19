@@ -1036,17 +1036,17 @@ void P_SpawnPlayerMissile(mobj_t* source,mobjtype_t type)
   // see which target is to be aimed at
 
   an = source->angle;
-  slope = P_AimLineAttack (source, an, 16*64*FRACUNIT, NULL);
+  slope = P_AimLineAttack (source, an, 16*64*FRACUNIT);
 
   if (!linetarget)
     {
     an += 1<<26;
-    slope = P_AimLineAttack (source, an, 16*64*FRACUNIT, NULL);
+    slope = P_AimLineAttack (source, an, 16*64*FRACUNIT);
 
     if (!linetarget)
       {
       an -= 2<<26;
-      slope = P_AimLineAttack (source, an, 16*64*FRACUNIT, NULL);
+      slope = P_AimLineAttack (source, an, 16*64*FRACUNIT);
       }
 
     if (!linetarget)
