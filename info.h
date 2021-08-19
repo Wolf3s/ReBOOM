@@ -3,6 +3,7 @@
 //
 // $Id: info.h,v 1.10 1998/05/12 12:47:31 phares Exp $
 //
+//  BOOM, a modified and improved DOOM engine
 //  Copyright (C) 1999 by
 //  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
 //
@@ -30,10 +31,6 @@
 
 #ifndef __INFO__
 #define __INFO__
-
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 
 // Needed for action function pointer handling.
 #include "d_think.h"
@@ -181,7 +178,7 @@ typedef enum
   SPR_BRS1,
   SPR_TLMP,
   SPR_TLP2,
-  SPR_TNT1,
+  SPR_TNT1, // add invisible sprite             // phares 3/8/98 
 
   NUMSPRITES  // counter of how many there are
 } spritenum_t;
@@ -1160,14 +1157,8 @@ typedef enum
   S_TECH2LAMP4,
   S_TNT1, // add state for invisible sprite         // phares 3/8/98 
 
-  S_GRENADE,   // killough 8/9/98: grenade launcher
-  S_DETONATE,  // killough 8/9/98: detonation of objects
-  S_DETONATE2,
-  S_DETONATE3, 
-
-  S_MUSHROOM,  // killough 10/98: mushroom explosion effect
-
   NUMSTATES  // Counter of how many there are
+
 } statenum_t;
 
 // ********************************************************************
@@ -1428,5 +1419,6 @@ extern mobjinfo_t mobjinfo[NUMMOBJTYPES];
 //
 // Revision 1.1.1.1  1998/01/19  14:02:57  rand
 // Lee's Jan 19 sources
+//
 //
 //----------------------------------------------------------------------------
