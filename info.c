@@ -120,7 +120,6 @@ void A_Chase();
 void A_FaceTarget();
 void A_PosAttack();
 void A_Scream();
-void A_Die();
 void A_SPosAttack();
 void A_VileChase();
 void A_VileStart();
@@ -1165,9 +1164,6 @@ state_t states[NUMSTATES] = {
   {SPR_TLP2,32771,4,NULL,S_TECH2LAMP},  // S_TECH2LAMP4
 
   {SPR_TNT1,0,-1,NULL,S_TNT1},          // S_TNT1    // phares 3/8/98
-
-  // killough 8/9/98: grenade
-  {SPR_MISL,32768,1000,A_Die,S_GRENADE},      // S_GRENADE
 
   // killough 8/10/98: variable damage explosion
   {SPR_MISL,32769,4,A_Scream,S_DETONATE2},    // S_DETONATE
