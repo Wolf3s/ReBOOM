@@ -83,11 +83,11 @@ static char *D_dehout(void)
   return s;
 }
 
-char **wadfiles;
-
 // killough 10/98: preloaded files
 #define MAXLOADFILES 2
-char *wad_files[MAXLOADFILES], *deh_files[MAXLOADFILES];
+char *wadfiles[MAXWADFILES];
+int wadfilesource[MAXWADFILES];  // Ty 08/29/98 - add source of lumps/files
+char *deh_files[MAXLOADFILES];
 
 boolean devparm;        // started game with -devparm
 
@@ -349,21 +349,9 @@ void D_PageTicker(void)
 //
 // D_PageDrawer
 //
-// killough 11/98: add credits screen
-//
-
 void D_PageDrawer(void)
 {
-  if (pagename)
-    {
-      int l = W_CheckNumForName(pagename);
-      byte *t = W_CacheLumpNum(l, PU_CACHE);
-      size_t s = W_LumpLength(l);
-      unsigned c = 0;
-      while (s--)
-	c = c*3 + t[s];
-      V_DrawPatch(0, 0, 0, (patch_t *) t);
-    }
+  V_DrawPatch (0, 0, 0, W_CacheLumpName(pagename, PU_CACHE));
 }
 
 //
@@ -470,22 +458,66 @@ static struct
 
 //
 // This cycles through the demo sequences.
+// FIXME - version dependend demo numbers?
 //
-// killough 11/98: made table-driven
-
-void D_DoAdvanceDemo(void)
+void D_DoAdvanceDemo (void)
 {
   players[consoleplayer].playerstate = PST_LIVE;  // not reborn
   advancedemo = usergame = paused = false;
   gameaction = ga_nothing;
 
-  pagetic = TICRATE * 11;         // killough 11/98: default behavior
-  gamestate = GS_DEMOSCREEN;
+  if ( gamemode == retail )
+    demosequence = (demosequence+1)%7;
+  else
+    demosequence = (demosequence+1)%6;
 
-  if (!demostates[++demosequence][gamemode].func)
-    demosequence = 0;
-  demostates[demosequence][gamemode].func
-    (demostates[demosequence][gamemode].name);
+    switch (demosequence)
+      {
+      case 0:
+        if ( gamemode == commercial )
+          pagetic = TICRATE * 11;        // killough 2/22/98: use TICRATE
+        else
+          pagetic = (TICRATE*170)/35;    // killough 2/22/98: use TICRATE
+        gamestate = GS_DEMOSCREEN;
+        pagename = "TITLEPIC";
+        if ( gamemode == commercial )
+          S_StartMusic(mus_dm2ttl);
+        else
+          S_StartMusic(mus_intro);
+        break;
+      case 1:
+        G_DeferedPlayDemo("demo1");
+        break;
+      case 2:
+        pagetic = (TICRATE * 200)/35;    // killough 2/22/98: use TICRATE
+        gamestate = GS_DEMOSCREEN;
+        pagename = "CREDIT";
+        break;
+      case 3:
+        G_DeferedPlayDemo("demo2");
+        break;
+      case 4:
+        gamestate = GS_DEMOSCREEN;
+        if (gamemode == commercial)
+          {
+            pagetic = TICRATE * 11;
+            pagename = "TITLEPIC";
+            S_StartMusic(mus_dm2ttl);
+          }
+        else
+          {
+            pagetic = (TICRATE*200)/35;   // killough 2/22/98: use TICRATE
+            pagename = gamemode == retail ? "CREDIT" : "HELP2";
+          }
+        break;
+      case 5:
+        G_DeferedPlayDemo ("demo3");
+        break;
+        // THE DEFINITIVE DOOM Special Edition demo
+      case 6:
+        G_DeferedPlayDemo ("demo4");
+        break;
+      }
 }
 
 //
@@ -506,17 +538,19 @@ static char title[128];
 //
 // Rewritten by Lee Killough
 //
-// killough 11/98: remove limit on number of files
-//
+// Ty 08/29/98 - add source parm to indicate where this came from
 
-void D_AddFile(char *file)
+void D_AddFile (char *file, int source)
 {
-  static int numwadfiles, numwadfiles_alloc;
+  static int numwadfiles;
 
-  if (numwadfiles >= numwadfiles_alloc)
-    wadfiles = realloc(wadfiles, (numwadfiles_alloc = numwadfiles_alloc ?
-                                  numwadfiles_alloc * 2 : 8)*sizeof*wadfiles);
-  wadfiles[numwadfiles++] = !file ? NULL : strdup(file);
+  if (numwadfiles >= MAXWADFILES)
+    I_Error("Error: Number of WAD files exceeds limit of %d", MAXWADFILES);
+
+  wadfiles[numwadfiles++] =
+    AddDefaultExtension(strcpy(malloc(strlen(file)+5), file), ".wad");
+  wadfilesource[numwadfiles-1] = source; // Ty 08/29/98
+
 }
 
 // Return the path where the executable lies -- Lee Killough
@@ -935,7 +969,7 @@ void IdentifyVersion (void)
       if (gamemode == indetermined)
         puts("Unknown Game Version, may not work");  // killough 8/8/98
 
-      D_AddFile(iwad);
+      D_AddFile(iwad, source_iwad);
     }
   else
     I_Error("IWAD not found\n");
@@ -1063,32 +1097,6 @@ static void D_ProcessDehCommandLine(void)
             }
     }
   // ty 03/09/98 end of do dehacked stuff
-}
-
-// killough 10/98: support preloaded wads
-
-static void D_ProcessWadPreincludes(void)
-{
-  if (!M_CheckParm ("-noload"))
-    {
-      int i;
-      char *s;
-      for (i=0; i<MAXLOADFILES; i++)
-        if ((s=wad_files[i]))
-          {
-            while (isspace(*s))
-              s++;
-            if (*s)
-              {
-                char file[PATH_MAX+1];
-                AddDefaultExtension(strcpy(file, s), ".wad");
-                if (!access(file, R_OK))
-                  D_AddFile(file);
-                else
-                  printf("\nWarning: could not open %s\n", file);
-              }
-          }
-    }
 }
 
 // killough 10/98: support preloaded deh/bex files
@@ -1310,15 +1318,6 @@ void D_DoomMain(void)
       sidemove[1] = sidemove[1]*scale/100;
     }
 
-#ifdef BETA
-  if (beta_emulation)
-    {
-      char s[PATH_MAX+1];
-      sprintf(s, "%s/betagrph.wad", D_DoomExeDir());  // killough 7/11/98
-      D_AddFile(s);
-    }
-#endif
-
   // add any files specified on the command line with -file wadfile
   // to the wad list
 
@@ -1336,7 +1335,7 @@ void D_DoomMain(void)
           file = !strcasecmp(myargv[p],"-file");
         else
           if (file)
-            D_AddFile(myargv[p]);
+            D_AddFile(myargv[p], source_pwad);
     }
 
   if (!(p = M_CheckParm("-playdemo")) || p >= myargc-1)    // killough
@@ -1349,7 +1348,7 @@ void D_DoomMain(void)
     {
       strcpy(file,myargv[p+1]);
       AddDefaultExtension(file,".lmp");     // killough
-      D_AddFile(file);
+      D_AddFile(file, source_lmp);
       printf("Playing demo %s\n",file);
     }
 
@@ -1429,12 +1428,8 @@ void D_DoomMain(void)
   puts("V_Init: allocate screens.");    // killough 11/98: moved down to here
   V_Init();
 
-  D_ProcessWadPreincludes(); // killough 10/98: add preincluded wads at the end
-
-  D_AddFile(NULL);           // killough 11/98
-
   puts("W_Init: Init WADfiles.");
-  W_InitMultipleFiles(wadfiles);
+  W_InitMultipleFiles(wadfiles, wadfilesource);
 
   putchar('\n');     // killough 3/6/98: add a newline, by popular demand :)
 

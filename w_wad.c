@@ -1,8 +1,9 @@
 // Emacs style mode select   -*- C++ -*-
 //-----------------------------------------------------------------------------
 //
-// $Id: w_wad.c,v 1.20 1998/05/06 11:32:00 jim Exp $
+// $Id: w_wad.c,v 1.22 1998/09/07 20:10:30 jim Exp $
 //
+//  BOOM, a modified and improved DOOM engine
 //  Copyright (C) 1999 by
 //  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
 //
@@ -26,8 +27,6 @@
 //
 //-----------------------------------------------------------------------------
 
-//static const char rcsid[] = "$Id: w_wad.c,v 1.20 1998/05/06 11:32:00 jim Exp $";
-
 #include "doomstat.h"
 #include "d_io.h"
 #include <fcntl.h>
@@ -46,10 +45,10 @@ void       **lumpcache;      // killough
 
 static int W_FileLength(int handle)
 {
-   struct stat fileinfo;
-   if(fstat(handle,&fileinfo) == -1)
-      I_Error("W_FileLength: Error fstating\n");
-   return fileinfo.st_size;
+  struct stat   fileinfo;
+  if (fstat(handle,&fileinfo) == -1)
+    I_Error("Error fstating");
+  return fileinfo.st_size;
 }
 
 void ExtractFileBase(const char *path, char *dest)
@@ -133,6 +132,7 @@ void NormalizeSlashes(char *str)
 //
 // Reload hack removed by Lee Killough
 //
+// Ty 08/29/98 - added source parm to indicate iwad, pwad or lmp loaded file
 
 static void W_AddFile(const char *name) // killough 1/31/98: static, const
 {
@@ -213,6 +213,7 @@ static void W_AddFile(const char *name) // killough 1/31/98: static, const
         lump_p->size = LONG(fileinfo->size);
         lump_p->data = NULL;                        // killough 1/31/98
         lump_p->namespace = ns_global;              // killough 4/17/98
+        lump_p->source;                    // Ty 08/29/98
         strncpy (lump_p->name, fileinfo->name, 8);
       }
 
@@ -397,8 +398,10 @@ int W_GetNumForName (const char* name)     // killough -- const added
 //  does override all earlier ones.
 //
 
-void W_InitMultipleFiles(char *const *filenames)
+void W_InitMultipleFiles(char *const *filenames, int *const pfilesource)
 {
+  int *filesource = pfilesource;  // to iterate with
+
   // killough 1/31/98: add predefined lumps first
 
   numlumps = num_predefined_lumps;
@@ -407,6 +410,12 @@ void W_InitMultipleFiles(char *const *filenames)
   lumpinfo = malloc(numlumps*sizeof(*lumpinfo));
 
   memcpy(lumpinfo, predefined_lumps, numlumps*sizeof(*lumpinfo));
+  // Ty 08/29/98 - add source flag to the predefined lumps
+  {
+    int i;
+    for (i=0;i<numlumps;i++)
+      lumpinfo[i].source = source_pre;
+  }
 
   // open all the files, load headers, and count lumps
   while (*filenames)
@@ -469,14 +478,11 @@ void W_ReadLump(int lump, void *dest)
       int c;
 
       // killough 1/31/98: Reload hack (-wart) removed
-      // killough 10/98: Add flashing disk indicator
 
-      I_BeginRead();
       lseek(l->handle, l->position, SEEK_SET);
       c = read(l->handle, dest, l->size);
       if (c < l->size)
         I_Error("W_ReadLump: only read %i of %i on lump %i", c, l->size, lump);
-      I_EndRead();
     }
 }
 
@@ -511,59 +517,60 @@ void *W_CacheLumpNum(int lump, int tag)
 // supplies the pwad name.
 //
 // killough 4/22/98: make endian-independent, remove tab chars
-// haleyjd 01/21/05: rewritten to use stdio
-//
 void WritePredefinedLumpWad(const char *filename)
 {
-   FILE *file;
-   char fn[PATH_MAX + 1];  // we may have to add ".wad" to the name they pass
-   
-   if(!filename || !*filename)  // check for null pointer or empty name
-      return;  // early return
+  int handle;         // for file open
+  char filenam[256];  // we may have to add ".wad" to the name they pass
 
-   AddDefaultExtension(strcpy(fn, filename), ".wad");
+  if (!filename || !*filename)  // check for null pointer or empty name
+    return;  // early return
 
-   // The following code writes a PWAD from the predefined lumps array
-   // How to write a PWAD will not be explained here.
-   if((file = fopen(fn, "wb")))
-   {
-      wadinfo_t header = { "PWAD" };
-      size_t filepos = sizeof(wadinfo_t) + num_predefined_lumps * sizeof(filelump_t);
-      int i;
-      
-      header.numlumps     = LONG(num_predefined_lumps);
-      header.infotableofs = LONG(sizeof(header));
-      
-      // write header
-      fwrite(&header, 1, sizeof(header), file);
-      
-      // write directory
-      for(i = 0; i < num_predefined_lumps; i++)
-      {
-         filelump_t fileinfo = { 0 };
-         
-         fileinfo.filepos = LONG(filepos);
-         fileinfo.size    = LONG(predefined_lumps[i].size);         
-         strncpy(fileinfo.name, predefined_lumps[i].name, 8);
-         
-         fwrite(&fileinfo, 1, sizeof(fileinfo), file);
+  AddDefaultExtension(strcpy(filenam, filename), ".wad");
 
-         filepos += predefined_lumps[i].size;
-      }
-      
-      // write lumps
-      for(i = 0; i < num_predefined_lumps; i++)
-         fwrite(predefined_lumps[i].data, 1, predefined_lumps[i].size, file);
-      
-      fclose(file);
-      I_Error("Predefined lumps wad, %s written, exiting\n", filename);
-   }
-   I_Error("Cannot open predefined lumps wad %s for output\n", filename);
+  // The following code writes a PWAD from the predefined lumps array
+  // How to write a PWAD will not be explained here.
+  if ( (handle = open (filenam, O_RDWR | O_CREAT | O_BINARY, S_IWUSR|S_IRUSR)) != -1)
+  {
+    wadinfo_t header = {"PWAD"};
+    size_t filepos = sizeof(wadinfo_t) + num_predefined_lumps * sizeof(filelump_t);
+    int i;
+
+    header.numlumps = LONG(num_predefined_lumps);
+    header.infotableofs = LONG(sizeof(header));
+
+    // write header
+    write(handle, &header, sizeof(header));
+
+    // write directory
+    for (i=0;i<num_predefined_lumps;i++)
+    {
+      filelump_t fileinfo = {0};
+      fileinfo.filepos = LONG(filepos);
+      fileinfo.size = LONG(predefined_lumps[i].size);
+      strncpy(fileinfo.name, predefined_lumps[i].name, 8);
+      write(handle, &fileinfo, sizeof(fileinfo));
+      filepos += predefined_lumps[i].size;
+    }
+
+    // write lumps
+    for (i=0;i<num_predefined_lumps;i++)
+      write(handle, predefined_lumps[i].data, predefined_lumps[i].size);
+
+    close(handle);
+    I_Error("Predefined lumps wad, %s written, exiting\n", filename);
+  }
+ I_Error("Cannot open predefined lumps wad %s for output\n", filename);
 }
 
 //----------------------------------------------------------------------------
 //
 // $Log: w_wad.c,v $
+// Revision 1.22  1998/09/07  20:10:30  jim
+// Logical output routine added
+//
+// Revision 1.21  1998/08/29  22:59:55  thldrmn
+// Lump source field logic etc.
+//
 // Revision 1.20  1998/05/06  11:32:00  jim
 // Moved predefined lump writer info->w_wad
 //

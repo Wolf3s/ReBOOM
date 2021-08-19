@@ -85,7 +85,7 @@ extern int grabmouse;
 extern int cfg_scalefactor; // haleyjd 05/11/09
 extern int cfg_aspectratio; // haleyjd 05/11/09
 
-extern char *chat_macros[], *wad_files[], *deh_files[];  // killough 10/98
+extern char *chat_macros[];
 
 //jff 3/3/98 added min, max, and help string to all entries
 //jff 4/10/98 added isstr field to specify whether value is string or int
@@ -360,34 +360,6 @@ default_t defaults[] = {
     (config_t *) &usegamma, NULL,
     {0}, {0,4}, number, ss_none, wad_no,
     "screen brightness (gamma correction)"
-  },
-
-  { // killough 10/98: preloaded files
-    "wadfile_1",
-    (config_t *) &wad_files[0], NULL,
-    {.s = ""}, {0}, string, ss_none, wad_no,
-    "WAD file preloaded at program startup"
-  },
-
-  {
-    "wadfile_2",
-    (config_t *) &wad_files[1], NULL,
-    {.s = ""}, {0}, string, ss_none, wad_no,
-    "WAD file preloaded at program startup"
-  },
-
-  {
-    "dehfile_1",
-    (config_t *) &deh_files[0], NULL,
-    {.s = ""}, {0}, string, ss_none, wad_no,
-    "DEH/BEX file preloaded at program startup"
-  },
-
-  {
-    "dehfile_2",
-    (config_t *) &deh_files[1], NULL,
-    {.s = ""}, {0}, string, ss_none, wad_no,
-    "DEH/BEX file preloaded at program startup"
   },
 
   // For key bindings, the values stored in the key_* variables       // phares

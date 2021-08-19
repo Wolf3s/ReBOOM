@@ -32,12 +32,15 @@
 
 #include "d_event.h"
 
-extern char **wadfiles;       // killough 11/98
+#define MAXWADFILES 256        /* make it ridiculously large -- killough */
+extern char *wadfiles[MAXWADFILES];
+extern int wadfilesource[MAXWADFILES];  // Ty 08/29/98 - added source of lumps info
+
 
 // jff make startskill globally visible
 extern skill_t startskill;
 
-void D_AddFile(char *file);
+void D_AddFile(char *file, int source);
 
 char *D_DoomExeDir(void);       // killough 2/16/98: path to executable's dir
 char *D_DoomExeName(void);      // killough 10/98: executable's name
