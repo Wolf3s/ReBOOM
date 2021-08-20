@@ -92,3 +92,9 @@ x64/Debug/ReBOOM.tlog/link.command.1.tlog
 x64/Debug/ReBOOM.pdb
 x64/Debug/ReBOOM.ilk
 x64/Debug/ReBOOM.exe.recipe
+*.dll
+*.dat
+*.exe
+*.cfg
+*.WAD
+*.ipch

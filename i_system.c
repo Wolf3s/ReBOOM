@@ -318,13 +318,23 @@ void I_Error(const char *error, ...) // killough 3/20/98: add const
    }
 }
 
-// killough 2/22/98: Add support for ENDBOOM, which is PC-specific
-// killough 8/1/98: change back to ENDOOM
+// Adam - Adding back ENDBOOM lump
 
+// killough 8/1/98: change back to ENDOOM
 void I_EndDoom(void)
 {
-   // Gibbon
-   puts("\nReBOOM exiting.\n");
+  int lump = W_CheckNumForName("ENDBOOM"); //jff 4/1/98 sign our work
+  if (lump != -1)
+    {
+      const char (*endoom)[2] = W_CacheLumpNum(lump, PU_STATIC);
+      int i, l = W_LumpLength(lump) / 2;
+      for (i=0; i<l; i++)
+        {
+          printf("%c",endoom[i][0]);
+        }
+      putch('\b');   // hack workaround for extra newline at bottom of screen
+      putch('\r');
+    }
 }
 
 //----------------------------------------------------------------------------
