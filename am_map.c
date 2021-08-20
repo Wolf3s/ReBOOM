@@ -166,15 +166,14 @@ mline_t cheat_player_arrow[] =
 #define NUMCHEATPLYRLINES (sizeof(cheat_player_arrow)/sizeof(mline_t))
 
 #define R (FRACUNIT)
-
+// proff: Added typecast to avoid warning
 mline_t triangle_guy[] =
 {
-  { { -.867*R, -.5*R }, { .867*R, -.5*R } },
-  { { .867*R, -.5*R } , { 0, R } },
-  { { 0, R }, { -.867*R, -.5*R } }
+{ { (fixed_t)(-.867*R), (fixed_t)(-.5*R) }, { (fixed_t)( .867*R), (fixed_t)(-.5*R) } },
+{ { (fixed_t)( .867*R), (fixed_t)(-.5*R) }, { (fixed_t)(0      ), (fixed_t)(    R) } },
+{ { (fixed_t)(0      ), (fixed_t)(    R) }, { (fixed_t)(-.867*R), (fixed_t)(-.5*R) } }
 };
 #undef R
-
 #define NUMTRIANGLEGUYLINES (sizeof(triangle_guy)/sizeof(mline_t))
 
 //jff 1/5/98 new symbol for keys on automap
@@ -189,11 +188,12 @@ mline_t cross_mark[] =
 //jff 1/5/98 end of new symbol
 
 #define R (FRACUNIT)
+// proff: Added typecast to avoid warning
 mline_t thintriangle_guy[] =
 {
-  { { -.5*R, -.7*R }, { R, 0 } },
-  { { R, 0 }, { -.5*R, .7*R } },
-  { { -.5*R, .7*R }, { -.5*R, -.7*R } }
+{ { (fixed_t)(-.5*R), (fixed_t)(-.7*R) }, { (fixed_t)(    R), (fixed_t)(    0) } },
+{ { (fixed_t)(    R), (fixed_t)(    0) }, { (fixed_t)(-.5*R), (fixed_t)( .7*R) } },
+{ { (fixed_t)(-.5*R), (fixed_t)( .7*R) }, { (fixed_t)(-.5*R), (fixed_t)(-.7*R) } }
 };
 #undef R
 #define NUMTHINTRIANGLEGUYLINES (sizeof(thintriangle_guy)/sizeof(mline_t))

@@ -332,8 +332,7 @@ void I_EndDoom(void)
         {
           printf("%c",endoom[i][0]);
         }
-      putch('\b');   // hack workaround for extra newline at bottom of screen
-      putch('\r');
+      printf('\n\n');   // hack workaround for extra newline at bottom of screen
     }
 }
 

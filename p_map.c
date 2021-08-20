@@ -1369,7 +1369,7 @@ static boolean PIT_RadiusAttack(mobj_t *thing)
   // killough 8/20/98: allow bouncers to take damage 
   // (missile bouncers are already excluded with MF_NOBLOCKMAP)
 
-  if (!(thing->flags & (MF_SHOOTABLE | MF_BOUNCES)))
+  if (!(thing->flags & (MF_SHOOTABLE)))
     return true;
 
   // Boss spider and cyborg
