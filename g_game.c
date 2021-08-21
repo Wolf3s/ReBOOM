@@ -481,7 +481,8 @@ void G_BuildTiccmd(ticcmd_t* cmd)
       cmd->buttons = BT_SPECIAL | BTS_PAUSE;
     }
 
-  if (sendsave)
+ // killough 10/6/98: suppress savegames in demos
+  if (sendsave && !demoplayback)
     {
       sendsave = false;
       cmd->buttons = BT_SPECIAL | BTS_SAVEGAME | (savegameslot<<BTS_SAVESHIFT);
@@ -625,8 +626,21 @@ boolean G_Responder(event_t* ev)
       return true;
     }
 
+  // killough 9/29/98: reformatted
+  if (gamestate == GS_LEVEL && (HU_Responder(ev) ||  // chat ate the event
+				ST_Responder(ev) ||  // status window ate it
+				AM_Responder(ev)))   // automap ate it
+    return true;
+
   // any other key pops up menu if in demos
+  //
+  // killough 8/2/98: enable automap in -timedemo demos
+  //
+  // killough 9/29/98: make any key pop up menu regardless of
+  // which kind of demo, and allow other events during playback
+
   if (gameaction == ga_nothing && (demoplayback || gamestate == GS_DEMOSCREEN))
+    {
       // killough 9/29/98: allow user to pause demos during playback
       if (ev->type == ev_keydown && ev->data1 == key_pause)
 	{
@@ -648,6 +662,7 @@ boolean G_Responder(event_t* ev)
 	 (ev->type == ev_mouse && ev->data1) ||
 	 (ev->type == ev_joystick && ev->data1)) ?
 	M_StartControlPanel(), true : false;
+    }
 
   if (gamestate == GS_FINALE && F_Responder(ev))
     return true;  // finale ate the event

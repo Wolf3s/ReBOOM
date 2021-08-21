@@ -109,7 +109,7 @@ int P_Random(pr_class_t pr_class)
   // since it's unnecessary for random shuffling otherwise
 
   if (demo_insurance)
-    boom += (gametic-basetic)*7;
+    boom += (gametic-levelstarttic)*7;
 
   return boom & 255;
 }

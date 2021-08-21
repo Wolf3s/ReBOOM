@@ -177,7 +177,8 @@ void P_MovePlayer (player_t* player)
 
   mo->angle += cmd->angleturn << 16;
   onground = mo->z <= mo->floorz;
-
+  boolean   onobject = false; // on top of an object?               // phares
+  
   // killough 10/98:
   //
   // We must apply thrust to the player and bobbing separately, to avoid
@@ -187,7 +188,7 @@ void P_MovePlayer (player_t* player)
 
   if (cmd->forwardmove | cmd->sidemove) // killough 10/98
     {
-      if (onground)
+      if (onground || onobject)
 	{
 	  int friction, movefactor = P_GetMoveFactor(mo, &friction);
 
