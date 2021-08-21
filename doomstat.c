@@ -50,6 +50,8 @@ int pitched_sounds;  // killough 10/98
 
 int general_translucency;    // killough 10/98
 
+int demo_insurance, default_demo_insurance;        // killough 1/16/98
+
 int  allow_pushers = 1;      // MT_PUSH Things              // phares 3/10/98
 int  default_allow_pushers;  // killough 3/1/98: make local to each game
 
@@ -60,34 +62,10 @@ int  weapon_recoil;              // weapon recoil                   // phares
 int  default_weapon_recoil;      // killough 3/1/98: make local to each game
 
 int player_bobbing;  // whether player bobs or not          // phares 2/25/98
-int default_player_bobbing;      // killough 3/1/98: make local to each game
+int default_player_bobbing;  // killough 3/1/98: make local to each game
 
-int monsters_remember=1;        // killough 3/1/98
-int default_monsters_remember=1;
-
-int monster_infighting=1;       // killough 7/19/98: monster<=>monster attacks
-int default_monster_infighting=1;
-
-int monster_friction=1;       // killough 10/98: monsters affected by friction 
-int default_monster_friction=1;
-
-// killough 8/8/98: distance friends tend to move towards players
-int distfriend = 128, default_distfriend = 128;
-
-// killough 9/8/98: whether monsters are allowed to strafe or retreat
-int monster_backing, default_monster_backing;
-
-// killough 9/9/98: whether monsters are able to avoid hazards (e.g. crushers)
-int monster_avoid_hazards, default_monster_avoid_hazards;
-
-// killough 9/9/98: whether monsters help friends
-int help_friends, default_help_friends;
-
-int flashing_hom;     // killough 10/98
-
-int doom_weapon_toggles; // killough 10/98
-
-int monkeys, default_monkeys;
+int monsters_remember;          // killough 3/1/98
+int default_monsters_remember;
 
 //----------------------------------------------------------------------------
 //

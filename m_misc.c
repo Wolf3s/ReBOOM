@@ -143,13 +143,6 @@ default_t defaults[] = {
     "Percentage of normal speed (35 fps) realtic clock runs at"
   },
 
-  { // killough 10/98
-    "disk_icon",
-    (config_t *) &disk_icon, NULL,
-    {1}, {0,1}, number, ss_none, wad_no,
-    "1 to enable flashing icon during disk IO"
-  },
-
   { // killough 2/21/98
     "pitched_sounds",
     (config_t *) &pitched_sounds, NULL,
@@ -178,13 +171,6 @@ default_t defaults[] = {
     "number of dead bodies in view supported (negative value = no limit)"
   },
 
-  { // killough 10/98
-    "flashing_hom",
-    (config_t *) &flashing_hom, NULL,
-    {1}, {0,1}, number, ss_none, wad_yes,
-    "1 to enable flashing HOM indicator"
-  },
-
   { // killough 3/31/98
     "demo_insurance",
     (config_t *) &default_demo_insurance, NULL,
@@ -199,22 +185,6 @@ default_t defaults[] = {
     "1 to enable recoil from weapon fire"
   },
 
-#ifdef BETA
-  { // killough 7/19/98
-    "classic_bfg",
-    (config_t *) &default_classic_bfg, (config_t *) &classic_bfg,
-    {0}, {0,1}, number, ss_weap, wad_yes,
-    "1 to enable pre-beta BFG2704"
-  },
-#endif
-
-  { // killough 10/98
-    "doom_weapon_toggles",
-    (config_t *) &doom_weapon_toggles, NULL,
-    {1}, {0,1}, number, ss_weap, wad_no,
-    "1 to toggle between SG/SSG and Fist/Chainsaw"
-  },
-
   { // phares 2/25/98
     "player_bobbing",
     (config_t *) &default_player_bobbing, (config_t *) &player_bobbing,
@@ -227,48 +197,6 @@ default_t defaults[] = {
     (config_t *) &default_monsters_remember, (config_t *) &monsters_remember,
     {1}, {0,1}, number, ss_enem, wad_yes,
     "1 to enable monsters remembering enemies after killing others"
-  },
-
-  { // killough 7/19/98
-    "monster_infighting",
-    (config_t *) &default_monster_infighting, (config_t *) &monster_infighting,
-    {1}, {0,1}, number, ss_enem, wad_yes,
-    "1 to enable monsters fighting against each other when provoked"
-  },
-
-  { // killough 9/8/98
-    "monster_backing",
-    (config_t *) &default_monster_backing, (config_t *) &monster_backing,
-    {0}, {0,1}, number, ss_enem, wad_yes,
-    "1 to enable monsters backing away from targets"
-  },
-
-  { //killough 9/9/98:
-    "monster_avoid_hazards",
-    (config_t *) &default_monster_avoid_hazards, (config_t *) &monster_avoid_hazards,
-    {1}, {0,1}, number, ss_enem, wad_yes,
-    "1 to enable monsters to intelligently avoid hazards"
-  },
-
-  {
-    "monkeys",
-    (config_t *) &default_monkeys, (config_t *) &monkeys,
-    {0}, {0,1}, number, ss_enem, wad_yes,
-    "1 to enable monsters to move up/down steep stairs"
-  },
-
-  { //killough 9/9/98:
-    "monster_friction",
-    (config_t *) &default_monster_friction, (config_t *) &monster_friction,
-    {1}, {0,1}, number, ss_enem, wad_yes,
-    "1 to enable monsters to be affected by friction"
-  },
-
-  { //killough 9/9/98:
-    "help_friends",
-    (config_t *) &default_help_friends, (config_t *) &help_friends,
-    {1}, {0,1}, number, ss_enem, wad_yes,
-    "1 to enable monsters to help dying friends"
   },
 
   { // no color changes on status bar

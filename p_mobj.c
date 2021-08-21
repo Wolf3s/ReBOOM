@@ -827,17 +827,17 @@ void P_SpawnMapThing (mapthing_t* mthing)
 
   // check for apropriate skill level
 
-  if (!netgame && mthing->options & MTF_NOTSINGLE)//jff "not single" thing flag
+  if (!netgame && mthing->options & 16)//jff "not single" thing flag
     return;
 
   //jff 3/30/98 implement "not deathmatch" thing flag
 
-  if (netgame && deathmatch && mthing->options & MTF_NOTDM)
+  if (netgame && deathmatch && mthing->options & 32)
     return;
 
   //jff 3/30/98 implement "not cooperative" thing flag
 
-  if (netgame && !deathmatch && mthing->options & MTF_NOTCOOP)
+  if (netgame && !deathmatch && mthing->options & 64)
     return;
 
   if (gameskill == sk_baby)

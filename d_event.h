@@ -86,7 +86,7 @@ typedef enum
 
   // Flag: game events, not really buttons.
   BT_SPECIAL      = 128,
-  //  BT_SPECIALMASK  = 3,   killough 9/29/98: unused now
+  BT_SPECIALMASK  = 3,   //killough 9/29/98: unused now
     
   // Flag, weapon change pending.
   // If true, the next 4 bits hold weapon num.

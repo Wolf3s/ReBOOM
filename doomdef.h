@@ -137,13 +137,6 @@ typedef enum {
 // Deaf monsters/do not react to sound.
 #define MTF_AMBUSH              8
 
-// killough 11/98
-#define MTF_NOTSINGLE          16
-#define MTF_NOTDM              32
-#define MTF_NOTCOOP            64
-#define MTF_FRIEND            128
-#define MTF_RESERVED          256
-
 typedef enum {
   sk_none=-1, //jff 3/24/98 create unpicked skill setting
   sk_baby=0,

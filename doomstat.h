@@ -73,11 +73,6 @@ extern int demo_version;           // killough 7/19/98: Version of demo
 
 #define demo_compatibility (demo_version < 200) /* killough 11/98: macroized */
 
-// killough 7/19/98: whether monsters should fight against each other
-extern int monster_infighting, default_monster_infighting;
-
-extern int monkeys, default_monkeys;
-
 // v1.1-like pitched sounds
 extern int pitched_sounds;
 
@@ -292,33 +287,6 @@ extern int default_weapon_recoil;
 
 extern int player_bobbing;  // whether player bobs or not   // phares 2/25/98
 extern int default_player_bobbing;  // killough 3/1/98: make local to each game
-
-#ifdef BETA
-// killough 7/19/98: Classic Pre-Beta BFG
-extern int classic_bfg, default_classic_bfg;
-
-// killough 7/24/98: Emulation of Press Release version of Doom
-extern int beta_emulation;
-#endif
-
-// killough 8/8/98: distance friendly monsters tend to stay from player
-extern int distfriend, default_distfriend;
-
-// killough 9/8/98: whether monsters are allowed to strafe or retreat
-extern int monster_backing, default_monster_backing;
-
-// killough 9/9/98: whether monsters intelligently avoid hazards
-extern int monster_avoid_hazards, default_monster_avoid_hazards;
-
-// killough 10/98: whether monsters are affected by friction
-extern int monster_friction, default_monster_friction;
-
-// killough 9/9/98: whether monsters help friends
-extern int help_friends, default_help_friends;
-
-extern int flashing_hom; // killough 10/98
-
-extern int doom_weapon_toggles;   // killough 10/98
 
 #endif
 
