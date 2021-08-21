@@ -48,7 +48,6 @@ void P_SetTarget(mobj_t **mo, mobj_t *target);   // killough 11/98
 typedef enum {
    th_delete,  // haleyjd 11/09/06: giant bug fix
    th_misc,
-   th_friends,
    th_enemies,
    NUMTHCLASS
 } th_class;

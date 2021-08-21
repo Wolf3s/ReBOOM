@@ -1035,7 +1035,7 @@ static void G_DoPlayDemo(void)
 #define VERSIONSIZE   16
 
 // killough 2/22/98: version id string format for savegames
-#define VERSIONID "MBF %d"
+#define VERSIONID "BoomVer %d"
 
 static char savename[PATH_MAX+1];
 

@@ -105,19 +105,6 @@ typedef enum {
   pr_spawnfly,                // #48
   pr_misc,                    // #49
   pr_all_in_one,              // #50
-  // Start new entries -- add new entries below
-  pr_opendoor,                // #51
-  pr_targetsearch,            // #52
-  pr_friends,                 // #53
-  pr_threshold,               // #54
-  pr_skiptarget,              // #55
-  pr_enemystrafe,             // #56
-  pr_avoidcrush,              // #57
-  pr_stayonlift,              // #58
-  pr_helpfriend,              // #59
-  pr_dropoff,                 // #60
-  pr_randomjump,              // #61
-  pr_defect,                  // #62
 
   // End of new entries
   NUMPRCLASS               // MUST be last item in list

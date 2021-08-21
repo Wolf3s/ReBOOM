@@ -70,13 +70,6 @@ void P_InitThinkers(void)
 //
 // killough 8/29/98:
 // 
-// We maintain separate threads of friends and enemies, to permit more
-// efficient searches.
-//
-// haleyjd 6/17/08: Import from EE: PrBoom bugfixes, including addition of the
-// th_delete thinker class to rectify problems with infinite loops in the AI
-// code due to corruption of the th_enemies/th_friends lists when monsters get
-// removed at an inopportune moment.
 //
 void P_UpdateThinker(thinker_t *thinker)
 {
