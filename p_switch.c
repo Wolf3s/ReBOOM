@@ -436,7 +436,7 @@ P_UseSpecialLine
         
     case 29:
       // Raise Door
-      if (EV_DoDoor(line, normal))
+      if (EV_DoDoor(line,normal))
         P_ChangeSwitchTexture(line,0);
       break;
         
@@ -466,9 +466,6 @@ P_UseSpecialLine
         
     case 51:
       // Secret EXIT
-	    S_StartSound(thing, sfx_noway);
-	    break;
- 
       P_ChangeSwitchTexture(line,0);
       G_SecretExitLevel ();
       break;
@@ -1018,7 +1015,7 @@ P_UseSpecialLine
         
     case 63:
       // Raise Door
-      if (EV_DoDoor(line, normal))
+      if (EV_DoDoor(line,normal))
         P_ChangeSwitchTexture(line,1);
       break;
         

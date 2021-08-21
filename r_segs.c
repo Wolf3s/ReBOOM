@@ -751,6 +751,18 @@ void R_StoreWallRange(const int start, const int stop)
 //----------------------------------------------------------------------------
 //
 // $Log: r_segs.c,v $
+// Revision 1.20  1998/10/05  21:46:31  phares
+// Cleanup fireline checkin
+//
+// Revision 1.19  1998/10/05  21:29:32  phares
+// Fixed firelines
+//
+// Revision 1.18  1998/09/11  16:19:17  jim
+// Fixed startup on vertex segviol
+//
+// Revision 1.17  1998/08/11  07:58:58  jim
+// Added ZDoom's fix to opening limit removal
+//
 // Revision 1.16  1998/05/03  23:02:01  killough
 // Move R_PointToDist from r_main.c, fix #includes
 //

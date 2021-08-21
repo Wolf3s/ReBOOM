@@ -90,13 +90,6 @@ int EV_Teleport(line_t *line, int side, mobj_t *thing)
                                    thing->z, MT_TFOG),
                        sfx_telept);
 
-          if (thing->player)       // don't move for a bit // killough 10/98
-#ifdef BETA
-	    // killough 10/98: beta teleporters were a bit faster
-	    thing->reactiontime = beta_emulation ? 4 : 18;
-#else
-  	    thing->reactiontime = 18;
-#endif
 
           thing->angle = m->angle;
 

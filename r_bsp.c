@@ -293,9 +293,9 @@ sector_t *R_FakeFlat(sector_t *sec, sector_t *tempsec,
       tempsec->floorheight   = s->floorheight;
       tempsec->ceilingheight = s->ceilingheight;
 
-      // killough 11/98: prevent sudden light changes from non-water sectors:
-      if (underwater && (tempsec->  floorheight = sec->floorheight,
-			 tempsec->ceilingheight = s->floorheight-1, !back))
+      if ((underwater && (tempsec->  floorheight = sec->floorheight,
+                          tempsec->ceilingheight = s->floorheight-1,
+                          !back)) || viewz <= s->floorheight)
         {                   // head-below-floor hack
           tempsec->floorpic    = s->floorpic;
           tempsec->floor_xoffs = s->floor_xoffs;
@@ -614,34 +614,27 @@ static void R_Subsector(int num)
   frontsector = sub->sector;
   count = sub->numlines;
   line = &segs[sub->firstline];
-
   // killough 3/8/98, 4/4/98: Deep water / fake ceiling effect
   frontsector = R_FakeFlat(frontsector, &tempsec, &floorlightlevel,
                            &ceilinglightlevel, false);   // killough 4/11/98
 
   // killough 3/7/98: Add (x,y) offsets to flats, add deep water check
   // killough 3/16/98: add floorlightlevel
-  // killough 10/98: add support for skies transferred from sidedefs
 
   floorplane = frontsector->floorheight < viewz || // killough 3/7/98
     (frontsector->heightsec != -1 &&
      sectors[frontsector->heightsec].ceilingpic == skyflatnum) ?
     R_FindPlane(frontsector->floorheight,
-		frontsector->floorpic == skyflatnum &&  // kilough 10/98
-		frontsector->sky & PL_SKYFLAT ? frontsector->sky :
                 frontsector->floorpic,
                 floorlightlevel,                // killough 3/16/98
                 frontsector->floor_xoffs,       // killough 3/7/98
                 frontsector->floor_yoffs
                 ) : NULL;
-
   ceilingplane = frontsector->ceilingheight > viewz ||
     frontsector->ceilingpic == skyflatnum ||
     (frontsector->heightsec != -1 &&
      sectors[frontsector->heightsec].floorpic == skyflatnum) ?
     R_FindPlane(frontsector->ceilingheight,     // killough 3/8/98
-		frontsector->ceilingpic == skyflatnum &&  // kilough 10/98
-		frontsector->sky & PL_SKYFLAT ? frontsector->sky :
                 frontsector->ceilingpic,
                 ceilinglightlevel,              // killough 4/11/98
                 frontsector->ceiling_xoffs,     // killough 3/7/98
@@ -665,6 +658,7 @@ static void R_Subsector(int num)
 
   while (count--)
     R_AddLine (line++);
+
 }
 
 //
@@ -700,6 +694,15 @@ void R_RenderBSPNode(int bspnum)
 //----------------------------------------------------------------------------
 //
 // $Log: r_bsp.c,v $
+// Revision 1.20  1998/10/05  21:46:36  phares
+// Cleanup fireline checkin
+//
+// Revision 1.19  1998/10/05  21:29:27  phares
+// Fixed firelines
+//
+// Revision 1.18  1998/09/12  01:06:34  jim
+// Fixed underwater fireball slowdown
+//
 // Revision 1.17  1998/05/03  22:47:33  killough
 // beautification
 //

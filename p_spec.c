@@ -998,12 +998,7 @@ void P_CrossSpecialLine(line_t *line, int side, mobj_t *thing)
       case MT_TROOPSHOT:
       case MT_HEADSHOT:
       case MT_BRUISERSHOT:
-#ifdef BETA
-      case MT_PLASMA1:    // killough 8/28/98: exclude beta fireballs
-      case MT_PLASMA2:
-#endif
         return;
-      default:
         break;
       }
 
@@ -2420,21 +2415,6 @@ void P_SpawnSpecials (void)
         sec = sides[*lines[i].sidenum].sector-sectors;
         for (s = -1; (s = P_FindSectorFromLineTag(lines+i,s)) >= 0;)
           sectors[s].ceilinglightsec = sec;
-        break;
-
-        // killough 10/98:
-        //
-        // Support for sky textures being transferred from sidedefs.
-        // Allows scrolling and other effects (but if scrolling is
-        // used, then the same sector tag needs to be used for the
-        // sky sector, the sky-transfer linedef, and the scroll-effect
-        // linedef). Still requires user to use F_SKY1 for the floor
-        // or ceiling texture, to distinguish floor and ceiling sky.
-
-      case 271:   // Regular sky
-      case 272:   // Same, only flipped
-        for (s = -1; (s = P_FindSectorFromLineTag(lines+i,s)) >= 0;)
-          sectors[s].sky = i | PL_SKYFLAT;
         break;
       }
 }

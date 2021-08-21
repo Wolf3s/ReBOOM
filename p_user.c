@@ -41,11 +41,7 @@ extern int P_GetMoveFactor(const mobj_t *mo, int *frictionp);
 
 // Index of the special effects (INVUL inverse) map.
 
-#if defined ACCESSIBILITY
-#define INVERSECOLORMAP 0
-#else
 #define INVERSECOLORMAP 32
-#endif
 
 //
 // Movement.
@@ -461,6 +457,9 @@ void P_PlayerThink (player_t* player)
 //----------------------------------------------------------------------------
 //
 // $Log: p_user.c,v $
+// Revision 1.15  1998/09/10  20:13:01  phares
+// Fix DM Stuck bug and refix ice-bobbing/momentum
+//
 // Revision 1.14  1998/05/12  12:47:25  phares
 // Removed OVER_UNDER code
 //

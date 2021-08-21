@@ -127,15 +127,6 @@ typedef struct
 
   int bottommap, midmap, topmap; // killough 4/4/98: dynamic colormaps
 
-  // killough 10/98: support skies coming from sidedefs. Allows scrolling
-  // skies and other effects. No "level info" kind of lump is needed, 
-  // because you can use an arbitrary number of skies per level with this
-  // method. This field only applies when skyflatnum is used for floorpic
-  // or ceilingpic, because the rest of Doom needs to know which is sky
-  // and which isn't, etc.
-
- int sky;
-
   // list of mobjs that are at least partially in the sector
   // thinglist is a subset of touching_thinglist
   struct msecnode_s *touching_thinglist;               // phares 3/14/98  
