@@ -1152,8 +1152,6 @@ void D_DoomMain(void)
   // killough 10/98: process all command-line DEH's first
   D_ProcessDehCommandLine();
 
-    mobjinfo[MT_SCEPTRE].doomednum = mobjinfo[MT_BIBLE].doomednum = -1;
-
   // jff 1/24/98 set both working and command line value of play parms
   nomonsters = clnomonsters = M_CheckParm ("-nomonsters");
   respawnparm = clrespawnparm = M_CheckParm ("-respawn");

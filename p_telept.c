@@ -90,6 +90,8 @@ int EV_Teleport(line_t *line, int side, mobj_t *thing)
                                    thing->z, MT_TFOG),
                        sfx_telept);
 
+                    if (thing->player)       // don't move for a bit // killough 10/98
+                      thing->reactiontime = 18;
 
           thing->angle = m->angle;
 
