@@ -104,8 +104,7 @@ result_e T_MovePlane
           // Moving a floor up
           // jff 02/04/98 keep floor from moving thru ceilings
           // jff 2/22/98 weaken check to demo_compatibility
-          destheight = (demo_version < 203 ||
-			dest<sector->ceilingheight)? // killough 10/98
+          destheight = (demo_compatibility || dest<sector->ceilingheight)? // killough 10/98
                           dest : sector->ceilingheight;
           if (sector->floorheight + speed > destheight)
           {
