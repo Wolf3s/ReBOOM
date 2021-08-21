@@ -98,3 +98,4 @@ x64/Debug/ReBOOM.exe.recipe
 *.cfg
 *.WAD
 *.ipch
+.DS_Store

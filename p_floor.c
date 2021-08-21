@@ -104,7 +104,7 @@ result_e T_MovePlane
           // Moving a floor up
           // jff 02/04/98 keep floor from moving thru ceilings
           // jff 2/22/98 weaken check to demo_compatibility
-          destheight = (demo_version < 203 || comp[comp_floors] ||
+          destheight = (demo_version < 203 ||
 			dest<sector->ceilingheight)? // killough 10/98
                           dest : sector->ceilingheight;
           if (sector->floorheight + speed > destheight)
@@ -127,7 +127,7 @@ result_e T_MovePlane
             flag = P_CheckSector(sector,crush); //jff 3/19/98 use faster chk
             if (flag == true)
             {
-              if (demo_version < 203 || comp[comp_floors]) // killough 10/98
+              if (demo_version < 203) // killough 10/98
                 if (crush == true) //jff 1/25/98 fix floor crusher
                   return crushed;
               sector->floorheight = lastpos;
@@ -147,7 +147,7 @@ result_e T_MovePlane
           // moving a ceiling down
           // jff 02/04/98 keep ceiling from moving thru floors
           // jff 2/22/98 weaken check to demo_compatibility
-          destheight = (comp[comp_floors] || dest>sector->floorheight)?
+          destheight = (dest>sector->floorheight)?
 	    dest : sector->floorheight; // killough 10/98: add comp flag
           if (sector->ceilingheight - speed < destheight)
           {
@@ -554,7 +554,7 @@ int EV_DoFloor
           int minsize = D_MAXINT;
           side_t*     side;
                       
-          if (!comp[comp_model])  // killough 10/98
+          if (!compatibility)  // killough 10/98
 	    minsize = 32000<<FRACBITS; //jff 3/13/98 no ovf
           floor->direction = 1;
           floor->sector = sec;
@@ -565,17 +565,17 @@ int EV_DoFloor
             {
               side = getSide(secnum,i,0);
               if (side->bottomtexture >= 0      //killough 10/98
-		  && (side->bottomtexture || comp[comp_model]))
+		  && (side->bottomtexture || compatibility))
                 if (textureheight[side->bottomtexture] < minsize)
                   minsize = textureheight[side->bottomtexture];
               side = getSide(secnum,i,1);
               if (side->bottomtexture >= 0      //killough 10/98
-		  && (side->bottomtexture || comp[comp_model]))
+		  && (side->bottomtexture || compatibility))
                 if (textureheight[side->bottomtexture] < minsize)
                   minsize = textureheight[side->bottomtexture];
             }
           }
-          if (comp[comp_model])
+          if (compatibility)
             floor->floordestheight = floor->sector->floorheight + minsize;
           else
           {
@@ -804,8 +804,6 @@ int EV_BuildStairs
         break;
       }
     } while(ok);      // continue until no next step is found
-
-    if (!comp[comp_stairs])      // killough 10/98: compatibility option
       secnum = osecnum;          //jff 3/4/98 restore loop index
   }
   return rtn;
@@ -846,14 +844,14 @@ int EV_DoDonut(line_t*  line)
                                           // pillar must be two-sided 
 
     // do not start the donut if the pool is already moving
-    if (!comp[comp_floors] && P_SectorActive(floor_special,s2))
+    if (!compatibility && P_SectorActive(floor_special,s2))
       continue;                           //jff 5/7/98
                       
     // find a two sided line around the pool whose other side isn't the pillar
     for (i = 0;i < s2->linecount;i++)
     {
       //jff 3/29/98 use true two-sidedness, not the flag
-      if (comp[comp_model])
+      if (compatibility)
       {
         if ((!s2->lines[i]->flags & ML_TWOSIDED) ||
             (s2->lines[i]->backsector == s1))

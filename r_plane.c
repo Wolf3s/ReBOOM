@@ -316,72 +316,24 @@ static void do_draw_plane(visplane_t *pl)
 {
   register int x;
   if (pl->minx <= pl->maxx)
-    if (pl->picnum == skyflatnum || pl->picnum & PL_SKYFLAT)  // sky flat
+    if (pl->picnum == skyflatnum)            // sky flat
       {
-	int texture;
-	angle_t an, flip;
-
-	// killough 10/98: allow skies to come from sidedefs.
-	// Allows scrolling and/or animated skies, as well as
-	// arbitrary multiple skies per level without having
-	// to use info lumps.
-
-	an = viewangle;
-
-	if (pl->picnum & PL_SKYFLAT)
-	  { 
-	    // Sky Linedef
-	    const line_t *l = &lines[pl->picnum & ~PL_SKYFLAT];
-
-	    // Sky transferred from first sidedef
-	    const side_t *s = *l->sidenum + sides;
-
-	    // Texture comes from upper texture of reference sidedef
-	    texture = texturetranslation[s->toptexture];
-
-	    // Horizontal offset is turned into an angle offset,
-	    // to allow sky rotation as well as careful positioning.
-	    // However, the offset is scaled very small, so that it
-	    // allows a long-period of sky rotation.
-
-	    an += s->textureoffset;
-
-	    // Vertical offset allows careful sky positioning.
-
-	    dc_texturemid = s->rowoffset - 28*FRACUNIT;
-
-	    // We sometimes flip the picture horizontally.
-	    //
-	    // Doom always flipped the picture, so we make it optional,
-	    // to make it easier to use the new feature, while to still
-	    // allow old sky textures to be used.
-
-	    flip = l->special==272 ? 0u : ~0u;
-	  }
-	else 	 // Normal Doom sky, only one allowed per level
-	  {
-	    dc_texturemid = skytexturemid;    // Default y-offset
-	    texture = skytexture;             // Default texture
-	    flip = 0;                         // Doom flips it
-	  }
-
         // Sky is always drawn full bright, i.e. colormaps[0] is used.
         // Because of this hack, sky is not affected by INVUL inverse mapping.
-	//
-	// killough 7/19/98: fix hack to be more realistic:
 
-	if (comp[comp_skymap] || !(dc_colormap = fixedcolormap))
-	  dc_colormap = fullcolormap;          // killough 3/20/98
+        dc_colormap = fullcolormap;          // killough 3/20/98
+        dc_texturemid = skytexturemid;
+        dc_texheight = textureheight[skytexture]>>FRACBITS; // killough
+// proff 09/21/98: Changed for high-res
+        dc_iscale = FRACUNIT*200/viewheight;
+//        dc_iscale = pspriteiscale;
 
-        dc_texheight = textureheight[texture]>>FRACBITS; // killough
-        dc_iscale = pspriteiscale;
-
-	// killough 10/98: Use sky scrolling offset, and possibly flip picture
-        for (x = pl->minx; (dc_x = x) <= pl->maxx; x++)
+        for (x = pl->minx; x <= pl->maxx; x++)
           if ((dc_yl = pl->top[x]) <= (dc_yh = pl->bottom[x]))
             {
-              dc_source = R_GetColumn(texture, ((an + xtoviewangle[x])^flip) >>
-				      ANGLETOSKYSHIFT);
+              dc_x = x;
+              dc_source = R_GetColumn(skytexture,
+                          (viewangle + xtoviewangle[x]) >> ANGLETOSKYSHIFT);
               colfunc();
             }
       }
@@ -394,6 +346,7 @@ static void do_draw_plane(visplane_t *pl)
 
         xoffs = pl->xoffs;  // killough 2/28/98: Add offsets
         yoffs = pl->yoffs;
+        // proff: Changed abs to abs (see m_fixed.h)
         planeheight = abs(pl->height-viewz);
         light = (pl->lightlevel >> LIGHTSEGSHIFT) + extralight;
 

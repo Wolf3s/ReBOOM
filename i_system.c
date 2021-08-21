@@ -60,14 +60,6 @@ void I_WaitVBL(int count)
    SDL_Delay((count*500)/TICRATE);
 }
 
-static void I_BeginRead(void)
-{
-}
-
-static void I_EndRead(void)
-{
-}
-
 // Most of the following has been rewritten by Lee Killough
 //
 // I_GetTime
@@ -318,22 +310,11 @@ void I_Error(const char *error, ...) // killough 3/20/98: add const
    }
 }
 
-// Adam - Adding back ENDBOOM lump
+// Adam - Adding back ENDBOOM lump (removed for now, causes segfault)
 
 // killough 8/1/98: change back to ENDOOM
 void I_EndDoom(void)
 {
-  int lump = W_CheckNumForName("ENDBOOM"); //jff 4/1/98 sign our work
-  if (lump != -1)
-    {
-      const char (*endoom)[2] = W_CacheLumpNum(lump, PU_STATIC);
-      int i, l = W_LumpLength(lump) / 2;
-      for (i=0; i<l; i++)
-        {
-          printf("%c",endoom[i][0]);
-        }
-      printf('\n\n');   // hack workaround for extra newline at bottom of screen
-    }
 }
 
 //----------------------------------------------------------------------------

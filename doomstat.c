@@ -43,8 +43,6 @@ boolean modifiedgame;
 // compatibility with old engines (monster behavior, metrics, etc.)
 int compatibility, default_compatibility;          // killough 1/31/98
 
-int comp[COMP_TOTAL], default_comp[COMP_TOTAL];    // killough 10/98
-
 int demo_version;           // killough 7/19/98: Boom version of demo
 
 // v1.1-like pitched sounds
@@ -72,14 +70,6 @@ int default_monster_infighting=1;
 
 int monster_friction=1;       // killough 10/98: monsters affected by friction 
 int default_monster_friction=1;
-
-#ifdef BETA
-// killough 7/19/98: classic Doom BFG
-int classic_bfg, default_classic_bfg;
-
-// killough 7/24/98: Emulation of Press Release version of Doom
-int beta_emulation;
-#endif
 
 // killough 8/8/98: distance friends tend to move towards players
 int distfriend = 128, default_distfriend = 128;

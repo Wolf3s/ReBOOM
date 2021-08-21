@@ -959,7 +959,6 @@ static void G_DoPlayDemo(void)
   if (demover < 200)     // Autodetect old demos
     {
       compatibility = true;
-      memset(comp, 0xff, sizeof comp);  // killough 10/98: a vector now
 
       // killough 3/2/98: force these variables to be 0 in demo_compatibility
 
@@ -1849,8 +1848,7 @@ void G_ReloadDefaults(void)
 
   consoleplayer = 0;
 
-  compatibility = false;     // killough 10/98: replaced by comp[] vector
-  memcpy(comp, default_comp, sizeof comp);
+  compatibility = false;
 
   demo_version = VERSION;     // killough 7/19/98: use this version's id
 
@@ -2054,12 +2052,6 @@ byte *G_WriteOptions(byte *demo_p)
   
   *demo_p++ = monkeys;
 
-  {   // killough 10/98: a compatibility vector now
-    int i;
-    for (i=0; i < COMP_TOTAL; i++)
-      *demo_p++ = comp[i] != 0;
-  }
-
   //----------------
   // Padding at end
   //----------------
@@ -2135,21 +2127,12 @@ byte *G_ReadOptions(byte *demo_p)
 
       monkeys = *demo_p++;
 
-      {   // killough 10/98: a compatibility vector now
-	int i;
-	for (i=0; i < COMP_TOTAL; i++)
-	  comp[i] = *demo_p++;
-      }
-
       // Options new to v2.04, etc.
       if (demo_version >= 204)
 	;
     }
   else  // defaults for versions < 2.02
     {
-      int i;  // killough 10/98: a compatibility vector now
-      for (i=0; i < COMP_TOTAL; i++)
-	comp[i] = compatibility;
 
       monster_infighting = 1;           // killough 7/19/98
 

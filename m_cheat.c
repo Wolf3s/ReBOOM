@@ -402,7 +402,7 @@ static void cheat_pw(int pw)
   else
     {
       P_GivePower(plyr, pw);
-      if (pw != pw_strength && !comp[comp_infcheat])
+      if (pw != pw_strength)
         plyr->powers[pw] = -1;      // infinite duration -- killough
     }
   plyr->message = s_STSTR_BEHOLDX; // Ty 03/27/98 - externalized
@@ -467,9 +467,6 @@ static void cheat_comp()
 
   plyr->message =   // Ty 03/27/98 - externalized
     (compatibility = !compatibility) ? s_STSTR_COMPON : s_STSTR_COMPOFF;
-
-  for (i=0; i<COMP_TOTAL; i++)  // killough 10/98: reset entire vector
-    comp[i] = compatibility;
 }
 
 // variable friction cheat

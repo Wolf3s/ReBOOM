@@ -42,6 +42,8 @@
 #include "g_game.h"
 #include "p_inter.h"
 
+extern int P_GetFriction(const mobj_t *mo, int *frictionfactor);
+
 //
 // P_SetMobjState
 // Returns true if the mobj is still present.

@@ -582,22 +582,6 @@ static void I_InitDiskFlash(void)
 {
 }
 
-//
-// killough 10/98: draw disk icon
-//
-
-void I_BeginRead(void)
-{
-}
-
-//
-// killough 10/98: erase disk icon
-//
-
-void I_EndRead(void)
-{
-}
-
 void I_SetPalette(byte *palette)
 {
    // haleyjd

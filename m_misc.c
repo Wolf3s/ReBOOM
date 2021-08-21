@@ -1832,10 +1832,8 @@ boolean M_WriteFile(char const *name, void *source, int length)
   if (!(fp = fopen(name, "wb")))       // Try opening file
     return 0;                          // Could not open file for writing
 
-  I_BeginRead();                       // Disk icon on
   length = fwrite(source, 1, length, fp) == length;   // Write data
   fclose(fp);
-  I_EndRead();                         // Disk icon off
 
   if (!length)                         // Remove partially written file
     remove(name);
@@ -1858,7 +1856,6 @@ int M_ReadFile(char const *name, byte **buffer)
     {
       size_t length;
 
-      I_BeginRead();
       fseek(fp, 0, SEEK_END);
       length = ftell(fp);
       fseek(fp, 0, SEEK_SET);
@@ -1866,7 +1863,6 @@ int M_ReadFile(char const *name, byte **buffer)
       if (fread(*buffer, 1, length, fp) == length)
         {
           fclose(fp);
-          I_EndRead();
           return length;
         }
       fclose(fp);
@@ -2019,7 +2015,7 @@ typedef struct tagBITMAPINFOHEADER
 
 #define SafeWrite(data,size,number,st) do {   \
     if (fwrite(data,size,number,st) < (number)) \
-   return fclose(st), I_EndRead(), false; } while(0)
+   return fclose(st), false; } while(0)
 
 //
 // WriteBMPfile
@@ -2036,8 +2032,6 @@ boolean WriteBMPfile(char *filename, byte *data, int width,
   FILE *st;
   char zero=0;
   ubyte_t c;
-
-  I_BeginRead();              // killough 10/98
 
   fhsiz = sizeof(BITMAPFILEHEADER);
   ihsiz = sizeof(BITMAPINFOHEADER);
@@ -2100,7 +2094,7 @@ boolean WriteBMPfile(char *filename, byte *data, int width,
 
       fclose(st);
     }
-  return I_EndRead(), true;       // killough 10/98
+  return true;       // killough 10/98
 }
 
 //

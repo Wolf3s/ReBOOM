@@ -37,6 +37,8 @@
 #include "p_spec.h"
 #include "p_user.h"
 
+extern int P_GetMoveFactor(const mobj_t *mo, int *frictionp);
+
 // Index of the special effects (INVUL inverse) map.
 
 #if defined ACCESSIBILITY
