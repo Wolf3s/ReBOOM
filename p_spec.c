@@ -2882,7 +2882,7 @@ boolean PIT_PushThing(mobj_t* thing)
 {
   if (demo_version < 203  ?     // killough 10/98: made more general
       thing->player && !(thing->flags & (MF_NOCLIP | MF_NOGRAVITY)) :
-      (sentient(thing) || thing->flags & MF_SHOOTABLE) &&
+      (thing->flags & MF_SHOOTABLE) &&
       !(thing->flags & MF_NOCLIP))
     {
       angle_t pushangle;
