@@ -537,6 +537,9 @@ static void G_DoLoadLevel(void)
       }//jff 3/27/98 end sky setting fix
 
   levelstarttic = gametic;        // for time calculation
+  
+    if (!demo_compatibility && demo_version < 203)   // killough 9/29/98
+    basetic = gametic;
 
   if (wipegamestate == GS_LEVEL)
     wipegamestate = -1;             // force a wipe
@@ -623,34 +626,31 @@ boolean G_Responder(event_t* ev)
     }
 
   // any other key pops up menu if in demos
-  if (gameaction == ga_nothing && !singledemo &&
-      (demoplayback || gamestate == GS_DEMOSCREEN))
-    {
-      if (ev->type == ev_keydown ||
-          (ev->type == ev_mouse && ev->data1) ||
-          (ev->type == ev_joystick && ev->data1) )
-        {
-          M_StartControlPanel ();
-          return true;
-        }
-      return false;
-    }
+  if (gameaction == ga_nothing && (demoplayback || gamestate == GS_DEMOSCREEN))
+      // killough 9/29/98: allow user to pause demos during playback
+      if (ev->type == ev_keydown && ev->data1 == key_pause)
+	{
+	  if (paused ^= 2)
+	    S_PauseSound();
+	  else
+	    S_ResumeSound();
+	  return true;
+	}
 
-  if (gamestate == GS_LEVEL)
-    {
-      if (HU_Responder (ev))
-        return true;  // chat ate the event
-      if (ST_Responder (ev))
-        return true;  // status window ate it
-      if (AM_Responder (ev))
-        return true;  // automap ate it
-    }
+      // killough 10/98:
+      // Don't pop up menu, if paused in middle
+      // of demo playback, or if automap active.
+      // Don't suck up keys, which may be cheats
 
-  if (gamestate == GS_FINALE)
-    {
-      if (F_Responder (ev))
-        return true;  // finale ate the event
-    }
+      return gamestate == GS_DEMOSCREEN &&
+	!(paused & 2) && !automapactive &&
+	((ev->type == ev_keydown) ||
+	 (ev->type == ev_mouse && ev->data1) ||
+	 (ev->type == ev_joystick && ev->data1)) ?
+	M_StartControlPanel(), true : false;
+
+  if (gamestate == GS_FINALE && F_Responder(ev))
+    return true;  // finale ate the event
 
   switch (ev->type)
     {

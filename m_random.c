@@ -64,8 +64,6 @@ static const unsigned char rndtable[256] = { // 1/19/98 killough -- made const
     120, 163, 236, 249
 };
 
-int demo_insurance=0, default_demo_insurance=0;   // killough 3/31/98
-
 rng_t rng;     // the random number state
 
 unsigned long rngseed = 1993;   // killough 3/26/98: The seed
@@ -111,7 +109,7 @@ int P_Random(pr_class_t pr_class)
   // since it's unnecessary for random shuffling otherwise
 
   if (demo_insurance)
-    boom += (gametic-levelstarttic)*7;
+    boom += (gametic-basetic)*7;
 
   return boom & 255;
 }

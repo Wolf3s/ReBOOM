@@ -464,8 +464,8 @@ static void cheat_massacre()    // jff 2/01/98 kill all monsters
   thinker_t *currentthinker=&thinkercap;
   extern void A_PainDie(mobj_t *);
 
-  while ((currentthinker=currentthinker->next)!=&thinkercap)
-    if (currentthinker->function == P_MobjThinker &&
+    while ((currentthinker=currentthinker->next)!=&thinkercap)
+      if (currentthinker->function == P_MobjThinker &&
 	  !(((mobj_t *) currentthinker)->flags) &&
 	  (((mobj_t *) currentthinker)->flags & MF_COUNTKILL ||
 	   ((mobj_t *) currentthinker)->type == MT_SKULL))
@@ -473,7 +473,7 @@ static void cheat_massacre()    // jff 2/01/98 kill all monsters
 	  if (((mobj_t *) currentthinker)->health > 0)
 	    {
 	      killcount++;
-	      P_DamageMobj((mobj_t *)currentthinker, NULL, NULL, 10000);
+	      P_DamageMobj((mobj_t *) currentthinker, NULL, NULL, 10000);
 	    }
 	  if (((mobj_t *) currentthinker)->type == MT_PAIN)
 	    {
@@ -481,6 +481,7 @@ static void cheat_massacre()    // jff 2/01/98 kill all monsters
 	      P_SetMobjState((mobj_t *) currentthinker, S_PAIN_DIE6);
 	    }
 	}
+
   // killough 3/22/98: make more intelligent about plural
   // Ty 03/27/98 - string(s) *not* externalized
   doom_printf("%d Monster%s Killed", killcount, killcount==1 ? "" : "s");
