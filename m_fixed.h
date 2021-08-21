@@ -48,6 +48,19 @@
 
 typedef int fixed_t;
 
+#ifdef BOOM_ASM
+__inline int boom_abs(int x)
+{
+    asm
+    (
+      "mov eax,x"
+      "cdq"
+      "xor eax,edx"
+      "sub eax,edx"
+    );
+}
+#endif
+
 //
 // Absolute Value
 //
