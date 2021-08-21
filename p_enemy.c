@@ -1270,7 +1270,6 @@ void A_SkullAttack(mobj_t *actor)
   dest = actor->target;
   actor->flags |= MF_SKULLFLY;
 
-  //Patch from Woof
   if (actor->info->attacksound)
   {
     S_StartSound(actor, actor->info->attacksound);

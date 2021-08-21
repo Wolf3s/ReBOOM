@@ -109,10 +109,9 @@ int P_Random(pr_class_t pr_class)
   // killough 3/30/98: use gametic-levelstarttic to shuffle RNG
   // killough 3/31/98: but only if demo insurance requested,
   // since it's unnecessary for random shuffling otherwise
-  // killough 9/29/98: but use basetic now instead of levelstarttic
 
   if (demo_insurance)
-    boom += (gametic-basetic)*7;
+    boom += (gametic-levelstarttic)*7;
 
   return boom & 255;
 }

@@ -198,22 +198,10 @@ typedef enum
     // Hmm ???.
     MF_TRANSSHIFT       = 26,
 
-    MF_TOUCHY = 0x10000000,        // killough 11/98: dies when solids touch it
-    MF_BOUNCES = 0x20000000,       // killough 7/11/98: for beta BFG fireballs
-    MF_FRIEND = 0x40000000,        // killough 7/18/98: friendly monsters
-
     // Translucent sprite?                                          // phares
     MF_TRANSLUCENT      = 0x80000000,                               // phares
 } mobjflag_t;
 
-// killough 9/15/98: Same, but internal flags, not intended for .deh
-// (some degree of opaqueness is good, to avoid compatibility woes)
-
-enum {
-  MIF_FALLING = 1,      // Object is falling
-  MIF_ARMED = 2,        // Object is armed (for MF_TOUCHY objects)
-  MIF_LINEDONE = 4,     // Object has activated W1 or S1 linedef via DEH frame
-};
 
 // Map Object definition.
 //
@@ -261,9 +249,6 @@ typedef struct mobj_s
     fixed_t             floorz;
     fixed_t             ceilingz;
 
-    // killough 11/98: the lowest floor over all contacted Sectors.
-    fixed_t             dropoffz;
-
     // For movement checking.
     fixed_t             radius;
     fixed_t             height; 
@@ -282,13 +267,11 @@ typedef struct mobj_s
     int                 tics;   // state tic counter
     state_t*            state;
     int                 flags;
-    int                 intflags;  // killough 9/15/98: internal flags
     int                 health;
 
     // Movement direction, movement generation (zig-zagging).
     short               movedir;        // 0-7
     short               movecount;      // when 0, select a new dir
-    short               strafecount;    // killough 9/8/98: monster strafing
 
     // Thing being chased/attacked (or NULL),
     // also the originator for missiles.
@@ -301,11 +284,6 @@ typedef struct mobj_s
     // If >0, the current target will be chased no
     // matter what (even if shot by another object)
     short               threshold;
-
-    // killough 9/9/98: How long a monster pursues a target.
-    short               pursuecount;
-
-    short               gear; // killough 11/98: used in torque simulation
 
     // Additional info record for player avatars only.
     // Only valid if type == MT_PLAYER
@@ -360,16 +338,6 @@ typedef struct mobj_s
 #define FLOATSPEED      (FRACUNIT*4)
 #define STOPSPEED       (FRACUNIT/16)
 
-// killough 11/98:
-// For torque simulation:
-
-#define OVERDRIVE 6
-#define MAXGEAR (OVERDRIVE+16)
-
-// killough 11/98:
-// Whether an object is "sentient" or not. Used for environmental influences.
-#define sentient(mobj) ((mobj)->health > 0 && (mobj)->info->seestate)
-
 extern mapthing_t itemrespawnque[];
 extern int itemrespawntime[];
 extern int iquehead;
@@ -385,8 +353,7 @@ void    P_SpawnBlood(fixed_t x, fixed_t y, fixed_t z, int damage);
 mobj_t  *P_SpawnMissile(mobj_t *source, mobj_t *dest, mobjtype_t type);
 void    P_SpawnPlayerMissile(mobj_t *source, mobjtype_t type);
 void    P_SpawnMapThing (mapthing_t*  mthing);
-void    P_CheckMissileSpawn(mobj_t*);  // killough 8/2/98
-void    P_ExplodeMissile(mobj_t*);    // killough
+
 #endif
 
 //----------------------------------------------------------------------------

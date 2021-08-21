@@ -261,9 +261,6 @@ void P_LoadSectors (int lump)
 
       // killough 4/4/98: colormaps:
       ss->bottommap = ss->midmap = ss->topmap = 0;
-
-      // killough 10/98: sky textures coming from sidedefs:
-      ss->sky = 0;
     }
 
   Z_Free (data);
@@ -433,14 +430,6 @@ void P_LoadLineDefs2(int lump)
   register line_t *ld = lines;
   for (;i--;ld++)
     {
-      // killough 11/98: fix common wad errors (missing sidedefs):
-
-      if (ld->sidenum[0] == -1)
-	ld->sidenum[0] = 0;  // Substitute dummy sidedef for missing right side
-
-      if (ld->sidenum[1] == -1)
-	ld->flags &= ~ML_TWOSIDED;  // Clear 2s flag for missing left side
-
       ld->frontsector = ld->sidenum[0]!=-1 ? sides[ld->sidenum[0]].sector : 0;
       ld->backsector  = ld->sidenum[1]!=-1 ? sides[ld->sidenum[1]].sector : 0;
       switch (ld->special)
@@ -831,82 +820,6 @@ void P_GroupLines (void)
     }
 }
 
-//
-// killough 10/98
-//
-// Remove slime trails.
-//
-// Slime trails are inherent to Doom's coordinate system -- i.e. there is
-// nothing that a node builder can do to prevent slime trails ALL of the time,
-// because it's a product of the integer coordinate system, and just because
-// two lines pass through exact integer coordinates, doesn't necessarily mean
-// that they will intersect at integer coordinates. Thus we must allow for
-// fractional coordinates if we are to be able to split segs with node lines,
-// as a node builder must do when creating a BSP tree.
-//
-// A wad file does not allow fractional coordinates, so node builders are out
-// of luck except that they can try to limit the number of splits (they might
-// also be able to detect the degree of roundoff error and try to avoid splits
-// with a high degree of roundoff error). But we can use fractional coordinates
-// here, inside the engine. It's like the difference between square inches and
-// square miles, in terms of granularity.
-//
-// For each vertex of every seg, check to see whether it's also a vertex of
-// the linedef associated with the seg (i.e, it's an endpoint). If it's not
-// an endpoint, and it wasn't already moved, move the vertex towards the
-// linedef by projecting it using the law of cosines. Formula:
-//
-//      2        2                         2        2
-//    dx  x0 + dy  x1 + dx dy (y0 - y1)  dy  y0 + dx  y1 + dx dy (x0 - x1)
-//   {---------------------------------, ---------------------------------}
-//                  2     2                            2     2
-//                dx  + dy                           dx  + dy
-//
-// (x0,y0) is the vertex being moved, and (x1,y1)-(x1+dx,y1+dy) is the
-// reference linedef.
-//
-// Segs corresponding to orthogonal linedefs (exactly vertical or horizontal
-// linedefs), which comprise at least half of all linedefs in most wads, don't
-// need to be considered, because they almost never contribute to slime trails
-// (because then any roundoff error is parallel to the linedef, which doesn't
-// cause slime). Skipping simple orthogonal lines lets the code finish quicker.
-//
-// Please note: This section of code is not interchangable with TeamTNT's
-// code which attempts to fix the same problem.
-//
-// Firelines (TM) is a Rezistered Trademark of MBF Productions
-//
-
-void P_RemoveSlimeTrails(void)                // killough 10/98
-{
-  byte *hit = calloc(1, numvertexes);         // Hitlist for vertices
-  int i;
-  for (i=0; i<numsegs; i++)                   // Go through each seg
-    {
-      const line_t *l = segs[i].linedef;      // The parent linedef
-      if (l->dx && l->dy)                     // We can ignore orthogonal lines
-	{
-	  vertex_t *v = segs[i].v1;
-	  do
-	    if (!hit[v - vertexes])           // If we haven't processed vertex
-	      {
-		hit[v - vertexes] = 1;        // Mark this vertex as processed
-		if (v != l->v1 && v != l->v2) // Exclude endpoints of linedefs
-		  { // Project the vertex back onto the parent linedef
-		    Long64 dx2 = (l->dx >> FRACBITS) * (l->dx >> FRACBITS);
-		    Long64 dy2 = (l->dy >> FRACBITS) * (l->dy >> FRACBITS);
-		    Long64 dxy = (l->dx >> FRACBITS) * (l->dy >> FRACBITS);
-		    Long64 s = dx2 + dy2;
-		    int x0 = v->x, y0 = v->y, x1 = l->v1->x, y1 = l->v1->y;
-		    v->x = (fixed_t)((dx2 * x0 + dy2 * x1 + dxy * (y0 - y1)) / s);
-		    v->y = (fixed_t)((dy2 * y0 + dx2 * y1 + dxy * (x0 - x1)) / s);
-		  }
-	      }  // Obfuscated C contest entry:   :)
-	  while ((v != segs[i].v2) && (v = segs[i].v2));
-	}
-    }
-  free(hit);
-}
 
 //
 // P_SetupLevel
@@ -967,12 +880,8 @@ void P_SetupLevel(int episode, int map, int playermask, skill_t skill)
   rejectmatrix = W_CacheLumpNum(lumpnum+ML_REJECT,PU_LEVEL);
   P_GroupLines();
 
-  P_RemoveSlimeTrails();    // killough 10/98: remove slime trails from wad
-
-  // Note: you don't need to clear player queue slots --
-  // a much simpler fix is in g_game.c -- killough 10/98
-
   bodyqueslot = 0;
+
   deathmatch_p = deathmatchstarts;
   P_LoadThings(lumpnum+ML_THINGS);
 
@@ -1013,6 +922,15 @@ void P_Init (void)
 //----------------------------------------------------------------------------
 //
 // $Log: p_setup.c,v $
+// Revision 1.21  1998/10/13  03:19:21  jim
+// Rand's segadjust chosen, Blockmap tweak
+//
+// Revision 1.18  1998/10/05  21:29:21  phares
+// Fixed firelines
+//
+// Revision 1.17  1998/08/11  19:32:07  phares
+// DM Weapon bug fix
+//
 // Revision 1.16  1998/05/07  00:56:49  killough
 // Ignore translucency lumps that are not exactly 64K long
 //

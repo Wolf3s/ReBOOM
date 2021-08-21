@@ -91,9 +91,6 @@ void I_Quit (void);
 void I_Error(const char *error, ...) __attribute__((format(printf,1,2)));
 
 extern int mousepresent;                // killough
-extern int leds_always_off;   // killough 10/98
-
-void I_ResetLEDs(void);       // killough 10/98
 
 void I_EndDoom(void);         // killough 2/22/98: endgame screen
 

@@ -367,10 +367,7 @@ void G_BuildTiccmd(ticcmd_t* cmd)
       // Allow user to switch to fist even if they have chainsaw.
       // Switch to fist or chainsaw based on preferences.
       // Switch to shotgun or SSG based on preferences.
-      //
-      // killough 10/98: make SG/SSG and Fist/Chainsaw
-      // weapon toggles optional
-      
+
       if (!demo_compatibility)
         {
           const player_t *player = &players[consoleplayer];
@@ -473,7 +470,7 @@ void G_BuildTiccmd(ticcmd_t* cmd)
     side = MAXPLMOVE;
   else if (side < -MAXPLMOVE)
     side = -MAXPLMOVE;
-  
+
   cmd->forwardmove += forward;
   cmd->sidemove += side;
 
@@ -484,8 +481,7 @@ void G_BuildTiccmd(ticcmd_t* cmd)
       cmd->buttons = BT_SPECIAL | BTS_PAUSE;
     }
 
-  // killough 10/6/98: suppress savegames in demos
-  if (sendsave && !demoplayback)
+  if (sendsave)
     {
       sendsave = false;
       cmd->buttons = BT_SPECIAL | BTS_SAVEGAME | (savegameslot<<BTS_SAVESHIFT);
@@ -530,12 +526,7 @@ static void G_DoLoadLevel(void)
         skytexture = R_TextureNumForName ("SKY1");
         break;
       case 2:
-#ifdef BETA
-	// killough 10/98: beta version had different sky orderings
-        skytexture = R_TextureNumForName (beta_emulation ? "SKY1" : "SKY2");
-#else
         skytexture = R_TextureNumForName ("SKY2");
-#endif
         break;
       case 3:
         skytexture = R_TextureNumForName ("SKY3");
@@ -546,9 +537,6 @@ static void G_DoLoadLevel(void)
       }//jff 3/27/98 end sky setting fix
 
   levelstarttic = gametic;        // for time calculation
-
-  if (!demo_compatibility && demo_version < 203)   // killough 9/29/98
-    basetic = gametic;
 
   if (wipegamestate == GS_LEVEL)
     wipegamestate = -1;             // force a wipe
@@ -584,7 +572,6 @@ static void G_DoLoadLevel(void)
   memset (mousebuttons, 0, sizeof(mousebuttons));
   memset (joybuttons, 0, sizeof(joybuttons));
 
-  //jff 4/26/98 wake up the status bar in case were coming out of a DM demo
   // killough 5/13/98: in case netdemo has consoleplayer other than green
   ST_Start();
   HU_Start();
@@ -635,46 +622,35 @@ boolean G_Responder(event_t* ev)
       return true;
     }
 
-  // killough 9/29/98: reformatted
-  if (gamestate == GS_LEVEL && (HU_Responder(ev) ||  // chat ate the event
-				ST_Responder(ev) ||  // status window ate it
-				AM_Responder(ev)))   // automap ate it
-    return true;
-
   // any other key pops up menu if in demos
-  //
-  // killough 8/2/98: enable automap in -timedemo demos
-  //
-  // killough 9/29/98: make any key pop up menu regardless of
-  // which kind of demo, and allow other events during playback
-
-  if (gameaction == ga_nothing && (demoplayback || gamestate == GS_DEMOSCREEN))
+  if (gameaction == ga_nothing && !singledemo &&
+      (demoplayback || gamestate == GS_DEMOSCREEN))
     {
-      // killough 9/29/98: allow user to pause demos during playback
-      if (ev->type == ev_keydown && ev->data1 == key_pause)
-	{
-	  if (paused ^= 2)
-	    S_PauseSound();
-	  else
-	    S_ResumeSound();
-	  return true;
-	}
-
-      // killough 10/98:
-      // Don't pop up menu, if paused in middle
-      // of demo playback, or if automap active.
-      // Don't suck up keys, which may be cheats
-
-      return gamestate == GS_DEMOSCREEN &&
-	!(paused & 2) && !automapactive &&
-	((ev->type == ev_keydown) ||
-	 (ev->type == ev_mouse && ev->data1) ||
-	 (ev->type == ev_joystick && ev->data1)) ?
-	M_StartControlPanel(), true : false;
+      if (ev->type == ev_keydown ||
+          (ev->type == ev_mouse && ev->data1) ||
+          (ev->type == ev_joystick && ev->data1) )
+        {
+          M_StartControlPanel ();
+          return true;
+        }
+      return false;
     }
 
-  if (gamestate == GS_FINALE && F_Responder(ev))
-    return true;  // finale ate the event
+  if (gamestate == GS_LEVEL)
+    {
+      if (HU_Responder (ev))
+        return true;  // chat ate the event
+      if (ST_Responder (ev))
+        return true;  // status window ate it
+      if (AM_Responder (ev))
+        return true;  // automap ate it
+    }
+
+  if (gamestate == GS_FINALE)
+    {
+      if (F_Responder (ev))
+        return true;  // finale ate the event
+    }
 
   switch (ev->type)
     {
@@ -1002,7 +978,7 @@ static void G_DoPlayDemo(void)
       consoleplayer = *demo_p++;
 
       // killough 11/98: save option pointer for below
-      if (demover >= 203)
+      if (demover == 203)
 	option_p = demo_p;
 
       demo_p = G_ReadOptions(demo_p);  // killough 3/1/98: Read game options
@@ -1078,7 +1054,6 @@ void G_ForcedLoadGame(void)
 
 // killough 3/16/98: add slot info
 // killough 5/15/98: add command-line
-
 void G_LoadGame(char *name, int slot, boolean command)
 {
   strcpy(savename, name);
@@ -1940,7 +1915,7 @@ void G_InitNew(skill_t skill, int episode, int map)
   //jff 4/16/98 force marks on automap cleared every new level start
   AM_clearMarks();
 
-  if (demo_version >= 203)
+  if (demo_version == 203)
     M_LoadOptions();     // killough 11/98: read OPTIONS lump from wad
 
   G_DoLoadLevel();
@@ -2068,11 +2043,11 @@ void G_BeginRecording(void)
 
   // signature
   *demo_p++ = 0x1d;
-  *demo_p++ = 'M';
   *demo_p++ = 'B';
-  *demo_p++ = 'F';
+  *demo_p++ = 'o';
+  *demo_p++ = 'o';
+  *demo_p++ = 'm';
   *demo_p++ = 0xe6;
-  *demo_p++ = '\0';
 
   // killough 2/22/98: save compatibility flag in new demos
   *demo_p++ = compatibility;       // killough 2/22/98
@@ -2163,9 +2138,6 @@ boolean G_CheckDemoStatus(void)
 //
 // killough 3/6/98: Made limit static to allow z_zone functions to call
 // this function, without calling realloc(), which seems to cause problems.
-// 
-// Gibbon - Sorry Lee, but this is like, the future and all..
-// So now we have to rename it to doom_printf from PRBoom instead..
 
 #define MAX_MESSAGE_SIZE 1024
 

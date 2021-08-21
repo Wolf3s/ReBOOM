@@ -48,6 +48,7 @@
 
 typedef int fixed_t;
 
+// Adam - Adding more efficient abs routine
 #ifdef BOOM_ASM
 __inline int boom_abs(int x)
 {

@@ -316,9 +316,8 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher)
       player->message = s_GOTMEGA; // Ty 03/22/98 - externalized
       break;
 
-      // bonus items
+        // bonus items
     case SPR_BON1:
-
       player->health++;               // can go over 100%
       if (player->health > (maxhealth * 2))
         player->health = (maxhealth * 2);
@@ -327,7 +326,6 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher)
       break;
 
     case SPR_BON2:
-
       player->armorpoints++;          // can go over 100%
       if (player->armorpoints > max_armor)
         player->armorpoints = max_armor;
@@ -436,7 +434,7 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher)
         return;
       player->message = s_GOTBERSERK; // Ty 03/22/98 - externalized
       if (player->readyweapon != wp_fist)
-	  player->pendingweapon = wp_fist;
+	player->pendingweapon = wp_fist;
       sound = sfx_getpow;
       break;
 
@@ -450,7 +448,6 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher)
     case SPR_SUIT:
       if (!P_GivePower (player, pw_ironfeet))
         return;
-
       player->message = s_GOTSUIT; // Ty 03/22/98 - externalized
       sound = sfx_getpow;
       break;
@@ -463,7 +460,6 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher)
       break;
 
     case SPR_PVIS:
-
       if (!P_GivePower (player, pw_infrared))
         return;
       player->message = s_GOTVISOR; // Ty 03/22/98 - externalized
@@ -746,6 +742,7 @@ void P_DamageMobj(mobj_t *target,mobj_t *inflictor, mobj_t *source, int damage)
   if (player)
     {
       int temp;
+
       // end of game hell hack
       if (target->subsector->sector->special == 11 && damage >= target->health)
         damage = target->health - 1;
@@ -812,7 +809,6 @@ void P_DamageMobj(mobj_t *target,mobj_t *inflictor, mobj_t *source, int damage)
 
       // killough 2/15/98: remember last enemy, to prevent
       // sleeping early; 2/21/98: Place priority on players
-
 
       if (!target->lastenemy || !target->lastenemy->player ||
           target->lastenemy->health <= 0)

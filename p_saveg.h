@@ -56,6 +56,9 @@ void CheckSaveGame(size_t);              // killough
 //----------------------------------------------------------------------------
 //
 // $Log: p_saveg.h,v $
+// Revision 1.6  1998/09/16  06:59:45  phares
+// Save soundtarget across savegames
+//
 // Revision 1.5  1998/05/03  23:10:40  killough
 // beautification
 //

@@ -29,7 +29,7 @@
 #ifndef __I_VIDEO__
 #define __I_VIDEO__
 
-#define BOOM_WINDOW_TEXT "ReBOOM"
+#define BOOM_WINDOW_TEXT "ReBOOM v2.03"
 
 #include "doomtype.h"
 
@@ -57,7 +57,6 @@ int I_ScanCode2DoomCode(int);   // killough
 void I_ResetScreen(void);   // killough 10/98
 
 extern int use_vsync;  // killough 2/8/98: controls whether vsync is called
-extern int disk_icon;  // killough 10/98
 
 #endif
 

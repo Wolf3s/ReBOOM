@@ -191,7 +191,7 @@ void P_MovePlayer (player_t* player)
 
   if (cmd->forwardmove | cmd->sidemove) // killough 10/98
     {
-      if (onground || mo->flags & MF_BOUNCES) // killough 8/9/98
+      if (onground || mo->flags) // killough 8/9/98
 	{
 	  int friction, movefactor = P_GetMoveFactor(mo, &friction);
 

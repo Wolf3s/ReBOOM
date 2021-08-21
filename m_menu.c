@@ -230,7 +230,6 @@ extern int key_map_mark;                                            //    ^
 extern int key_map_clear;                                           //    |
 extern int key_map_grid;                                            // phares
 extern int key_screenshot;    // killough 2/22/98
-extern int key_setup;         // killough 10/98
 
 // phares 3/30/98
 // externs added for setup menus
@@ -262,7 +261,6 @@ extern int hud_nosecrets; // status does not list secrets/items/kills
 extern int sts_traditional_keys;  // display keys the traditional way
 extern int hud_list_bgon; // solid window background for list of messages
 extern int hud_msg_lines; // number of message lines in window up to 16
-extern int hud_msg_scrollup; // killough 11/98: whether list scrolls upwards
 extern int mapcolor_back; // map background
 extern int mapcolor_grid; // grid lines color
 extern int mapcolor_wall; // normal 1s wall color
@@ -288,11 +286,7 @@ extern int hudcolor_titl; // color range of automap level title
 extern int hudcolor_xyco; // color range of new coords on automap
 extern int hudcolor_mesg; // color range of scrolling messages
 extern int hudcolor_chat; // color range of chat lines
-extern int hudcolor_list; // color of list of past messages
-
-extern int mapcolor_frnd;  // friends colors  // killough 8/8/98
-extern int default_monsters_remember;                     
-extern int monsters_remember;                            
+extern int hudcolor_list; // color of list of past messages                        
 
 extern char* chat_macros[];  // chat macros
 extern char *wad_files[], *deh_files[]; // killough 10/98
@@ -332,7 +326,6 @@ void M_ChangeSensitivity(int choice);
 void M_DrawMouse(void);
 
 void M_FinishReadThis(int choice);
-void M_FinishHelp(int choice);            // killough 10/98
 void M_LoadSelect(int choice);
 void M_SaveSelect(int choice);
 void M_ReadSaveStrings(void);
@@ -389,8 +382,6 @@ void M_DrawAutoMap(void);
 void M_DrawEnemy(void);
 void M_DrawMessages(void);
 void M_DrawChatStrings(void);
-void M_Trans(void);       // killough 10/98
-void M_ResetMenu(void);   // killough 10/98
 
 menu_t NewDef;                                              // phares 5/04/98
 
@@ -479,12 +470,6 @@ enum
   read2_end
 } read_e2;
 
-enum               // killough 10/98
-{
-  helpempty,
-  help_end
-} help_e;
-
 
 // The definitions of the Read This! screens
 
@@ -498,11 +483,6 @@ menuitem_t ReadMenu2[]=
   {1,"",M_FinishReadThis,0}
 };
 
-menuitem_t HelpMenu[]=    // killough 10/98
-{
-  {1,"",M_FinishHelp,0}
-};
-
 menu_t ReadDef1 =
 {
   read1_end,
@@ -510,7 +490,7 @@ menu_t ReadDef1 =
   ReadMenu1,
   M_DrawReadThis1,
   330,175,
-  //280,185,              // killough 2/21/98: fix help screens
+//280,185,              // killough 2/21/98: fix help screens
   0
 };
 
@@ -524,15 +504,6 @@ menu_t ReadDef2 =
   0
 };
 
-menu_t HelpDef =           // killough 10/98
-{
-  help_end,
-  &HelpDef,
-  HelpMenu,
-  M_DrawHelp,
-  330,175,
-  0
-};
 
 //
 // M_ReadThis
@@ -553,34 +524,59 @@ void M_FinishReadThis(int choice)
   M_SetupNextMenu(&MainDef);
 }
 
-void M_FinishHelp(int choice)        // killough 10/98
-{
-  M_SetupNextMenu(&MainDef);
-}
-
 //
 // Read This Menus
 // Had a "quick hack to fix romero bug"
 //
-// killough 10/98: updated with new screens
 
 void M_DrawReadThis1(void)
-{
+  {
   inhelpscreens = true;
-  V_DrawPatchDirect (0,0,0,W_CacheLumpName("HELP2",PU_CACHE));
-}
+  switch(gamemode)
+      {
+    case commercial:
+      M_DrawHelp();
+//    V_DrawPatchDirect (0,0,0,W_CacheLumpName("HELP",PU_CACHE));
+      break;
+    case shareware:
+    case registered:
+      V_DrawPatchDirect (0,0,0,W_CacheLumpName("HELP2",PU_CACHE));
+      break;
+    case retail:   // killough 2/21/98: Fix Ultimate Doom help screen:
+      V_DrawPatchDirect (0,0,0,W_CacheLumpName("CREDIT",PU_CACHE));
+      break;
+    default:
+      break;
+      }
+  return;
+  }
 
 //
 // Read This Menus - optional second page.
 //
-// killough 10/98: updated with new screens
 
 void M_DrawReadThis2(void)
-{
+  {
   inhelpscreens = true;
-  if (gamemode == shareware)
-    V_DrawPatchDirect (0,0,0,W_CacheLumpName("CREDIT",PU_CACHE));
-}
+  switch(gamemode)
+      {
+    case commercial:
+
+      // This hack keeps us from having to change menus.
+
+      V_DrawPatchDirect (0,0,0,W_CacheLumpName("CREDIT",PU_CACHE));
+      break;
+    case shareware:
+    case registered:
+    case retail:
+      M_DrawHelp();
+//    V_DrawPatchDirect (0,0,0,W_CacheLumpName("HELP2",PU_CACHE));
+      break;
+    default:
+      break;
+      }
+  return;
+  }
 
 /////////////////////////////
 //
@@ -643,6 +639,7 @@ void M_Episode(int choice)
 
   // Yet another hack...
   if (gamemode == registered && choice > 2)
+    printf("M_Episode: 4th episode requires UltimateDOOM\n");
     choice = 0;         // killough 8/8/98
    
   epi = choice;
@@ -997,8 +994,7 @@ void M_SaveSelect(int choice)
 //
 void M_SaveGame (int choice)
 {
-  // killough 10/6/98: allow savegames during single-player demo playback
-  if (!usergame && (!demoplayback || netgame))
+  if (!usergame)
     {
       M_StartMessage(s_SAVEDEAD,NULL,false); // Ty 03/27/98 - externalized
       return;
@@ -1120,11 +1116,9 @@ int quitsounds2[8] =
 
 void M_QuitResponse(int ch)
 {
-  extern int snd_card;      // killough 10/98
   if (ch != 'y')
     return;
-  if ((!netgame || demoplayback) // killough 12/98
-      && !nosfxparm && snd_card) // avoid delay if no sound card
+  if (!netgame)
     {
       if (gamemode == commercial)
 	S_StartSound(NULL,quitsounds2[(gametic>>2)&7]);
@@ -1359,7 +1353,7 @@ void M_QuickSaveResponse(int ch)
 
 void M_QuickSave(void)
 {
-  if (!usergame && (!demoplayback || netgame))  // killough 10/98
+  if (!usergame)
     {
       S_StartSound(NULL,sfx_oof);
       return;
@@ -1635,7 +1629,7 @@ menuitem_t Generic_Setup[] =
 menu_t  SetupDef =
 {
   set_setup_end, // number of Setup Menu items (Key Bindings, etc.)
-  &OptionsDef,   // menu to return to when BACKSPACE is hit on this menu
+  &MainDef,      // menu to return to when BACKSPACE is hit on this menu
   SetupMenu,     // definition of items to show on the Setup Screen
   M_DrawSetup,   // program that draws the Setup Screen
   59,37,         // x,y position of the skull (modified when the skull is
@@ -2327,8 +2321,7 @@ setup_menu_t keys_settings2[] =  // Key Binding screen strings
 
   {"HELP"        ,S_SKIP|S_KEEP ,m_scrn,0   ,0    ,{&key_help}},
   {"MENU"        ,S_SKIP|S_KEEP ,m_scrn,0   ,0    ,{&key_escape}},
-  // killough 10/98: hotkey for entering setup menu:
-  {"SETUP"       ,S_KEY       ,m_scrn,KB_X,KB_Y+ 1*8,{&key_setup}},
+
   {"PAUSE"       ,S_KEY       ,m_scrn,KB_X,KB_Y+ 2*8,{&key_pause}},
   {"AUTOMAP"     ,S_KEY       ,m_scrn,KB_X,KB_Y+ 3*8,{&key_map}},
   {"VOLUME"      ,S_KEY       ,m_scrn,KB_X,KB_Y+ 4*8,{&key_soundvolume}},
@@ -2363,7 +2356,7 @@ setup_menu_t keys_settings3[] =  // Key Binding screen strings
   {"CHAINGUN",S_KEY       ,m_scrn,KB_X,KB_Y+ 4*8,{&key_weapon4}},
   {"ROCKET"  ,S_KEY       ,m_scrn,KB_X,KB_Y+ 5*8,{&key_weapon5}},
   {"PLASMA"  ,S_KEY       ,m_scrn,KB_X,KB_Y+ 6*8,{&key_weapon6}},
-  {"BFG",     S_KEY       ,m_scrn,KB_X,KB_Y+ 7*8,{&key_weapon7}},
+  {"BFG 9000",S_KEY       ,m_scrn,KB_X,KB_Y+ 7*8,{&key_weapon7}},
   {"CHAINSAW",S_KEY       ,m_scrn,KB_X,KB_Y+ 8*8,{&key_weapon8}},
   {"SSG"     ,S_KEY       ,m_scrn,KB_X,KB_Y+ 9*8,{&key_weapon9}},
   {"BEST"    ,S_KEY       ,m_scrn,KB_X,KB_Y+10*8,{&key_weapontoggle}},
@@ -2423,7 +2416,6 @@ void M_KeyBindings(int choice)
   set_keybnd_active = true;
   setup_select = false;
   default_verify = false;
-  setup_gather = false;
   mult_screens_index = 0;
   current_setup_menu = keys_settings[0];
   set_menu_itemon = 0;
@@ -2530,7 +2522,6 @@ void M_Weapons(int choice)
   set_weapon_active = true;
   setup_select = false;
   default_verify = false;
-  setup_gather = false;
   mult_screens_index = 0;
   current_setup_menu = weap_settings[0];
   set_menu_itemon = 0;
@@ -2578,7 +2569,6 @@ setup_menu_t* stat_settings[] =
 setup_menu_t stat_settings1[] =  // Status Bar and HUD Settings screen       
 {
   {"STATUS BAR"        ,S_SKIP|S_TITLE,m_null,ST_X,ST_Y+ 1*8 },
-
   {"USE RED NUMBERS"   ,S_YESNO, m_null,ST_X,ST_Y+ 2*8, {"sts_always_red"}},
   {"GRAY %"            ,S_YESNO, m_null,ST_X,ST_Y+ 3*8, {"sts_pct_always_gray"}},
   {"SINGLE KEY DISPLAY",S_YESNO, m_null,ST_X,ST_Y+ 4*8, {"sts_traditional_keys"}},
@@ -2679,11 +2669,6 @@ setup_menu_t auto_settings1[] =  // 1st AutoMap Settings screen
   {"blue door"                          ,S_COLOR,m_null,AU_X,AU_Y+10*8, {"mapcolor_bdor"}},
   {"yellow door"                        ,S_COLOR,m_null,AU_X,AU_Y+11*8, {"mapcolor_ydor"}},
 
-  {"AUTOMAP LEVEL TITLE COLOR"      ,S_CRITEM,m_null,AU_X,AU_Y+13*8, {"hudcolor_titl"}},
-  {"AUTOMAP COORDINATES COLOR"      ,S_CRITEM,m_null,AU_X,AU_Y+14*8, {"hudcolor_xyco"}},
-
-  {"Show Secrets only after entering",S_YESNO,m_null,AU_X,AU_Y+15*8, {"map_secret_after"}},
-
   // Button for resetting to defaults
   {0,S_RESET,m_null,X_BUTTON,Y_BUTTON},
 
@@ -2709,7 +2694,12 @@ setup_menu_t auto_settings2[] =  // 2nd AutoMap Settings screen
   {"player 2 arrow"                 ,S_COLOR ,m_null,AU_X,AU_Y+ 9*8, {"mapcolor_ply2"}},
   {"player 3 arrow"                 ,S_COLOR ,m_null,AU_X,AU_Y+10*8, {"mapcolor_ply3"}},
   {"player 4 arrow"                 ,S_COLOR ,m_null,AU_X,AU_Y+11*8, {"mapcolor_ply4"}},
-  
+
+  {"AUTOMAP LEVEL TITLE COLOR"      ,S_CRITEM,m_null,AU_X,AU_Y+13*8, {"hudcolor_titl"}},
+  {"AUTOMAP COORDINATES COLOR"      ,S_CRITEM,m_null,AU_X,AU_Y+14*8, {"hudcolor_xyco"}},
+
+  {"Show Secrets only after entering",S_YESNO,m_null,AU_X,AU_Y+15*8, {"map_secret_after"}},
+
   {"<- PREV",S_SKIP|S_PREV,m_null,AU_PREV,AU_Y+20*8, {auto_settings1}},
 
   // Final entry
@@ -2733,7 +2723,6 @@ void M_Automap(int choice)
   setup_select = false;
   colorbox_active = false;
   default_verify = false;
-  setup_gather = false;
   set_menu_itemon = 0;
   mult_screens_index = 0;
   current_setup_menu = auto_settings[0];
@@ -2819,24 +2808,14 @@ setup_menu_t* enem_settings[] =
 };
 
 enum {
-  enem_infighting,
-
   enem_remember = 1,
-
-  enem_backing,
-  enem_monkeys,
-  enem_avoid_hazards,
-  enem_friction,
-  enem_help_friends,
-  enem_distfriend,
-
   enem_end
 };
 
 setup_menu_t enem_settings1[] =  // Enemy Settings screen       
 {
 
-  {"Remember Previous Enemy",S_YESNO,m_null,E_X,E_Y+ enem_remember*8, {"monsters_remember"}},
+  {"REMEMBER PREVIOUS TARGET",S_YESNO,m_null,E_X,E_Y+ enem_remember*8, {"monsters_remember"}},
 
   // Button for resetting to defaults
   {0,S_RESET,m_null,X_BUTTON,Y_BUTTON},
@@ -2861,7 +2840,6 @@ void M_Enemy(int choice)
   set_enemy_active = true;
   setup_select = false;
   default_verify = false;
-  setup_gather = false;
   mult_screens_index = 0;
   current_setup_menu = enem_settings[0];
   set_menu_itemon = 0;
@@ -2887,12 +2865,6 @@ void M_DrawEnemy(void)
 
   if (default_verify)
     M_DrawDefVerify();
-}
-
-void M_Trans(void) // To reset translucency after setting it in menu
-{
-  if (general_translucency)
-    R_InitTranMap(0);
 }
 
 /////////////////////////////
@@ -3037,7 +3009,6 @@ void M_ChatStrings(int choice)
   set_chat_active = true;
   setup_select = false;
   default_verify = false;
-  setup_gather = false;
   mult_screens_index = 0;
   current_setup_menu = chat_settings[0];
   set_menu_itemon = 0;
@@ -3467,7 +3438,6 @@ setup_menu_t helpstrings[] =  // HELP screen strings
   {"SCREEN"      ,S_SKIP|S_TITLE,m_null,KT_X1,KT_Y1},
   {"HELP"        ,S_SKIP|S_KEY,m_null,KT_X1,KT_Y1+ 1*8,{&key_help}},
   {"MENU"        ,S_SKIP|S_KEY,m_null,KT_X1,KT_Y1+ 2*8,{&key_escape}},
-  {"SETUP"       ,S_SKIP|S_KEY,m_null,KT_X1,KT_Y1+ 3*8,{&key_setup}},
   {"PAUSE"       ,S_SKIP|S_KEY,m_null,KT_X1,KT_Y1+ 4*8,{&key_pause}},
   {"AUTOMAP"     ,S_SKIP|S_KEY,m_null,KT_X1,KT_Y1+ 5*8,{&key_map}},
   {"SOUND VOLUME",S_SKIP|S_KEY,m_null,KT_X1,KT_Y1+ 6*8,{&key_soundvolume}},
@@ -3595,6 +3565,7 @@ void M_DrawHelp (void)
   inhelpscreens = true;                        // killough 10/98
   M_DrawBackground("FLOOR4_6", screens[0]);
   V_MarkRect (0,0,SCREENWIDTH,SCREENHEIGHT);
+
   M_DrawScreenItems(helpstrings);
 }
   
@@ -3843,12 +3814,19 @@ boolean M_Responder (event_t* ev)
 	{
 	  M_StartControlPanel ();
 
-	  currentMenu = &HelpDef;         // killough 10/98: new help screen
+      // killough 3/7/98:
+      //
+      // Here's where you're supposed to switch the
+      // order in which the help menus are entered:
 
-	  itemOn = 0;
-	  S_StartSound(NULL,sfx_swtchn);
-	  return true;
-	}
+      if ( gamemode != commercial )   // killough 3/7/98
+        currentMenu = &ReadDef2;
+      else
+        currentMenu = &ReadDef1;
+      itemOn = 0;
+      S_StartSound(NULL,sfx_swtchn);
+      return true;
+      }
 
       if (ch == key_savegame)     // Save Game
 	{                             
@@ -3963,15 +3941,6 @@ boolean M_Responder (event_t* ev)
 	    }
 	  return true;
 	}
-
-      // killough 10/98: allow key shortcut into Setup menu
-      if (ch == key_setup)
-	{
-	  M_StartControlPanel();
-	  S_StartSound(NULL,sfx_swtchn);
-	  M_SetupNextMenu(&SetupDef);
-	  return true;
-	}
     }                               
   
   // Pop-up Main menu?
@@ -4022,7 +3991,6 @@ boolean M_Responder (event_t* ev)
 	  if (ch == key_menu_escape) // Exit key = no change
 	    {
 	      M_SelectDone(ptr1);                           // phares 4/17/98
-	      setup_gather = false;   // finished gathering keys, if any
 	      return true;
 	    }
 
@@ -5076,8 +5044,6 @@ void M_Init(void)
     }
 
   M_ResetMenu();        // killough 10/98
-  M_InitHelpScreen();   // init the help screen       // phares 4/08/98
-  M_InitExtendedHelp(); // init extended help screens // phares 3/30/98
 }
 
 // killough 10/98: allow runtime changing of menu order
@@ -5104,6 +5070,9 @@ void M_ResetMenu(void)
 //----------------------------------------------------------------------------
 //
 // $Log: m_menu.c,v $
+// Revision 1.55  1998/09/07  20:06:56  jim
+// Added logical output routine
+//
 // Revision 1.54  1998/05/28  05:27:13  killough
 // Fix some load / save / end game handling r.w.t. demos
 //

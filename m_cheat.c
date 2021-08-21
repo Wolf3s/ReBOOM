@@ -76,12 +76,6 @@ static void cheat_ammo();
 static void cheat_ammox();
 static void cheat_smart();
 static void cheat_pitch();
-static void cheat_nuke();
-
-#ifdef BETA
-static void cheat_autoaim();      // killough 7/19/98
-static void cheat_tst();
-#endif
 
 //-----------------------------------------------------------------------------
 //
@@ -219,9 +213,8 @@ struct cheat_s cheat[] = {
   {"pitch",   NULL,                   always,
    cheat_pitch},         // killough 2/21/98: pitched sound toggle
 
-  // killough 2/21/98: reduce RSI injury by adding simpler alias sequences:
-  {"mbfran",     NULL,                always, 
-   cheat_tran    },   // killough 2/21/98: same as mbftran
+  {"boomtran",     NULL,                always, 
+   cheat_tran    },   // killough 2/21/98: same as boomtran
 
   {"fast",    NULL,                   not_net | not_demo,
    cheat_fast       },   // killough 3/6/98: -fast toggle
@@ -232,41 +225,10 @@ struct cheat_s cheat[] = {
   {"push",    NULL,                   not_net | not_demo, 
    cheat_pushers    },   // phares 3/10/98: toggle pushers
 
-  {"nuke",    NULL,                   not_net | not_demo,
-   cheat_nuke       },   // killough 12/98: disable nukage damage
-
-#ifdef BETA
-  {"aim",        NULL,                not_net | not_demo | beta_only,
-   cheat_autoaim},
-
-  {"eek",        NULL,                not_dm  | not_demo | beta_only,
-   cheat_ddt      },     // killough 2/07/98: moved from am_map.c
-
-  {"amo",        NULL,                not_net | not_demo | beta_only,
-   cheat_kfa },
-
-  {"tst",        NULL,                not_net | not_demo | beta_only,
-   cheat_tst    },
-
-  {"nc",         NULL,                not_net | not_demo | beta_only,
-   cheat_noclip },
-#endif
-
   {NULL}                 // end-of-list marker
 };
 
 //-----------------------------------------------------------------------------
-
-#ifdef BETA
-// killough 7/19/98: Autoaiming optional in beta emulation mode
-static void cheat_autoaim()
-{
-  extern int autoaim;
-  plyr->message = (autoaim=!autoaim) ?
-    "Projectile autoaiming on" : 
-    "Projectile autoaiming off";
-}
-#endif
 
 static void cheat_mus(buf)
 char buf[3];
@@ -331,14 +293,6 @@ static void cheat_god()
   else 
     plyr->message = s_STSTR_DQDOFF; // Ty 03/27/98 - externalized
 }
-
-#ifdef BETA
-static void cheat_tst()
-{ // killough 10/98: same as iddqd except for message
-  cheat_god();
-  plyr->message = plyr->cheats & CF_GODMODE ? "God Mode On" : "God Mode Off";
-}
-#endif
 
 static void cheat_fa()
 {
@@ -436,8 +390,8 @@ char buf[3];
       (gamemode == retail     && (epsd > 4 || map > 9  )) ||
       (gamemode == registered && (epsd > 3 || map > 9  )) ||
       (gamemode == shareware  && (epsd > 1 || map > 9  )) ||
-      (gamemode == commercial && (epsd > 1 || map > 32 )) )
-    return;
+      (gamemode == commercial && (epsd > 1 || map > 32 )) )  //jff no 33 and 34
+    return; 
 
   // So be it.
 
@@ -509,19 +463,17 @@ static void cheat_massacre()    // jff 2/01/98 kill all monsters
   int killcount=0;
   thinker_t *currentthinker=&thinkercap;
   extern void A_PainDie(mobj_t *);
-  // killough 7/20/98: kill friendly monsters only if no others to kill
-  int mask = MF_FRIEND;
-  do
-    while ((currentthinker=currentthinker->next)!=&thinkercap)
-      if (currentthinker->function == P_MobjThinker &&
-	  !(((mobj_t *) currentthinker)->flags & mask) && // killough 7/20/98
+
+  while ((currentthinker=currentthinker->next)!=&thinkercap)
+    if (currentthinker->function == P_MobjThinker &&
+	  !(((mobj_t *) currentthinker)->flags) &&
 	  (((mobj_t *) currentthinker)->flags & MF_COUNTKILL ||
 	   ((mobj_t *) currentthinker)->type == MT_SKULL))
 	{ // killough 3/6/98: kill even if PE is dead
 	  if (((mobj_t *) currentthinker)->health > 0)
 	    {
 	      killcount++;
-	      P_DamageMobj((mobj_t *) currentthinker, NULL, NULL, 10000);
+	      P_DamageMobj((mobj_t *)currentthinker, NULL, NULL, 10000);
 	    }
 	  if (((mobj_t *) currentthinker)->type == MT_PAIN)
 	    {
@@ -529,7 +481,6 @@ static void cheat_massacre()    // jff 2/01/98 kill all monsters
 	      P_SetMobjState((mobj_t *) currentthinker, S_PAIN_DIE6);
 	    }
 	}
-  while (!killcount && mask ? mask=0, 1 : 0);  // killough 7/20/98
   // killough 3/22/98: make more intelligent about plural
   // Ty 03/27/98 - string(s) *not* externalized
   doom_printf("%d Monster%s Killed", killcount, killcount==1 ? "" : "s");
@@ -653,13 +604,6 @@ static void cheat_pitch()
     "Pitch Effects Disabled";
 }
 
-static void cheat_nuke()
-{
-  extern int disable_nuke;
-  plyr->message = (disable_nuke = !disable_nuke) ? "Nukage Disabled" :
-    "Nukage Enabled";
-}
-
 //-----------------------------------------------------------------------------
 // 2/7/98: Cheat detection rewritten by Lee Killough, to avoid
 // scrambling and to use a more general table-driven approach.
@@ -722,9 +666,6 @@ boolean M_FindCheats(int key)
         !(cheat[i].when & not_coop && netgame && !deathmatch) &&
         !(cheat[i].when & not_demo && (demorecording || demoplayback)) &&
         !(cheat[i].when & not_menu && menuactive) &&
-#ifdef BETA
-        !(cheat[i].when & beta_only && !beta_emulation) &&
-#endif
         !(cheat[i].when & not_deh  && cheat[i].deh_modified))
       if (cheat[i].arg < 0)               // if additional args are required
         {

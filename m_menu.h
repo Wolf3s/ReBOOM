@@ -66,13 +66,9 @@ void M_ForcedLoadGame(const char *msg); // killough 5/15/98: forced loadgames
 
 extern int traditional_menu;  // display the menu traditional way
 
-void M_Trans(void);          // killough 11/98: reset translucency
-
 void M_ResetMenu(void);      // killough 11/98: reset main menu ordering
 
 void M_DrawBackground(char *patch, byte *screen);  // killough 11/98
-
-void M_DrawCredits(void);    // killough 11/98
 
 // killough 8/15/98: warn about changes not being committed until next game
 #define warn_about_changes(x) (warning_about_changes=(x), \

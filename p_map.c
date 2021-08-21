@@ -104,10 +104,6 @@ static boolean PIT_StompThing (mobj_t *thing)
   if (abs(thing->x - tmx) >= blockdist || abs(thing->y - tmy) >= blockdist)
     return true; // didn't hit it
 
-  // don't clip against self
-  if (thing == tmthing)
-    return true;
-
   // monsters don't stomp things except on boss level
   if (!telefrag)  // killough 8/9/98: make consistent across all levels
     return false;
@@ -374,7 +370,7 @@ static boolean PIT_CheckThing(mobj_t *thing) // killough 3/26/98: make static
   fixed_t blockdist;
   int damage;
 
-  // killough 11/98: add touchy things
+
   if (!(thing->flags & (MF_SOLID|MF_SPECIAL|MF_SHOOTABLE)))
     return true;
 
@@ -1219,8 +1215,6 @@ static boolean PTR_ShootTraverse(intercept_t *in)
 //
 // P_AimLineAttack
 //
-// killough 8/2/98: add mask parameter, which, if set to MF_FRIEND,
-// makes autoaiming skip past friends.
 
 fixed_t P_AimLineAttack(mobj_t *t1,angle_t angle,fixed_t distance)
 {

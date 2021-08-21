@@ -43,7 +43,7 @@ platlist_t *activeplats;       // killough 2/14/98: made global again
 // Action routine to move a plat up and down
 //
 // Passed a plat structure containing all pertinent information about the move
-// No return value
+// No return
 //
 // jff 02/08/98 all cases with labels beginning with gen added to support 
 // generalized line type behaviors.
