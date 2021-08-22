@@ -267,6 +267,9 @@ void P_XYMovement (mobj_t* mo)
 
     mo->momx = 0;
     mo->momy = 0;
+
+      if (player && player->mo == mo)
+	player->momx = player->momy = 0;
     }
   else
     {
