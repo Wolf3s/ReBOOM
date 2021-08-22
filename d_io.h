@@ -1,6 +1,10 @@
 
 //  Copyright (C) 2004 James Haley
 //
+//  BOOM, a modified and improved DOOM engine
+//  Copyright (C) 1999 by
+//  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
+//
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
 //  as published by the Free Software Foundation; either version 2
@@ -66,5 +70,3 @@
 #endif
 
 // EOF
-
-

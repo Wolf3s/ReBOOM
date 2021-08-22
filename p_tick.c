@@ -3,6 +3,7 @@
 //
 // $Id: p_tick.c,v 1.7 1998/05/15 00:37:56 killough Exp $
 //
+//  BOOM, a modified and improved DOOM engine
 //  Copyright (C) 1999 by
 //  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
 //
@@ -25,8 +26,6 @@
 //      Thinker, Ticker.
 //
 //-----------------------------------------------------------------------------
-
-//static const char rcsid[] = "$Id: p_tick.c,v 1.7 1998/05/15 00:37:56 killough Exp $";
 
 #include "doomstat.h"
 #include "p_user.h"
@@ -261,29 +260,3 @@ void P_Ticker (void)
   P_RespawnSpecials();
   leveltime++;                       // for par times
 }
-
-//----------------------------------------------------------------------------
-//
-// $Log: p_tick.c,v $
-// Revision 1.7  1998/05/15  00:37:56  killough
-// Remove unnecessary crash hack, fix demo sync
-//
-// Revision 1.6  1998/05/13  22:57:59  killough
-// Restore Doom bug compatibility for demos
-//
-// Revision 1.5  1998/05/03  22:49:01  killough
-// Get minimal includes at top
-//
-// Revision 1.4  1998/04/29  16:19:16  killough
-// Fix typo causing game to not pause correctly
-//
-// Revision 1.3  1998/04/27  01:59:58  killough
-// Fix crashes caused by thinkers being used after freed
-//
-// Revision 1.2  1998/01/26  19:24:32  phares
-// First rev with no ^Ms
-//
-// Revision 1.1.1.1  1998/01/19  14:03:01  rand
-// Lee's Jan 19 sources
-//
-//----------------------------------------------------------------------------

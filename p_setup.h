@@ -3,6 +3,7 @@
 //
 // $Id: p_setup.h,v 1.3 1998/05/03 23:03:31 killough Exp $
 //
+//  BOOM, a modified and improved DOOM engine
 //  Copyright (C) 1999 by
 //  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
 //
@@ -46,17 +47,3 @@ extern fixed_t  bmaporgy;        // origin of block map
 extern mobj_t   **blocklinks;    // for thing chains
 
 #endif
-
-//----------------------------------------------------------------------------
-//
-// $Log: p_setup.h,v $
-// Revision 1.3  1998/05/03  23:03:31  killough
-// beautification, add external declarations for blockmap
-//
-// Revision 1.2  1998/01/26  19:27:28  phares
-// First rev with no ^Ms
-//
-// Revision 1.1.1.1  1998/01/19  14:03:08  rand
-// Lee's Jan 19 sources
-//
-//----------------------------------------------------------------------------

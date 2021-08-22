@@ -3,6 +3,7 @@
 //
 // $Id: i_net.c,v 1.4 1998/05/16 09:41:03 jim Exp $
 //
+//  BOOM, a modified and improved DOOM engine
 //  Copyright (C) 1999 by
 //  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
 //
@@ -295,23 +296,3 @@ void I_NetCmd (void)
   else
       I_Error ("Bad net cmd: %i\n",doomcom->command);
 }
-
-
-
-//----------------------------------------------------------------------------
-//
-// $Log: i_net.c,v $
-// Revision 1.4  1998/05/16  09:41:03  jim
-// formatted net files, installed temp switch for testing Stan/Lee's version
-//
-// Revision 1.3  1998/05/03  23:27:19  killough
-// Fix #includes at the top, nothing else
-//
-// Revision 1.2  1998/01/26  19:23:26  phares
-// First rev with no ^Ms
-//
-// Revision 1.1.1.1  1998/01/19  14:03:07  rand
-// Lee's Jan 19 sources
-//
-//
-//----------------------------------------------------------------------------

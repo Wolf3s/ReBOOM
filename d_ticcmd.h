@@ -3,6 +3,7 @@
 //
 // $Id: d_ticcmd.h,v 1.2 1998/01/26 19:26:36 phares Exp $
 //
+//  BOOM, a modified and improved DOOM engine
 //  Copyright (C) 1999 by
 //  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
 //
@@ -46,15 +47,3 @@ typedef struct
 } ticcmd_t;
 
 #endif
-
-//----------------------------------------------------------------------------
-//
-// $Log: d_ticcmd.h,v $
-// Revision 1.2  1998/01/26  19:26:36  phares
-// First rev with no ^Ms
-//
-// Revision 1.1.1.1  1998/01/19  14:03:08  rand
-// Lee's Jan 19 sources
-//
-//
-//----------------------------------------------------------------------------

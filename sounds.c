@@ -3,6 +3,7 @@
 //
 // $Id: sounds.c,v 1.3 1998/05/03 22:44:25 killough Exp $
 //
+//  BOOM, a modified and improved DOOM engine
 //  Copyright (C) 1999 by
 //  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
 //
@@ -27,8 +28,6 @@
 //      Kept as a sample, DOOM2 sounds.
 //
 //-----------------------------------------------------------------------------
-
-//static const char rcsid[] = "$Id: sounds.c,v 1.3 1998/05/03 22:44:25 killough Exp $";
 
 // killough 5/3/98: reformatted
 
@@ -228,17 +227,3 @@ sfxinfo_t S_sfx[] = {
   { "skeatk", sg_none,   70, 0, -1, -1, 0 },
   { "radio",  sg_none,   60, 0, -1, -1, 0 },
 };
-
-//----------------------------------------------------------------------------
-//
-// $Log: sounds.c,v $
-// Revision 1.3  1998/05/03  22:44:25  killough
-// beautification
-//
-// Revision 1.2  1998/01/26  19:24:54  phares
-// First rev with no ^Ms
-//
-// Revision 1.1.1.1  1998/01/19  14:03:03  rand
-// Lee's Jan 19 sources
-//
-//----------------------------------------------------------------------------

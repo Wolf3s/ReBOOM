@@ -3,6 +3,7 @@
 //
 // $Id: p_sight.c,v 1.7 1998/05/07 00:55:55 killough Exp $
 //
+//  BOOM, a modified and improved DOOM engine
 //  Copyright (C) 1999 by
 //  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
 //
@@ -25,8 +26,6 @@
 //      LineOfSight/Visibility checks, uses REJECT Lookup Table.
 //
 //-----------------------------------------------------------------------------
-
-//static const char rcsid[] = "$Id: p_sight.c,v 1.7 1998/05/07 00:55:55 killough Exp $";
 
 #include "r_main.h"
 #include "p_maputl.h"
@@ -272,29 +271,3 @@ boolean P_CheckSight(mobj_t *t1, mobj_t *t2)
   // the head node is the last node output
   return P_CrossBSPNode(numnodes-1, &los);
 }
-
-//----------------------------------------------------------------------------
-//
-// $Log: p_sight.c,v $
-// Revision 1.7  1998/05/07  00:55:55  killough
-// Make monsters directly tangent to water surface blind
-//
-// Revision 1.6  1998/05/03  22:34:33  killough
-// beautification, header cleanup
-//
-// Revision 1.5  1998/05/01  14:52:09  killough
-// beautification
-//
-// Revision 1.4  1998/04/24  11:43:08  killough
-// minor optimization
-//
-// Revision 1.3  1998/04/20  11:13:41  killough
-// Fix v1.9 demo sync probs, make monsters blind across water
-//
-// Revision 1.2  1998/01/26  19:24:24  phares
-// First rev with no ^Ms
-//
-// Revision 1.1.1.1  1998/01/19  14:03:00  rand
-// Lee's Jan 19 sources
-//
-//----------------------------------------------------------------------------

@@ -3,6 +3,7 @@
 //
 // $Id: am_map.h,v 1.7 1998/05/10 12:05:18 jim Exp $
 //
+//  BOOM, a modified and improved DOOM engine
 //  Copyright (C) 1999 by
 //  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
 //
@@ -102,30 +103,3 @@ extern int mapcolor_plyr[4];  // colors for player arrows in multiplayer
 extern int map_secret_after;  // secrets do not appear til after bagged
 
 #endif
-
-//----------------------------------------------------------------------------
-//
-// $Log: am_map.h,v $
-// Revision 1.7  1998/05/10  12:05:18  jim
-// formatted/documented am_map
-//
-// Revision 1.6  1998/05/03  22:12:58  killough
-// Add most external automap variable declarations
-//
-// Revision 1.5  1998/04/16  16:17:05  jim
-// Fixed disappearing marks after new level
-//
-// Revision 1.4  1998/03/02  11:23:10  killough
-// Add automap_grid decl for savegames
-//
-// Revision 1.3  1998/02/23  04:10:11  killough
-// Remove limit on automap marks, save them in savegame
-//
-// Revision 1.2  1998/01/26  19:26:19  phares
-// First rev with no ^Ms
-//
-// Revision 1.1.1.1  1998/01/19  14:02:50  rand
-// Lee's Jan 19 sources
-//
-//
-//----------------------------------------------------------------------------

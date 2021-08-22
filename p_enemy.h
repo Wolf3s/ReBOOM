@@ -42,13 +42,3 @@ extern struct brain_s {         // killough 3/26/98: global state of boss brain
 } brain;
 
 #endif // __P_ENEMY__
-
-//----------------------------------------------------------------------------
-//
-// $Log: p_enemy.h,v $
-// Revision 1.1  1998/05/03  22:29:32  killough
-// External declarations formerly in p_local.h
-//
-//
-//----------------------------------------------------------------------------
-

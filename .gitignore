@@ -99,3 +99,7 @@ x64/Debug/ReBOOM.exe.recipe
 *.WAD
 *.ipch
 .DS_Store
+*.log
+*.recipe
+x64/Release/ReBOOM.vcxproj.FileListAbsolute.txt
+*.obj

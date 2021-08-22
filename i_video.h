@@ -3,6 +3,7 @@
 //
 // $Id: i_video.h,v 1.4 1998/05/03 22:40:58 killough Exp $
 //
+//  BOOM, a modified and improved DOOM engine
 //  Copyright (C) 1999 by
 //  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
 //
@@ -59,20 +60,3 @@ void I_ResetScreen(void);   // killough 10/98
 extern int use_vsync;  // killough 2/8/98: controls whether vsync is called
 
 #endif
-
-//----------------------------------------------------------------------------
-//
-// $Log: i_video.h,v $
-// Revision 1.4  1998/05/03  22:40:58  killough
-// beautification
-//
-// Revision 1.3  1998/02/09  03:01:51  killough
-// Add vsync for flicker-free blits
-//
-// Revision 1.2  1998/01/26  19:27:01  phares
-// First rev with no ^Ms
-//
-// Revision 1.1.1.1  1998/01/19  14:03:08  rand
-// Lee's Jan 19 sources
-//
-//----------------------------------------------------------------------------

@@ -3,6 +3,7 @@
 //
 // $Id: doomtype.h,v 1.3 1998/05/03 23:24:33 killough Exp $
 //
+//  BOOM, a modified and improved DOOM engine
 //  Copyright (C) 1999 by
 //  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
 //
@@ -72,17 +73,3 @@ typedef __LONG64_TYPE__ Long64;
 #define arrlen(array) (sizeof(array) / sizeof(*array))
 
 #endif
-
-//----------------------------------------------------------------------------
-//
-// $Log: doomtype.h,v $
-// Revision 1.3  1998/05/03  23:24:33  killough
-// beautification
-//
-// Revision 1.2  1998/01/26  19:26:43  phares
-// First rev with no ^Ms
-//
-// Revision 1.1.1.1  1998/01/19  14:02:51  rand
-// Lee's Jan 19 sources
-//
-//----------------------------------------------------------------------------

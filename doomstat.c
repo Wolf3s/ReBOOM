@@ -1,6 +1,7 @@
 // Emacs style mode select   -*- C++ -*-
 //-----------------------------------------------------------------------------
 //
+//  BOOM, a modified and improved DOOM engine
 //  Copyright (C) 1999 by
 //  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
 //
@@ -66,23 +67,3 @@ int default_player_bobbing;  // killough 3/1/98: make local to each game
 
 int monsters_remember;          // killough 3/1/98
 int default_monsters_remember;
-
-//----------------------------------------------------------------------------
-//
-// $Log: doomstat.c,v $
-// Revision 1.5  1998/05/12  12:46:12  phares
-// Removed OVER_UNDER code
-//
-// Revision 1.4  1998/05/05  16:29:01  phares
-// Removed RECOIL and OPT_BOBBING defines
-//
-// Revision 1.3  1998/05/03  23:12:13  killough
-// beautify, move most global switch variables here
-//
-// Revision 1.2  1998/01/26  19:23:10  phares
-// First rev with no ^Ms
-//
-// Revision 1.1.1.1  1998/01/19  14:03:06  rand
-// Lee's Jan 19 sources
-//
-//----------------------------------------------------------------------------

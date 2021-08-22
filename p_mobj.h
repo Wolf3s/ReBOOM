@@ -3,6 +3,7 @@
 //
 // $Id: p_mobj.h,v 1.10 1998/05/03 23:45:09 killough Exp $
 //
+//  BOOM, a modified and improved DOOM engine
 //  Copyright (C) 1999 by
 //  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
 //
@@ -355,39 +356,3 @@ void    P_SpawnPlayerMissile(mobj_t *source, mobjtype_t type);
 void    P_SpawnMapThing (mapthing_t*  mthing);
 
 #endif
-
-//----------------------------------------------------------------------------
-//
-// $Log: p_mobj.h,v $
-// Revision 1.10  1998/05/03  23:45:09  killough
-// beautification, fix headers, declarations
-//
-// Revision 1.9  1998/03/23  15:24:33  phares
-// Changed pushers to linedef control
-//
-// Revision 1.8  1998/03/20  00:30:09  phares
-// Changed friction to linedef control
-//
-// Revision 1.7  1998/03/09  18:27:13  phares
-// Fixed bug in neighboring variable friction sectors
-//
-// Revision 1.6  1998/02/24  08:46:24  phares
-// Pushers, recoil, new friction, and over/under work
-//
-// Revision 1.5  1998/02/20  21:56:34  phares
-// Preliminarey sprite translucency
-//
-// Revision 1.4  1998/02/20  09:51:14  killough
-// Add savegame warning
-//
-// Revision 1.3  1998/02/17  05:48:16  killough
-// Add new last enemy field to prevent monster sleepiness
-//
-// Revision 1.2  1998/01/26  19:27:23  phares
-// First rev with no ^Ms
-//
-// Revision 1.1.1.1  1998/01/19  14:03:08  rand
-// Lee's Jan 19 sources
-//
-//
-//----------------------------------------------------------------------------

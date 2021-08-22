@@ -3,6 +3,7 @@
 //
 // $Id: sounds.h,v 1.3 1998/05/03 22:44:30 killough Exp $
 //
+//  BOOM, a modified and improved DOOM engine
 //  Copyright (C) 1999 by
 //  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
 //
@@ -305,17 +306,3 @@ typedef enum {
 } sfxenum_t;
 
 #endif
-
-//----------------------------------------------------------------------------
-//
-// $Log: sounds.h,v $
-// Revision 1.3  1998/05/03  22:44:30  killough
-// beautification
-//
-// Revision 1.2  1998/01/26  19:27:53  phares
-// First rev with no ^Ms
-//
-// Revision 1.1.1.1  1998/01/19  14:03:03  rand
-// Lee's Jan 19 sources
-//
-//----------------------------------------------------------------------------

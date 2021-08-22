@@ -3,6 +3,7 @@
 //
 // $Id: d_englsh.h,v 1.5 1998/05/04 21:33:57 thldrmn Exp $
 //
+//  BOOM, a modified and improved DOOM engine
 //  Copyright (C) 1999 by
 //  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
 //
@@ -717,24 +718,3 @@
 
 
 #endif
-
-//----------------------------------------------------------------------------
-//
-// $Log: d_englsh.h,v $
-// Revision 1.5  1998/05/04  21:33:57  thldrmn
-// commenting and reformatting
-//
-// Revision 1.4  1998/02/08  15:26:40  jim
-// New messages for keyed doors
-//
-// Revision 1.3  1998/01/28  12:23:02  phares
-// TNTCOMP cheat code added
-//
-// Revision 1.2  1998/01/26  19:26:21  phares
-// First rev with no ^Ms
-//
-// Revision 1.1.1.1  1998/01/19  14:02:51  rand
-// Lee's Jan 19 sources
-//
-//
-//----------------------------------------------------------------------------

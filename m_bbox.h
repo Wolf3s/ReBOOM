@@ -3,6 +3,7 @@
 //
 // $Id: m_bbox.h,v 1.3 1998/05/05 19:55:58 phares Exp $
 //
+//  BOOM, a modified and improved DOOM engine
 //  Copyright (C) 1999 by
 //  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
 //
@@ -50,18 +51,3 @@ void M_ClearBox(fixed_t* box);
 void M_AddToBox(fixed_t* box,fixed_t x,fixed_t y);
 
 #endif
-
-//----------------------------------------------------------------------------
-//
-// $Log: m_bbox.h,v $
-// Revision 1.3  1998/05/05  19:55:58  phares
-// Formatting and Doc changes
-//
-// Revision 1.2  1998/01/26  19:27:06  phares
-// First rev with no ^Ms
-//
-// Revision 1.1.1.1  1998/01/19  14:02:58  rand
-// Lee's Jan 19 sources
-//
-//
-//----------------------------------------------------------------------------

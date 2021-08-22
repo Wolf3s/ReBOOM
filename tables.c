@@ -3,6 +3,7 @@
 //
 // $Id: tables.c,v 1.3 1998/05/03 22:58:48 killough Exp $
 //
+//  BOOM, a modified and improved DOOM engine
 //  Copyright (C) 1999 by
 //  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
 //
@@ -39,8 +40,6 @@
 //        maps tan(angle) to angle fast. Gotta search.
 //
 //-----------------------------------------------------------------------------
-
-//static const char rcsid[] = "$Id: tables.c,v 1.3 1998/05/03 22:58:48 killough Exp $";
 
 #include "tables.h"
 
@@ -2115,17 +2114,3 @@ const angle_t tantoangle[2049] = {
   535533216,535700704,535868128,536035456,536202720,536369888,536536992,536704000,
   536870912
 };
-
-//----------------------------------------------------------------------------
-//
-// $Log: tables.c,v $
-// Revision 1.3  1998/05/03  22:58:48  killough
-// beautification
-//
-// Revision 1.2  1998/01/26  19:25:03  phares
-// First rev with no ^Ms
-//
-// Revision 1.1.1.1  1998/01/19  14:03:04  rand
-// Lee's Jan 19 sources
-//
-//----------------------------------------------------------------------------

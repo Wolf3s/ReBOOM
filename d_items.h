@@ -3,6 +3,7 @@
 //
 // $Id: d_items.h,v 1.3 1998/05/04 21:34:12 thldrmn Exp $
 //
+//  BOOM, a modified and improved DOOM engine
 //  Copyright (C) 1999 by
 //  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
 //
@@ -20,7 +21,6 @@
 //  along with this program; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
 //  02111-1307, USA.
-//
 // DESCRIPTION:
 //  Items: key cards, artifacts, weapon, ammunition.
 //
@@ -45,18 +45,3 @@ typedef struct
 extern  weaponinfo_t    weaponinfo[NUMWEAPONS];
 
 #endif
-
-//----------------------------------------------------------------------------
-//
-// $Log: d_items.h,v $
-// Revision 1.3  1998/05/04  21:34:12  thldrmn
-// commenting and reformatting
-//
-// Revision 1.2  1998/01/26  19:26:26  phares
-// First rev with no ^Ms
-//
-// Revision 1.1.1.1  1998/01/19  14:03:07  rand
-// Lee's Jan 19 sources
-//
-//
-//----------------------------------------------------------------------------

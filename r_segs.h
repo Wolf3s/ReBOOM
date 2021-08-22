@@ -3,6 +3,7 @@
 //
 // $Id: r_segs.h,v 1.5 1998/05/03 23:02:40 killough Exp $
 //
+//  BOOM, a modified and improved DOOM engine
 //  Copyright (C) 1999 by
 //  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
 //
@@ -33,23 +34,3 @@ void R_RenderMaskedSegRange(drawseg_t *ds, int x1, int x2);
 void R_StoreWallRange(int start, int stop);
 
 #endif
-
-//----------------------------------------------------------------------------
-//
-// $Log: r_segs.h,v $
-// Revision 1.5  1998/05/03  23:02:40  killough
-// beautification, add R_StoreWallRange() decl
-//
-// Revision 1.4  1998/04/27  02:01:28  killough
-// Program beautification
-//
-// Revision 1.3  1998/03/02  11:53:29  killough
-// add scrolling walls
-//
-// Revision 1.2  1998/01/26  19:27:44  phares
-// First rev with no ^Ms
-//
-// Revision 1.1.1.1  1998/01/19  14:03:09  rand
-// Lee's Jan 19 sources
-//
-//----------------------------------------------------------------------------

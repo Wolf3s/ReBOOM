@@ -3,6 +3,7 @@
 //
 // $Id: r_draw.c,v 1.16 1998/05/03 22:41:46 killough Exp $
 //
+//  BOOM, a modified and improved DOOM engine
 //  Copyright (C) 1999 by
 //  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
 //
@@ -27,8 +28,6 @@
 //       e.g. inline assembly, different algorithms.
 //
 //-----------------------------------------------------------------------------
-
-//static const char rcsid[] = "$Id: r_draw.c,v 1.16 1998/05/03 22:41:46 killough Exp $";
 
 #include "doomstat.h"
 #include "w_wad.h"
@@ -781,57 +780,3 @@ void R_DrawViewBorder(void)
  
   V_MarkRect (0,0,SCREENWIDTH, SCREENHEIGHT-SBARHEIGHT); 
 } 
-
-//----------------------------------------------------------------------------
-//
-// $Log: r_draw.c,v $
-// Revision 1.16  1998/05/03  22:41:46  killough
-// beautification
-//
-// Revision 1.15  1998/04/19  01:16:48  killough
-// Tidy up last fix's code
-//
-// Revision 1.14  1998/04/17  15:26:55  killough
-// fix showstopper
-//
-// Revision 1.13  1998/04/12  01:57:51  killough
-// Add main_tranmap
-//
-// Revision 1.12  1998/03/23  03:36:28  killough
-// Use new 'fullcolormap' for fuzzy columns
-//
-// Revision 1.11  1998/02/23  04:54:59  killough
-// #ifdef out translucency code since its in asm
-//
-// Revision 1.10  1998/02/20  21:57:04  phares
-// Preliminarey sprite translucency
-//
-// Revision 1.9  1998/02/17  06:23:40  killough
-// #ifdef out code duplicated in asm for djgpp targets
-//
-// Revision 1.8  1998/02/09  03:18:02  killough
-// Change MAXWIDTH, MAXHEIGHT defintions
-//
-// Revision 1.7  1998/02/02  13:17:55  killough
-// performance tuning
-//
-// Revision 1.6  1998/01/27  16:33:59  phares
-// more testing
-//
-// Revision 1.5  1998/01/27  16:32:24  phares
-// testing
-//
-// Revision 1.4  1998/01/27  15:56:58  phares
-// Comment about invisibility
-//
-// Revision 1.3  1998/01/26  19:24:40  phares
-// First rev with no ^Ms
-//
-// Revision 1.2  1998/01/26  05:05:55  killough
-// Use unrolled version of R_DrawSpan
-//
-// Revision 1.1.1.1  1998/01/19  14:03:02  rand
-// Lee's Jan 19 sources
-//
-//
-//----------------------------------------------------------------------------

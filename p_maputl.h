@@ -3,6 +3,7 @@
 //
 // $Id: p_maputl.h,v 1.1 1998/05/03 22:19:26 killough Exp $
 //
+//  BOOM, a modified and improved DOOM engine
 //  Copyright (C) 1999 by
 //  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
 //
@@ -82,12 +83,3 @@ extern fixed_t lowfloor;
 extern divline_t trace;
 
 #endif  // __P_MAPUTL__
-
-//----------------------------------------------------------------------------
-//
-// $Log: p_maputl.h,v $
-// Revision 1.1  1998/05/03  22:19:26  killough
-// External declarations formerly in p_local.h
-//
-//
-//----------------------------------------------------------------------------

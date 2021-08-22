@@ -70,15 +70,3 @@ extern mobj_t *linetarget;     // who got hit (or NULL)
 extern msecnode_t *sector_list;                             // phares 3/16/98
 extern fixed_t tmbbox[4];         // phares 3/20/98
 #endif // __P_MAP__
-
-//----------------------------------------------------------------------------
-//
-// $Log: p_map.h,v $
-// Revision 1.2  1998/05/07  00:53:07  killough
-// Add more external declarations
-//
-// Revision 1.1  1998/05/03  22:19:23  killough
-// External declarations formerly in p_local.h
-//
-//
-//----------------------------------------------------------------------------

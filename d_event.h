@@ -3,6 +3,7 @@
 //
 // $Id: d_event.h,v 1.4 1998/05/05 19:55:53 phares Exp $
 //
+//  BOOM, a modified and improved DOOM engine
 //  Copyright (C) 1999 by
 //  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
 //
@@ -122,21 +123,3 @@ extern int       eventtail;
 extern gameaction_t gameaction;
 
 #endif
-
-//----------------------------------------------------------------------------
-//
-// $Log: d_event.h,v $
-// Revision 1.4  1998/05/05  19:55:53  phares
-// Formatting and Doc changes
-//
-// Revision 1.3  1998/02/15  02:48:04  phares
-// User-defined keys
-//
-// Revision 1.2  1998/01/26  19:26:23  phares
-// First rev with no ^Ms
-//
-// Revision 1.1.1.1  1998/01/19  14:02:52  rand
-// Lee's Jan 19 sources
-//
-//
-//----------------------------------------------------------------------------

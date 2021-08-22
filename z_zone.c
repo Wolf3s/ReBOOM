@@ -3,6 +3,7 @@
 //
 // $Id: z_zone.c,v 1.13 1998/05/12 06:11:55 killough Exp $
 //
+//  BOOM, a modified and improved DOOM engine
 //  Copyright (C) 1999 by
 //  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
 //
@@ -570,4 +571,3 @@ char *(Z_Strdup)(const char *s, int tag, void **user
 {
   return strcpy((Z_Malloc)(strlen(s)+1, tag, user DA(file, line)), s);
 }
-
