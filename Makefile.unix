@@ -1,7 +1,7 @@
 SRC = $(wildcard *.c)
 OBJ = $(SRC:.c=.o)
 DEP = $(OBJ:.o=.d)
-CFLAGS = -g -Wall -DUNIX -DUNIX_NOT_MAC -DINSTRUMENTED -DRANGECHECK
+CFLAGS = -Wall -DUNIX -DUNIX_NOT_MAC -DINSTRUMENTED -DRANGECHECK
 LDFLAGS = -lSDL2 -lSDL2_mixer -lSDL2_net -lm
 
 reboom: $(OBJ)
