@@ -3,7 +3,7 @@ ReBOOM is a continuation of the BOOM source port, version 2.02.
 
 # what is it
 ReBOOM is a source port, directly ported from BOOM 2.02 with additions from the Pooch source port (64bit compatibility, SDL2).  ReBOOM aims to tastefully continue the development of BOOM in the
-style of Team TNT and bring it into modern times.
+style of TeamTNT and bring it into modern times.
 
 # building
 Use the appropriate makefile or project file(s) for your system (only 64bit is supported):
