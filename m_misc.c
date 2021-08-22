@@ -98,6 +98,13 @@ default_t defaults[] = {
     "1 to show help strings about each variable in config file"
   },
 
+    {
+    "orig_doom_compatibility",
+    (config_t *) &default_compatibility, NULL,
+    {0}, {1,5}, number, ss_none, wad_no,
+    "1 to make the game as close to original DOOM as practical"
+  },
+
   { // jff 3/24/98 allow default skill setting
     "default_skill",
     (config_t *) &defaultskill, NULL,
@@ -178,7 +185,7 @@ default_t defaults[] = {
   { // phares
     "weapon_recoil",
     (config_t *) &default_weapon_recoil, (config_t *) &weapon_recoil,
-    {0}, {0,1}, number, ss_weap, wad_yes,
+    {1}, {0,1}, number, ss_weap, wad_yes,
     "1 to enable recoil from weapon fire"
   },
 
@@ -199,28 +206,28 @@ default_t defaults[] = {
   { // no color changes on status bar
     "sts_always_red",
     (config_t *) &sts_always_red, NULL,
-    {1}, {0,1}, number, ss_stat, wad_yes,
+    {0}, {0,1}, number, ss_stat, wad_yes,
     "1 to disable use of color on status bar"
   },
 
   {
     "sts_pct_always_gray",
     (config_t *) &sts_pct_always_gray, NULL,
-    {0}, {0,1}, number, ss_stat, wad_yes,
+    {1}, {0,1}, number, ss_stat, wad_yes,
     "1 to make percent signs on status bar always gray"
   },
 
   { // killough 2/28/98
     "sts_traditional_keys",
     (config_t *) &sts_traditional_keys, NULL,
-    {1}, {0,1}, number, ss_stat, wad_yes,
+    {0}, {0,1}, number, ss_stat, wad_yes,
     "1 to disable doubled card and skull key display on status bar"
   },
 
   { // killough 4/17/98
     "traditional_menu",
     (config_t *) &traditional_menu, NULL,
-    {1}, {0,1}, number, ss_none, wad_yes,
+    {0}, {0,1}, number, ss_none, wad_yes,
     "1 to use Doom's main menu ordering"
   },
 
@@ -283,7 +290,7 @@ default_t defaults[] = {
   { //jff 3/6/98 fix erroneous upper limit in range
     "usegamma",
     (config_t *) &usegamma, NULL,
-    {0}, {0,4}, number, ss_none, wad_no,
+    {2}, {0,4}, number, ss_none, wad_no,
     "screen brightness (gamma correction)"
   },
 
