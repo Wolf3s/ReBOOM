@@ -76,6 +76,7 @@ static void cheat_ammo();
 static void cheat_ammox();
 static void cheat_smart();
 static void cheat_pitch();
+static void legend();
 
 //-----------------------------------------------------------------------------
 //
@@ -224,6 +225,9 @@ struct cheat_s cheat[] = {
 
   {"push",    NULL,                   not_net | not_demo, 
    cheat_pushers    },   // phares 3/10/98: toggle pushers
+
+  {"legend",      NULL,          not_net | not_demo,
+   legend      },
 
   {NULL}                 // end-of-list marker
 };
@@ -603,6 +607,12 @@ static void cheat_pitch()
   extern int pitched_sounds;  // Ty 03/27/98 - *not* externalized
   plyr->message=(pitched_sounds = !pitched_sounds) ? "Pitch Effects Enabled" :
     "Pitch Effects Disabled";
+}
+
+// Adam - you're a legend!
+static void legend()
+{
+      plyr->message = "ReBOOM is dedicated to Ty Halderman";
 }
 
 //-----------------------------------------------------------------------------
