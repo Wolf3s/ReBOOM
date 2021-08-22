@@ -1128,6 +1128,19 @@ static void D_ProcessDehInWad(int i)
 #define D_ProcessDehInWads() D_ProcessDehInWad(lumpinfo[W_LumpNameHash \
                                                        ("dehacked") % (unsigned) numlumps].index);
 
+// 
+// Called at exit to display the ENDOOM screen (ENDTEXT in Heretic)
+//
+
+void D_Endoom(void)
+{
+    byte *endoom;
+
+    endoom = W_CacheLumpName("ENDBOOM", PU_STATIC);
+
+    I_EndDoom(endoom);
+}
+
 //
 // D_DoomMain
 //

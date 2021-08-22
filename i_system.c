@@ -47,6 +47,11 @@
 #include "w_wad.h"
 #include "v_video.h"
 #include "m_argv.h"
+#include "i_video.h" //Adam - For BOOM_WINDOW_TEXT
+#include "txt_main.h"
+
+#define ENDOOM_W 80
+#define ENDOOM_H 25
 
 ticcmd_t *I_BaseTiccmd(void)
 {
@@ -272,21 +277,11 @@ void I_Quit (void)
    if (*errmsg)
       puts(errmsg);   // killough 8/8/98
    else
-      I_EndDoom();
-   
+      //I_EndDoom(endoom);
+
    if (demorecording)
       G_CheckDemoStatus();
    M_SaveDefaults();
-
-#if defined(_MSC_VER)
-   // Under Visual C++, the console window likes to rudely slam
-   // shut -- this can stop it
-   if(*errmsg || waitAtExit)
-   {
-      puts("Press any key to continue");
-      getch();
-   }
-#endif
 }
 
 //
@@ -310,11 +305,57 @@ void I_Error(const char *error, ...) // killough 3/20/98: add const
    }
 }
 
-// Adam - Adding back ENDBOOM lump (removed for now, causes segfault)
+// Adam - Adding back ENDBOOM lump
+// Adam - Created by using the SDL2 textscreen code from Chocolate Doom (Thanks Fraggle!)
 
-// killough 8/1/98: change back to ENDOOM
-void I_EndDoom(void)
+// 
+// Displays the text mode ending screen after the game quits
+//
+
+void I_EndDoom(byte *endoom)
 {
+    unsigned char *screendata;
+    int y;
+    int indent;
+
+    I_Quit();
+
+    // Set up text mode screen
+
+    TXT_Init();
+
+    TXT_SetWindowTitle(BOOM_WINDOW_TEXT);
+
+    // Write the data to the screen memory
+
+    screendata = TXT_GetScreenData();
+
+    indent = (ENDOOM_W - TXT_SCREEN_W) / 2;
+
+    for (y=0; y<TXT_SCREEN_H; ++y)
+    {
+        memcpy(screendata + (y * TXT_SCREEN_W * 2),
+               endoom + (y * ENDOOM_W + indent) * 2,
+               TXT_SCREEN_W * 2);
+    }
+
+    // Wait for a keypress
+
+    while (true)
+    {
+        TXT_UpdateScreen();
+
+        if (TXT_GetChar() > 0)
+        {
+            break;
+        }
+
+        TXT_Sleep(0);
+    }
+
+    // Shut down text mode screen
+
+    TXT_Shutdown();
 }
 
 //----------------------------------------------------------------------------

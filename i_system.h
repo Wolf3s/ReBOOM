@@ -92,7 +92,7 @@ void I_Error(const char *error, ...) __attribute__((format(printf,1,2)));
 
 extern int mousepresent;                // killough
 
-void I_EndDoom(void);         // killough 2/22/98: endgame screen
+void I_EndDoom(byte *data);
 
 // killough 3/21/98: keyboard queue
 
