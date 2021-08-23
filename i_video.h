@@ -57,6 +57,7 @@ int I_ScanCode2DoomCode(int);   // killough
 
 void I_ResetScreen(void);   // killough 10/98
 
+extern int uncapped_framerate;
 extern int use_vsync;  // killough 2/8/98: controls whether vsync is called
 
 #endif

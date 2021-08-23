@@ -40,6 +40,8 @@
 #include <stdlib.h> // abs()
 #include "i_system.h"
 
+#define FIXED2DOUBLE(x) (x/(double)FRACUNIT)
+
 //
 // Fixed point, 32bit as 16.16.
 //

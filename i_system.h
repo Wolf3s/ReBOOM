@@ -43,6 +43,7 @@ void I_Init(void);
 // returns current time in tics.
 
 extern int (*I_GetTime)();           // killough
+int I_GetTimeMS();
 int I_GetTime_RealTime();     // killough
 int I_GetTime_Adaptive(void); // killough 4/10/98
 extern int GetTime_Scale;

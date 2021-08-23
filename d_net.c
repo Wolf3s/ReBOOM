@@ -711,6 +711,9 @@ void TryRunTics (void)
              "=======real: %i  avail: %i  game: %i\n",
              realtics, availabletics,counts);
 
+    if (uncapped_framerate && counts == 0 && leveltime)
+    return;
+
   if (!demoplayback)
   {   
     // ideally nettics[0] should be 1 - 3 tics above lowtic

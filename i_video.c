@@ -517,7 +517,7 @@ void I_UpdateNoBlit (void)
 
 
 int use_vsync;     // killough 2/8/98: controls whether vsync is called
-
+int uncapped_framerate;
 static int in_graphics_mode;
 static int linear;
 static int scroll_offset;
@@ -557,6 +557,13 @@ void I_FinishUpdate(void)
    SDL_RenderClear(renderer);
    SDL_RenderCopy(renderer, texture, NULL, NULL);
    SDL_RenderPresent(renderer);
+
+   fixed_t fractionaltic;
+
+   if (uncapped_framerate)
+   {
+     fractionaltic = I_GetTimeMS() * TICRATE % 1000 * FRACUNIT / 1000;
+   }
 }
 
 //
