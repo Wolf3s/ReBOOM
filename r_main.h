@@ -83,11 +83,6 @@ extern lighttable_t *fixedcolormap;
 
 #define NUMCOLORMAPS 32
 
-fixed_t fractionaltic; // Adam - from Woof, used for interpolation
-
-// [AM] Interpolate between two angles.
-angle_t R_InterpolateAngle(angle_t oangle, angle_t nangle, fixed_t scale);
-
 //
 // Function pointer to switch refresh/drawing functions.
 //

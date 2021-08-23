@@ -166,11 +166,7 @@ typedef struct player_s
   pspdef_t            psprites[NUMPSPRITES];
 
   // True if secret level has been done.
-  boolean             didsecret;     
-
-  // [AM] Previous position of viewz before think.
-  //      Used to interpolate between camera positions.
-  angle_t   oldviewz; 
+  boolean             didsecret;      
 
 } player_t;
 

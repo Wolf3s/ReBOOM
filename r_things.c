@@ -28,7 +28,6 @@
 //-----------------------------------------------------------------------------
 
 #include "doomstat.h"
-#include "i_video.h"
 #include "w_wad.h"
 #include "r_main.h"
 #include "r_bsp.h"
@@ -422,26 +421,6 @@ void R_ProjectSprite (mobj_t* thing)
   vissprite_t *vis;
   fixed_t   iscale;
   int heightsec;      // killough 3/27/98
-
-  fixed_t interpx, interpy, interpz, interpangle;
-
-  if (uncapped_framerate &&
-      // Don't interpolate if the mobj did something
-      // that would necessitate turning it off for a tic.
-      thing->interp == true &&
-      // Don't interpolate during a paused state.
-      leveltime)
-  {
-      interpx = thing->oldx + FixedMul(thing->x - thing->oldx, fractionaltic);
-      interpy = thing->oldy + FixedMul(thing->y - thing->oldy, fractionaltic);
-      interpz = thing->oldz + FixedMul(thing->z - thing->oldz, fractionaltic);
-      interpangle = R_InterpolateAngle(thing->oldangle, thing->angle, fractionaltic);
-  } else {
-      interpx = thing->x;
-      interpy = thing->y;
-      interpz = thing->z;
-      interpangle = thing->angle;
-  }
 
   // transform the origin point
   fixed_t tr_x = thing->x - viewx;

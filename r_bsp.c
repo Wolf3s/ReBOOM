@@ -30,7 +30,6 @@
 #include "doomstat.h"
 #include "m_bbox.h"
 #include "i_system.h"
-#include "i_video.h"
 #include "r_main.h"
 #include "r_segs.h"
 #include "r_plane.h"
@@ -358,30 +357,6 @@ sector_t *R_FakeFlat(sector_t *sec, sector_t *tempsec,
       sec = tempsec;               // Use other sector
     }
   return sec;
-}
-
-// [AM] Interpolate the passed sector, if prudent.
-static void R_MaybeInterpolateSector(sector_t* sector)
-{
-    if (uncapped_framerate &&
-        // Only if we moved the sector last tic.
-        sector->oldgametic == gametic - 1)
-    {
-        // Interpolate between current and last floor/ceiling position.
-        if (sector->floorheight != sector->oldfloorheight)
-            sector->interpfloorheight = sector->oldfloorheight + FixedMul(sector->floorheight - sector->oldfloorheight, fractionaltic);
-        else
-            sector->interpfloorheight = sector->floorheight;
-        if (sector->ceilingheight != sector->oldceilingheight)
-            sector->interpceilingheight = sector->oldceilingheight + FixedMul(sector->ceilingheight - sector->oldceilingheight, fractionaltic);
-        else
-            sector->interpceilingheight = sector->ceilingheight;
-    }
-    else
-    {
-        sector->interpfloorheight = sector->floorheight;
-        sector->interpceilingheight = sector->ceilingheight;
-    }
 }
 
 //

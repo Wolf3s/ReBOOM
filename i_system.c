@@ -92,15 +92,6 @@ int I_GetTime_Scaled(void)
    return (int)((Long64) I_GetTime_RealTime() * I_GetTime_Scale >> 24);
 }
 
-int I_GetTimeMS(void)
-{
-    Uint32 ticks;
-
-    ticks = SDL_GetTicks();
-
-    return ticks - basetime;
-}
-
 static int  I_GetTime_FastDemo(void)
 {
   static int fasttic;

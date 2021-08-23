@@ -112,13 +112,6 @@ default_t defaults[] = {
     "selects default skill 1=TYTD 2=NTR 3=HMP 4=UV 5=NM"
   },
 
-  {
-    "uncapped_framerate",
-    (config_t *) &uncapped_framerate, NULL,
-    {1}, {0, 1}, number, ss_none, wad_no,
-    "1 to remove the frame rate limiter"
-  },
-
   { // jff 1/18/98 allow Allegro drivers to be set,  -1 = autodetect
     "sound_card",
     (config_t *) &default_snd_card, NULL,
@@ -140,9 +133,16 @@ default_t defaults[] = {
     "1 enables voice detection prior to calling install sound"
   },
 
+  { // killough 8/15/98: page flipping option
+    "page_flip",
+    (config_t*)&page_flip, NULL,
+    {1}, {0,1}, number, ss_none, wad_no,
+    "1 to enable page flipping to avoid display tearing"
+  },
+
   {
     "use_vsync",
-    (config_t *) &use_vsync, NULL,
+    (config_t*)&use_vsync, NULL,
     {1}, {0,1}, number, ss_none, wad_no,
     "1 to enable wait for vsync to avoid display tearing"
   },

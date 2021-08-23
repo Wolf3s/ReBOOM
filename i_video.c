@@ -517,7 +517,8 @@ void I_UpdateNoBlit (void)
 
 
 int use_vsync;     // killough 2/8/98: controls whether vsync is called
-int uncapped_framerate;
+int page_flip;     // killough 8/15/98: enables page flipping
+static int in_page_flip;
 static int in_graphics_mode;
 static int linear;
 static int scroll_offset;
@@ -557,13 +558,6 @@ void I_FinishUpdate(void)
    SDL_RenderClear(renderer);
    SDL_RenderCopy(renderer, texture, NULL, NULL);
    SDL_RenderPresent(renderer);
-
-   fixed_t fractionaltic;
-
-   if (uncapped_framerate)
-   {
-     fractionaltic = I_GetTimeMS() * TICRATE % 1000 * FRACUNIT / 1000;
-   }
 }
 
 //
@@ -701,22 +695,48 @@ static void I_InitGraphicsMode(void)
               video_display, SDL_GetError());
    }
 
-      flags |= SDL_RENDERER_SOFTWARE;
-      flags &= ~SDL_RENDERER_PRESENTVSYNC;
-      use_vsync = false;
+   if (page_flip && use_vsync && !timingdemo && mode.refresh_rate > 0)
+   {
+       flags |= SDL_RENDERER_PRESENTVSYNC;
+   }
+
+   // [FG] page_flip = !force_software_renderer
+   if (!page_flip)
+   {
+       flags |= SDL_RENDERER_SOFTWARE;
+       flags &= ~SDL_RENDERER_PRESENTVSYNC;
+       use_vsync = false;
+   }
+
+   // [FG] create renderer
 
    if (renderer != NULL)
    {
-      SDL_DestroyRenderer(renderer);
-      texture = NULL;
+       SDL_DestroyRenderer(renderer);
+       texture = NULL;
    }
 
    renderer = SDL_CreateRenderer(screen, -1, flags);
 
+   // [FG] try again without hardware acceleration
+   if (renderer == NULL && page_flip)
+   {
+       flags |= SDL_RENDERER_SOFTWARE;
+       flags &= ~SDL_RENDERER_PRESENTVSYNC;
+
+       renderer = SDL_CreateRenderer(screen, -1, flags);
+
+       if (renderer != NULL)
+       {
+           // remove any special flags
+           use_vsync = page_flip = false;
+       }
+   }
+
    if (renderer == NULL)
    {
-      I_Error("Error creating renderer for screen window: %s",
-              SDL_GetError());
+       I_Error("Error creating renderer for screen window: %s",
+           SDL_GetError());
    }
 
    SDL_RenderSetLogicalSize(renderer, v_w, actualheight);
@@ -786,7 +806,7 @@ static void I_InitGraphicsMode(void)
    UpdateGrab();
 
    in_graphics_mode = 1;
-   
+   in_page_flip = true;
    setsizeneeded = true;
      
    I_SetPalette(W_CacheLumpName("PLAYPAL",PU_CACHE));
@@ -835,6 +855,8 @@ void I_InitGraphics(void)
   //
 
   atexit(I_ShutdownGraphics);
+
+  in_page_flip = page_flip;
 
   I_InitGraphicsMode();    // killough 10/98
 }
