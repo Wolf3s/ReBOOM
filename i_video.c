@@ -47,14 +47,15 @@
 #include "wi_stuff.h"
 #include "i_video.h"
 
-SDL_Surface *sdlscreen;
+static SDL_Surface *sdlscreen;
 
 // [FG] rendering window, renderer, intermediate ARGB frame buffer and texture
 
-SDL_Window *screen;
-SDL_Renderer *renderer;
-SDL_Surface *argbbuffer;
-SDL_Texture *texture;
+static SDL_Window* screen;
+static SDL_Renderer* renderer;
+static SDL_Surface* argbbuffer;
+static SDL_Texture* texture;
+static SDL_Rect blit_rect = { 0 };
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -515,9 +516,9 @@ void I_UpdateNoBlit (void)
 {
 }
 
-
-int use_vsync;     // killough 2/8/98: controls whether vsync is called
-int page_flip;     // killough 8/15/98: enables page flipping
+// Adam - Making vsync and page flipping permanent, no reason to have them off
+int use_vsync = 1;     // killough 2/8/98: controls whether vsync is called
+int page_flip = 1;     // killough 8/15/98: enables page flipping
 static int in_page_flip;
 static int in_graphics_mode;
 static int linear;
@@ -545,13 +546,21 @@ void I_FinishUpdate(void)
       lasttic = i;
       if (tics > 20)
          tics = 20;
-         for (i=0 ; i<tics*2 ; i+=2)
-            s[(SCREENHEIGHT-1)*SCREENWIDTH + i] = 0xff;
-         for ( ; i<20*2 ; i+=2)
-            s[(SCREENHEIGHT-1)*SCREENWIDTH + i] = 0x0;
+      for (i = 0; i < tics * 2; i += 2)
+          s[(SCREENHEIGHT - 1) * SCREENWIDTH * 4 + i] =
+          s[(SCREENHEIGHT - 1) * SCREENWIDTH * 4 + i + 1] =
+          s[(SCREENHEIGHT - 1) * SCREENWIDTH * 4 + i + SCREENWIDTH * 2] =
+          s[(SCREENHEIGHT - 1) * SCREENWIDTH * 4 + i + SCREENWIDTH * 2 + 1] =
+          0xff;
+      for (; i < 20 * 2; i += 2)
+          s[(SCREENHEIGHT - 1) * SCREENWIDTH * 4 + i] =
+          s[(SCREENHEIGHT - 1) * SCREENWIDTH * 4 + i + 1] =
+          s[(SCREENHEIGHT - 1) * SCREENWIDTH * 4 + i + SCREENWIDTH * 2] =
+          s[(SCREENHEIGHT - 1) * SCREENWIDTH * 4 + i + SCREENWIDTH * 2 + 1] =
+          0x0;
    }
 
-   SDL_BlitSurface(sdlscreen, NULL, argbbuffer, NULL);
+   SDL_LowerBlit(sdlscreen, &blit_rect, argbbuffer, &blit_rect);
 
    SDL_UpdateTexture(texture, NULL, argbbuffer->pixels, argbbuffer->pitch);
 
@@ -566,7 +575,7 @@ void I_FinishUpdate(void)
 
 void I_ReadScreen(byte *scr)
 {
-   int size = SCREENWIDTH*SCREENHEIGHT;
+    int size = 1 ? SCREENWIDTH * SCREENHEIGHT * 4 : SCREENWIDTH * SCREENHEIGHT;
 
    // haleyjd
    memcpy(scr, *screens, size);
@@ -634,6 +643,12 @@ static void I_InitGraphicsMode(void)
       firsttime = false;
    }
 
+    v_w = SCREENWIDTH*2;
+    v_h = SCREENHEIGHT*2;
+
+    blit_rect.w = v_w;
+    blit_rect.h = v_h;
+
    // haleyjd 10/09/05: from Chocolate DOOM
    // mouse grabbing   
    if(M_CheckParm("-grabmouse"))
@@ -651,6 +666,17 @@ static void I_InitGraphicsMode(void)
       fullscreen = true; // 5/11/09: forgotten O_O
       flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
    }
+
+   if (M_CheckParm("-1"))
+       scalefactor = 1;
+   else if (M_CheckParm("-2"))
+       scalefactor = 2;
+   else if (M_CheckParm("-3"))
+       scalefactor = 3;
+   else if (M_CheckParm("-4"))
+       scalefactor = 4;
+   else if (M_CheckParm("-5"))
+       scalefactor = 5;
 
    if(M_CheckParm("-aspect"))
       useaspect = true;

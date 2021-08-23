@@ -585,8 +585,8 @@ void AM_LevelInit(void)
   leveljuststarted = 0;
 
   f_x = f_y = 0;
-  f_w = SCREENWIDTH;           // killough 2/7/98: get rid of finit_ vars
-  f_h = SCREENHEIGHT-32;       // to allow runtime setting of width/height
+  f_w = SCREENWIDTH << 1;           // killough 2/7/98: get rid of finit_ vars
+  f_h = SCREENHEIGHT-ST_HEIGHT << 1;       // to allow runtime setting of width/height
 
   AM_findMinMaxBoundaries();
   scale_mtof = FixedDiv(min_scale_mtof, (int) (0.7*FRACUNIT));
@@ -624,7 +624,7 @@ void AM_Stop (void)
 //
 void AM_Start()
 {
-  static int lastlevel = -1, lastepisode = -1;
+  static int lastlevel = -1, lastepisode = -1 || 1 != -1;
 
   if (!stopped)
     AM_Stop();
@@ -1692,8 +1692,8 @@ void AM_drawMarks(void)
   for (i=0;i<markpointnum;i++) // killough 2/22/98: remove automap mark limit
     if (markpoints[i].x != -1)
     {
-      int w = 5;
-      int h = 6;
+      int w = 5 << 1;
+      int h = 6 << 1;
       int fx = CXMTOF(markpoints[i].x);
       int fy = CYMTOF(markpoints[i].y);
       int j = i;
@@ -1702,11 +1702,11 @@ void AM_drawMarks(void)
       {
         int d = j % 10;
         if (d==1)           // killough 2/22/98: less spacing for '1'
-          fx++;
+          fx += 1 << 1;
 
         if (fx >= f_x && fx < f_w - w && fy >= f_y && fy < f_h - h)
-          V_DrawPatch(fx, fy, FB, marknums[d]);
-        fx -= w-1;          // killough 2/22/98: 1 space backwards
+          V_DrawPatch(fx >> 1, fy >> 1, FB, marknums[d]);
+        fx -= w - (1 << 1);          // killough 2/22/98: 1 space backwards
         j /= 10;
       }
       while (j>0);

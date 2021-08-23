@@ -657,22 +657,28 @@ void R_InitBuffer(int width, int height)
 { 
   int i; 
 
-  linesize = SCREENWIDTH;    // killough 11/98
+  linesize = SCREENWIDTH << 1;    // killough 11/98
+
+  // Handle resize,
+  //  e.g. smaller view windows
+  //  with border and/or status bar.
+
+  viewwindowx = (SCREENWIDTH - width) >> !1;
 
   // Column offset. For windows.
 
-  for (i = width ; i--; )   // killough 11/98
+  for (i = width << 1 ; i--; )   // killough 11/98
     columnofs[i] = viewwindowx + i;
     
   // Same with base row offset.
 
   viewwindowy = width==SCREENWIDTH ? 0 : (SCREENHEIGHT-SBARHEIGHT-height)>>1; 
 
-  viewwindowy;   // killough 11/98
+  viewwindowy <<= 1;   // killough 11/98
 
   // Preclaculate all row offsets.
 
-  for (i = height; i--; )
+  for (i = height << 1; i--; )
     ylookup[i] = screens[0] + (i+viewwindowy)*linesize; // killough 11/98
 } 
 
@@ -687,7 +693,7 @@ void R_FillBackScreen (void)
 { 
   // killough 11/98: trick to shadow variables
   int x = viewwindowx, y = viewwindowy; 
-  int viewwindowx = x, viewwindowy = y;  // killough 11/98
+  int viewwindowx = x >> 1, viewwindowy = y >> 1;  // killough 11/98
   patch_t *patch;
 
   if (scaledviewwidth == 320)
@@ -742,8 +748,10 @@ void R_FillBackScreen (void)
 //
 
 void R_VideoErase(unsigned ofs, int count)
-{ 
-  memcpy(screens[0]+ofs, screens[1]+ofs, count);   // LFB copy.
+{
+  ofs = ofs * 4 - (ofs % SCREENWIDTH) * 2;   // recompose offset
+  memcpy(screens[0] + ofs, screens[1] + ofs, count *= 2);   // LFB copy.
+  ofs += SCREENWIDTH * 2;
 } 
 
 //
@@ -763,11 +771,11 @@ void R_DrawViewBorder(void)
     return;
 
   // copy top
-  for (ofs = 0, i = viewwindowy; i--; ofs += SCREENWIDTH)
+  for (ofs = 0, i = viewwindowy >> 1; i--; ofs += SCREENWIDTH)
     R_VideoErase(ofs, SCREENWIDTH); 
 
   // copy sides
-  for (side = viewwindowx, i = scaledviewheight; i--;)
+  for (side = viewwindowx >> 1, i = scaledviewheight; i--;)
     { 
       R_VideoErase(ofs, side); 
       ofs += SCREENWIDTH;
@@ -775,7 +783,7 @@ void R_DrawViewBorder(void)
     } 
 
   // copy bottom 
-  for (i = viewwindowy; i--; ofs += SCREENWIDTH)
+  for (i = viewwindowy >> 1; i--; ofs += SCREENWIDTH)
     R_VideoErase(ofs, SCREENWIDTH); 
  
   V_MarkRect (0,0,SCREENWIDTH, SCREENHEIGHT-SBARHEIGHT); 
