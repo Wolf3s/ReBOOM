@@ -283,15 +283,18 @@ void R_DrawTLColumn (void)
 //
 
 #define FUZZTABLE 50 
+// proff 08/17/98: Changed for high-res
+//#define FUZZOFF (SCREENWIDTH)
+#define FUZZOFF 1
 
 static const int fuzzoffset[FUZZTABLE] = {
-  1,0,1,0,1,1,0,
-  1,1,0,1,1,1,0,
-  1,1,1,0,0,0,0,
-  1,0,0,1,1,1,1,0,
-  1,0,1,1,0,0,1,
-  1,0,0,0,0,1,1,
-  1,1,0,1,1,0,1 
+  FUZZOFF,-FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,
+  FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,
+  FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,-FUZZOFF,-FUZZOFF,-FUZZOFF,
+  FUZZOFF,-FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,
+  FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,-FUZZOFF,FUZZOFF,
+  FUZZOFF,-FUZZOFF,-FUZZOFF,-FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,
+  FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF 
 }; 
 
 static int fuzzpos = 0; 
@@ -363,15 +366,17 @@ void R_DrawFuzzColumn(void)
      //  left or right of the current one.
      // Add index from colormap to index.
      // killough 3/20/98: use fullcolormap instead of colormaps
+
+                //sf : hires
      *dest = fullcolormap[6*256+
-                          dest[fuzzoffset[fuzzpos] ?   SCREENWIDTH 
-                                                   : -(SCREENWIDTH)]];
+                          dest[fuzzoffset[fuzzpos] ?   SCREENWIDTH<<1 
+                                                   : -(SCREENWIDTH<<1)]];
      
      // Clamp table lookup index.
      if (++fuzzpos == FUZZTABLE) 
         fuzzpos = 0;
         
-     dest += SCREENWIDTH;
+     dest += SCREENWIDTH<<1;
 
      frac += fracstep; 
   } 
