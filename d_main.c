@@ -954,7 +954,7 @@ void IdentifyVersion (void)
 // Find a Response File
 //
 
-#define MAXARGVS 100
+#define MAXARGVS 1000
 
 void FindResponseFile (void)
 {
