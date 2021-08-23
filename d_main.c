@@ -1076,6 +1076,13 @@ static void D_ProcessDehCommandLine(void)
 
 static void D_ProcessDehPreincludes(void)
 {
+  // Automatic pistol start when advancing from one level to the next. At the
+  // beginning of each level, the player's health is reset to 100, their
+  // armor to 0 and their inventory is reduced to the following: pistol,
+  // fists and 50 bullets.
+
+  pistolstart = M_CheckParm("-pistolstart");
+  
   if (!M_CheckParm ("-noload"))
     {
       int i;
