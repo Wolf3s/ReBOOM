@@ -33,8 +33,12 @@
 //-----------------------------------------------------------------------------
 
 #include <fcntl.h>
+#ifdef _MSC_VER // proff
+#include <io.h>
+#else
+#include <unistd.h>
+#endif
 #include "d_io.h" // haleyjd
-
 #include "doomdef.h"
 #include "doomstat.h"
 #include "dstrings.h"
@@ -121,6 +125,7 @@ boolean menuactive;    // The menus are up
 #define LINEHEIGHT  16
 
 char savegamestrings[10][SAVESTRINGSIZE];
+
 
 //
 // MENU TYPEDEFS
@@ -285,10 +290,9 @@ extern int hudcolor_titl; // color range of automap level title
 extern int hudcolor_xyco; // color range of new coords on automap
 extern int hudcolor_mesg; // color range of scrolling messages
 extern int hudcolor_chat; // color range of chat lines
-extern int hudcolor_list; // color of list of past messages                        
+extern int hudcolor_list; // color of list of past messages
 
 extern char* chat_macros[];  // chat macros
-extern char *wad_files[], *deh_files[]; // killough 10/98
 extern const char* shiftxform;
 extern int map_secret_after; //secrets do not appear til after bagged
 extern default_t defaults[];
@@ -638,7 +642,6 @@ void M_Episode(int choice)
 
   // Yet another hack...
   if (gamemode == registered && choice > 2)
-    printf("M_Episode: 4th episode requires UltimateDOOM\n");
     choice = 0;         // killough 8/8/98
    
   epi = choice;
@@ -993,7 +996,8 @@ void M_SaveSelect(int choice)
 //
 void M_SaveGame (int choice)
 {
-  if (!usergame)
+  // killough 10/6/98: allow savegames during single-player demo playback
+  if (!usergame && (!demoplayback || netgame))
     {
       M_StartMessage(s_SAVEDEAD,NULL,false); // Ty 03/27/98 - externalized
       return;
@@ -1077,7 +1081,7 @@ void M_DrawOptions(void)
      10,mouseSensitivity);   killough */
   
   M_DrawThermo(OptionsDef.x,OptionsDef.y+LINEHEIGHT*(scrnsize+1),
-	       9,screenSize);
+    9,screenSize);
 }
 
 void M_Options(int choice)
@@ -1117,7 +1121,8 @@ void M_QuitResponse(int ch)
 {
   if (ch != 'y')
     return;
-  if (!netgame)
+  if ((!netgame || demoplayback) // killough 12/98
+      && !nosfxparm) // avoid delay if no sound card
     {
       if (gamemode == commercial)
 	S_StartSound(NULL,quitsounds2[(gametic>>2)&7]);
@@ -1352,7 +1357,7 @@ void M_QuickSaveResponse(int ch)
 
 void M_QuickSave(void)
 {
-  if (!usergame)
+  if (!usergame && (!demoplayback || netgame))  // killough 10/98
     {
       S_StartSound(NULL,sfx_oof);
       return;
@@ -1728,12 +1733,17 @@ void M_DrawBackground(char* patchname, byte *back_dest)
   src = back_src = 
     W_CacheLumpNum(firstflat+R_FlatNumForName(patchname),PU_CACHE);
 
-    for (y = 0 ; y < SCREENHEIGHT ; src = ((++y & 63)<<6) + back_src)
-      for (x = 0 ; x < SCREENWIDTH/64 ; x++)
-	{
-	  memcpy (back_dest,back_src+((y & 63)<<6),64);
-	  back_dest += 64;
-	}
+      for (y = 0 ; y < SCREENHEIGHT ; src = ((++y & 63)<<6) + back_src,
+	     back_dest += SCREENWIDTH*2)
+	for (x = 0 ; x < SCREENWIDTH/64 ; x++)
+	  {
+	    int i = 63;
+	    do
+	      back_dest[i*2] = back_dest[i*2+SCREENWIDTH*2] =
+		back_dest[i*2+1] = back_dest[i*2+SCREENWIDTH*2+1] = src[i];
+	    while (--i>=0);
+	    back_dest += 128;
+	  }
 }
 
 /////////////////////////////
@@ -2415,6 +2425,7 @@ void M_KeyBindings(int choice)
   set_keybnd_active = true;
   setup_select = false;
   default_verify = false;
+  setup_gather = false;
   mult_screens_index = 0;
   current_setup_menu = keys_settings[0];
   set_menu_itemon = 0;
@@ -2521,6 +2532,7 @@ void M_Weapons(int choice)
   set_weapon_active = true;
   setup_select = false;
   default_verify = false;
+  setup_gather = false;
   mult_screens_index = 0;
   current_setup_menu = weap_settings[0];
   set_menu_itemon = 0;
@@ -2722,6 +2734,7 @@ void M_Automap(int choice)
   setup_select = false;
   colorbox_active = false;
   default_verify = false;
+  setup_gather = false;
   set_menu_itemon = 0;
   mult_screens_index = 0;
   current_setup_menu = auto_settings[0];
@@ -2839,6 +2852,7 @@ void M_Enemy(int choice)
   set_enemy_active = true;
   setup_select = false;
   default_verify = false;
+  setup_gather = false;
   mult_screens_index = 0;
   current_setup_menu = enem_settings[0];
   set_menu_itemon = 0;
@@ -3008,6 +3022,7 @@ void M_ChatStrings(int choice)
   set_chat_active = true;
   setup_select = false;
   default_verify = false;
+  setup_gather = false;
   mult_screens_index = 0;
   current_setup_menu = chat_settings[0];
   set_menu_itemon = 0;
@@ -3243,7 +3258,6 @@ void M_InitExtendedHelp(void)
 	}
       extended_help_count++;
     }
-
 }
 
 // Initialization for the extended HELP screens.
@@ -3990,6 +4004,7 @@ boolean M_Responder (event_t* ev)
 	  if (ch == key_menu_escape) // Exit key = no change
 	    {
 	      M_SelectDone(ptr1);                           // phares 4/17/98
+	      setup_gather = false;   // finished gathering keys, if any
 	      return true;
 	    }
 
@@ -4312,8 +4327,7 @@ boolean M_Responder (event_t* ev)
       
       // killough 10/98: consolidate handling into one place:
       if (setup_select &&
-	  set_enemy_active | set_chat_active | 
-	  set_mess_active | set_status_active)
+	  set_enemy_active | set_chat_active | set_mess_active | set_status_active)
 	{
 	  if (ptr1->m_flags & S_STRING) // creating/editing a string?
 	    {

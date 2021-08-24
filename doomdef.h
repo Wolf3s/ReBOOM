@@ -211,6 +211,10 @@ typedef enum {
 // This is the stuff configured by Setup.Exe.
 // Most key data are simple ascii (uppercased).
 
+// DOOM keyboard definition.
+// This is the stuff configured by Setup.Exe.
+// Most key data are simple ascii (uppercased).
+
 #define KEYD_RIGHTARROW 0xae
 #define KEYD_LEFTARROW  0xac
 #define KEYD_UPARROW    0xad
