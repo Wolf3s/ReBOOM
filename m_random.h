@@ -106,6 +106,7 @@ typedef enum {
   pr_spawnfly,                // #48
   pr_misc,                    // #49
   pr_all_in_one,              // #50
+  pr_mbf21,					  // #51
 
   // End of new entries
   NUMPRCLASS               // MUST be last item in list
@@ -129,5 +130,9 @@ int P_Random(pr_class_t);
 
 // Fix randoms for demos.
 void M_ClearRandom(void);
+
+// [XA] Common random formulas used by codepointers
+int P_RandomHitscanAngle(pr_class_t pr_class, fixed_t spread);
+int P_RandomHitscanSlope(pr_class_t pr_class, fixed_t spread);
 
 #endif

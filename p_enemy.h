@@ -37,6 +37,27 @@
 void P_NoiseAlert (mobj_t *target, mobj_t *emmiter);
 void P_SpawnBrainTargets(void); // killough 3/26/98: spawn icon landings
 
+// [XA] New mbf21 codepointers
+
+void A_SpawnObject(mobj_t*);
+void A_MonsterProjectile(mobj_t*);
+void A_MonsterBulletAttack(mobj_t*);
+void A_MonsterMeleeAttack(mobj_t*);
+void A_RadiusDamage(mobj_t*);
+void A_NoiseAlert(mobj_t*);
+void A_HealChase(mobj_t*);
+void A_SeekTracer(mobj_t*);
+void A_FindTracer(mobj_t*);
+void A_ClearTracer(mobj_t*);
+void A_JumpIfHealthBelow(mobj_t*);
+void A_JumpIfTargetInSight(mobj_t*);
+void A_JumpIfTargetCloser(mobj_t*);
+void A_JumpIfTracerInSight(mobj_t*);
+void A_JumpIfTracerCloser(mobj_t*);
+void A_JumpIfFlagsSet(mobj_t*);
+void A_AddFlags(mobj_t*);
+void A_RemoveFlags(mobj_t*);
+
 extern struct brain_s {         // killough 3/26/98: global state of boss brain
   int easy, targeton;
 } brain;

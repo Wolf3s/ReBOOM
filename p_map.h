@@ -61,6 +61,8 @@ void    P_DelSeclist(msecnode_t*);                          // phares 3/16/98
 void    P_CreateSecNodeList(mobj_t*,fixed_t,fixed_t);       // phares 3/14/98
 boolean Check_Sides(mobj_t *, int, int);                    // phares
 
+boolean P_CheckFov(mobj_t* t1, mobj_t* t2, angle_t fov);
+
 // If "floatok" true, move would be ok if within "tmfloorz - tmceilingz".
 extern boolean floatok;
 extern fixed_t tmfloorz;

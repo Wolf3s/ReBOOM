@@ -110,6 +110,9 @@ size_t     num_deathmatchstarts;   // killough
 mapthing_t *deathmatch_p;
 mapthing_t playerstarts[MAXPLAYERS];
 
+int blockmapxneg = -257;
+int blockmapyneg = -257;
+
 //
 // P_LoadVertexes
 //

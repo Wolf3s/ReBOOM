@@ -60,7 +60,7 @@ typedef struct {
 } intercept_t;
 
 typedef boolean (*traverser_t)(intercept_t *in);
-
+mobj_t* P_RoughTargetSearch(mobj_t* mo, angle_t fov, int distance);
 fixed_t P_AproxDistance (fixed_t dx, fixed_t dy);
 int     P_PointOnLineSide (fixed_t x, fixed_t y, line_t *line);
 int     P_PointOnDivlineSide (fixed_t x, fixed_t y, divline_t *line);
