@@ -135,6 +135,8 @@ const char *const standard_iwads[]=
   "/tnt.wad",
   "/doom.wad",
   "/doom1.wad",
+  "/freedoom1.wad",
+  "/freedoom2.wad",
 };
 static const int nstandard_iwads = sizeof standard_iwads/sizeof*standard_iwads;
 
