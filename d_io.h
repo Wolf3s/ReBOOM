@@ -20,8 +20,6 @@
 //  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
 //  02111-1307, USA.
 
-// haleyjd: IO crap for MSVC
-
 #ifndef D_IO_INCLUDED
 #define D_IO_INCLUDED
 
@@ -32,24 +30,22 @@
   #define FALSE false
 #endif
 
-#ifdef _MSC_VER
+#ifdef WINDOWS
   #include <direct.h>
   #include <io.h>
   #define F_OK 0
   #define W_OK 2
   #define R_OK 4
   #define S_ISDIR(x) (((sbuf.st_mode & S_IFDIR)==S_IFDIR)?1:0)
-  #define strcasecmp _stricmp
-  #define strncasecmp _strnicmp
-  #ifndef PATH_MAX
-     #define PATH_MAX _MAX_PATH
-  #endif
+#ifndef PATH_MAX
+  #define PATH_MAX _MAX_PATH
+#endif
 #elif defined UNIX
   #include <unistd.h>
   #include <ctype.h> // tolower()
-  #ifndef O_BINARY
-    #define O_BINARY 0
-  #endif
+#ifndef O_BINARY
+  #define O_BINARY 0
+#endif
   #define stricmp strcasecmp
   #define strnicmp strncasecmp
   static inline char *strlwr (char *str) {
@@ -66,7 +62,6 @@
 #include <stdio.h>
 #include <ctype.h>
 #endif
-
 #endif
 
 // EOF

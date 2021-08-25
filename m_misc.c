@@ -1380,7 +1380,11 @@ default_t *M_LookupDefault(const char *name)
 
   // Look up name in hash table
   for (dp = defaults[default_hash(name)].first;
-       dp && strcasecmp(name, dp->name); dp = dp->next);
+#ifdef WINDOWS
+       dp && _stricmp(name, dp->name); dp = dp->next);
+#else
+      dp&& strcasecmp(name, dp->name); dp = dp->next);
+#endif
 
   return dp;
 }
@@ -1901,7 +1905,7 @@ typedef uint32_t dword_t; // [FG] unsigned long
 typedef int32_t long_t; // [FG] long
 typedef unsigned char ubyte_t;
 
-#ifdef _WIN64
+#ifdef WINDOWS
 #pragma pack(push, 1)
 #endif
 
@@ -1929,7 +1933,7 @@ typedef struct tagBITMAPINFOHEADER
   dword_t biClrImportant;
 } __attribute__ ((packed)) BITMAPINFOHEADER;
 
-#ifdef _WIN64
+#ifdef WINDOWS
 #pragma pack(pop)
 #endif
 

@@ -104,3 +104,4 @@ x64/Debug/ReBOOM.exe.recipe
 x64/Release/ReBOOM.vcxproj.FileListAbsolute.txt
 *.obj
 *.bak
+*.tlog

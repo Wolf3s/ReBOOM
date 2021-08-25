@@ -35,8 +35,7 @@
 //
 
 // haleyjd 01/21/05: these structs must be packed
-//Gibbon - Using _WIN64 now as this will never run under 32bit Windows again.
-#ifdef _WIN64
+#ifdef WINDOWS
 #pragma pack(push, 1)
 #endif
 
@@ -54,7 +53,7 @@ typedef struct
   char name[8];
 } filelump_t;
 
-#ifdef _WIN64
+#ifdef WINDOWS
 #pragma pack(pop)
 #endif
 

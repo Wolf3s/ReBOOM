@@ -19,7 +19,7 @@
 #ifndef __WIN_D_FOPEN__
 #define __WIN_D_FOPEN__
 
-#ifdef _WIN32
+#ifdef WINDOWS
 #include <stdio.h>
 #include <io.h>
 #include <sys/stat.h>

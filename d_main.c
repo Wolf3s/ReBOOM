@@ -1053,7 +1053,11 @@ static void D_ProcessDehCommandLine(void)
       boolean deh = true;
       while (++p < myargc)
         if (*myargv[p] == '-')
-          deh = !strcasecmp(myargv[p],"-deh") || !strcasecmp(myargv[p],"-bex");
+#ifdef WINDOWS
+          deh = !_stricmp(myargv[p],"-deh") || !_stricmp(myargv[p],"-bex");
+#else
+          deh = !strcasecmp(myargv[p], "-deh") || !strcasecmp(myargv[p], "-bex");
+#endif
         else
           if (deh)
             {
@@ -1129,7 +1133,11 @@ static void D_ProcessDehInWad(int i)
   if (i >= 0)
     {
       D_ProcessDehInWad(lumpinfo[i].next);
+#ifdef WINDOWS
+      if (!strnicmp(lumpinfo[i].name, "dehacked", 8) &&
+#else
       if (!strncasecmp(lumpinfo[i].name, "dehacked", 8) &&
+#endif
           lumpinfo[i].namespace == ns_global)
         ProcessDehFile(NULL, D_dehout(), i);
     }

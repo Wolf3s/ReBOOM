@@ -23,7 +23,7 @@
 #include <ctype.h>
 #include <errno.h>
 
-#ifdef _WIN32
+#ifdef WINDOWS
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <io.h>
@@ -38,7 +38,7 @@
 #include "i_system.h"
 #include "m_misc2.h"
 
-#ifdef _WIN32
+#ifdef WINDOWS
 #include "win_fopen.h"
 #endif
 
@@ -48,7 +48,7 @@
 
 void M_MakeDirectory(const char *path)
 {
-#ifdef _WIN32
+#ifdef WINDOWS
     mkdir(path);
 #else
     mkdir(path, 0755);
@@ -86,7 +86,7 @@ char *M_TempFile(const char *s)
 {
     const char *tempdir;
 
-#ifdef _WIN32
+#ifdef WINDOWS
 
     // Check the TEMP environment variable to find the location.
 
@@ -423,7 +423,7 @@ char *M_StringJoin(const char *s, ...)
 }
 
 // On Windows, vsnprintf() is _vsnprintf().
-#ifdef _WIN32
+#ifdef WINDOWS
 #if _MSC_VER < 1400 /* not needed for Visual Studio 2008 */
 #define vsnprintf _vsnprintf
 #endif

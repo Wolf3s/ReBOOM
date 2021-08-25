@@ -67,7 +67,7 @@ typedef struct
   int         speed;
 } anim_t;
 
-#ifdef _WIN64
+#ifdef WINDOWS
 #pragma pack(push, 1)
 #endif
 
@@ -82,7 +82,7 @@ typedef struct
   int  speed;
 } __attribute__ ((packed)) animdef_t; //jff 3/23/98 pack to read from memory
 
-#ifdef _WIN64
+#ifdef WINDOWS
 #pragma pack(pop)
 #endif
 

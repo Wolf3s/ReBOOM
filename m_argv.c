@@ -40,11 +40,40 @@ char **myargv;
 // or 0 if not present
 //
 
-int M_CheckParm(const char *check)
+int M_CheckParm(const char* check)
 {
-  int i;
-  for (i=1; i<myargc; i++)
-    if (!strcasecmp(check, myargv[i]))
-      return i;
-  return 0;
+    signed int i = myargc;
+    while (--i > 0)
+#ifdef WINDOWS
+        if (!_stricmp(check, myargv[i]))
+#else
+        if (!strcasecmp(check, myargv[i]))
+#endif
+            return i;
+    return 0;
+}
+
+//
+// M_CheckParmEx
+// Checks for the given parameter in the given params list.
+// Returns the argument number (0 to paramscount-1) or -1 if not present
+//
+
+int M_CheckParmEx(const char* check, char** params, int paramscount)
+{
+    if (paramscount > 0 && check && params && *params)
+    {
+        while (--paramscount >= 0)
+        {
+#ifdef WINDOWS
+            if (!_stricmp(check, params[paramscount]))
+#else
+            if (!strcasecmp(check, params[paramscount]))
+#endif
+            {
+                return paramscount;
+            }
+        }
+    }
+    return -1;
 }
