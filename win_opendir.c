@@ -29,6 +29,7 @@
 // * Peters <colin@fu.is.saga-u.ac.jp>
 //
 
+#ifdef WINDOWS
 #ifndef _MSC_VER
 #error i_opndir.c is for Microsoft Visual C++ only
 #endif
@@ -332,5 +333,6 @@ void seekdir(DIR *dirp, long lPos)
    }
 }
 
+#endif
 // EOF
 

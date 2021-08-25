@@ -55,6 +55,7 @@
 #include "m_menu.h"
 #include "d_deh.h"
 #include "m_misc.h"
+#include "z_zone.h"
 
 extern patch_t* hu_font[HU_FONTSIZE];
 extern boolean  message_dontfuckwithme;
@@ -1723,28 +1724,31 @@ menu_t ChatStrDef =                                         // phares 4/10/98
 // M_DrawBackground tiles a 64x64 patch over the entire screen, providing the
 // background for the Help and Setup screens.
 
-void M_DrawBackground(char* patchname, byte* back_dest)
-{
-	int x, y;
-	byte* back_src, * src;
+void M_DrawBackground(char* patchname)
 
-	V_MarkRect(0, 0, SCREENWIDTH, SCREENHEIGHT);
+  {
+  int     x,y;
+  byte*   back_src;
+  byte*   back_dest;
 
-	src = back_src =
-		W_CacheLumpNum(firstflat + R_FlatNumForName(patchname), PU_CACHE);
+  // killough 4/17/98: 
+  back_src = W_CacheLumpNum(firstflat+R_FlatNumForName(patchname),PU_CACHE);
 
-	for (y = 0; y < SCREENHEIGHT; src = ((++y & 63) << 6) + back_src,
-		back_dest += SCREENWIDTH * 2)
-		for (x = 0; x < SCREENWIDTH / 64; x++)
-		{
-			int i = 63;
-			do
-				back_dest[i * 2] = back_dest[i * 2 + SCREENWIDTH * 2] =
-				back_dest[i * 2 + 1] = back_dest[i * 2 + SCREENWIDTH * 2 + 1] = src[i];
-			while (--i >= 0);
-			back_dest += 128;
-		}
-}
+  back_dest = screens[0]; // screen buffer
+  for (y = 0 ; y < SCREENHEIGHT ; y++)
+    {
+    for (x = 0 ; x < SCREENWIDTH/64 ; x++)
+      {
+      memcpy (back_dest,back_src+((y & 63)<<6),64);
+      back_dest += 64;
+      }
+    if (SCREENWIDTH & 63)
+      {
+      memcpy (back_dest,back_src+((y & 63)<<6),SCREENWIDTH & 63);
+      back_dest += (SCREENWIDTH & 63);
+      }
+    }
+  }
 
 /////////////////////////////
 //
@@ -2443,7 +2447,7 @@ void M_DrawKeybnd(void)
 
 	// Set up the Key Binding screen 
 
-	M_DrawBackground("FLOOR4_6", screens[0]); // Draw background
+	M_DrawBackground("FLOOR4_6"); // Draw background
 	V_DrawPatchDirect(84, 2, 0, W_CacheLumpName("M_KEYBND", PU_CACHE));
 	M_DrawInstructions();
 	M_DrawScreenItems(current_setup_menu);
@@ -2548,7 +2552,7 @@ void M_DrawWeapons(void)
 {
 	inhelpscreens = true;    // killough 4/6/98: Force status bar redraw
 
-	M_DrawBackground("FLOOR4_6", screens[0]); // Draw background
+	M_DrawBackground("FLOOR4_6"); // Draw background
 	V_DrawPatchDirect(109, 2, 0, W_CacheLumpName("M_WEAP", PU_CACHE));
 	M_DrawInstructions();
 	M_DrawScreenItems(current_setup_menu);
@@ -2633,7 +2637,7 @@ void M_DrawStatusHUD(void)
 {
 	inhelpscreens = true;    // killough 4/6/98: Force status bar redraw
 
-	M_DrawBackground("FLOOR4_6", screens[0]); // Draw background
+	M_DrawBackground("FLOOR4_6"); // Draw background
 	V_DrawPatchDirect(59, 2, 0, W_CacheLumpName("M_STAT", PU_CACHE));
 	M_DrawInstructions();
 	M_DrawScreenItems(current_setup_menu);
@@ -2786,7 +2790,7 @@ void M_DrawAutoMap(void)
 {
 	inhelpscreens = true;    // killough 4/6/98: Force status bar redraw
 
-	M_DrawBackground("FLOOR4_6", screens[0]); // Draw background
+	M_DrawBackground("FLOOR4_6"); // Draw background
 	V_DrawPatchDirect(109, 2, 0, W_CacheLumpName("M_AUTO", PU_CACHE));
 	M_DrawInstructions();
 	M_DrawScreenItems(current_setup_menu);
@@ -2868,7 +2872,7 @@ void M_DrawEnemy(void)
 {
 	inhelpscreens = true;
 
-	M_DrawBackground("FLOOR4_6", screens[0]); // Draw background
+	M_DrawBackground("FLOOR4_6"); // Draw background
 	V_DrawPatchDirect(114, 2, 0, W_CacheLumpName("M_ENEM", PU_CACHE));
 	M_DrawInstructions();
 	M_DrawScreenItems(current_setup_menu);
@@ -2962,15 +2966,15 @@ void M_Messages(int choice)
 // background, title, instruction line, and items.
 
 void M_DrawMessages(void)
-
 {
-	inhelpscreens = true;
-	M_DrawBackground("FLOOR4_6", screens[0]); // Draw background
-	V_DrawPatchDirect(103, 2, 0, W_CacheLumpName("M_MESS", PU_CACHE));
-	M_DrawInstructions();
-	M_DrawScreenItems(current_setup_menu);
-	if (default_verify)
-		M_DrawDefVerify();
+  inhelpscreens = true;
+  M_DrawBackground("FLOOR4_6"); // Draw background
+  V_DrawPatchDirect (103,2,0,W_CacheLumpName("M_MESS",PU_CACHE));
+  M_DrawInstructions();
+  M_DrawScreenItems(current_setup_menu);
+
+  if (default_verify)
+    M_DrawDefVerify();
 }
 
 
@@ -3037,7 +3041,7 @@ void M_DrawChatStrings(void)
 
 {
 	inhelpscreens = true;
-	M_DrawBackground("FLOOR4_6", screens[0]); // Draw background
+	M_DrawBackground("FLOOR4_6"); // Draw background
 	V_DrawPatchDirect(83, 2, 0, W_CacheLumpName("M_CHAT", PU_CACHE));
 	M_DrawInstructions();
 	M_DrawScreenItems(current_setup_menu);
@@ -3577,7 +3581,7 @@ int M_GetPixelWidth(char* ch)
 void M_DrawHelp(void)
 {
 	inhelpscreens = true;                        // killough 10/98
-	M_DrawBackground("FLOOR4_6", screens[0]);
+	M_DrawBackground("FLOOR4_6");
 	V_MarkRect(0, 0, SCREENWIDTH, SCREENHEIGHT);
 
 	M_DrawScreenItems(helpstrings);

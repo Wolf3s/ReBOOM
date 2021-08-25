@@ -43,15 +43,43 @@ lumpinfo_t *lumpinfo;
 int        numlumps;         // killough
 void       **lumpcache;      // killough
 
-static int W_FileLength(int handle)
+// proff 07/04/98: Changed from _WIN32 to _MSC_VER for CYGWIN32 compatibility
+// proff: This is defined in <io.h>
+#if !defined WINDOWS
+static int filelength(int handle)
 {
   struct stat   fileinfo;
   if (fstat(handle,&fileinfo) == -1)
     I_Error("Error fstating");
   return fileinfo.st_size;
 }
+#endif
 
-void ExtractFileBase(const char *path, char *dest)
+//
+// NormalizeSlashes
+//
+// Remove trailing slashes, translate backslashes to slashes
+// The string to normalize is passed and returned in str
+//
+// jff 4/19/98 Make killoughs slash fixer a subroutine
+//
+void NormalizeSlashes(char *str)
+{
+  int l;
+
+  // killough 1/18/98: Neater / \ handling.
+  // Remove trailing / or \ to prevent // /\ \/ \\, and change \ to /
+
+  if (!str || !(l = strlen(str)))
+    return;
+  if (str[--l]=='/' || str[l]=='\\')     // killough 1/18/98
+    str[l]=0;
+  while (l--)
+    if (str[l]=='\\')
+      str[l]='/';
+}
+
+void ExtractFileBase (const char *path, char *dest)
 {
   const char *src = path + strlen(path) - 1;
   int length;
@@ -90,33 +118,6 @@ char *AddDefaultExtension(char *path, const char *ext)
   return strcat(path,ext);
 }
 
-// NormalizeSlashes
-//
-// Remove trailing slashes, translate backslashes to slashes
-// The string to normalize is passed and returned in str
-//
-// killough 11/98: rewritten
-
-void NormalizeSlashes(char *str)
-{
-  char *p;
-
-  // Convert backslashes to slashes
-  for (p = str; *p; p++)
-    if (*p == '\\')
-      *p = '/';
-
-  // Remove trailing slashes
-  while (p > str && *--p == '/')
-    *p = 0;
-
-  // Collapse multiple slashes
-  for (p = str; (*str++ = *p);)
-    if (*p++ == '/')
-      while (*p == '/')
-	p++;
-}
-
 //
 // LUMP BASED ROUTINES.
 //
@@ -134,7 +135,7 @@ void NormalizeSlashes(char *str)
 //
 // Ty 08/29/98 - added source parm to indicate iwad, pwad or lmp loaded file
 
-static void W_AddFile(const char *name) // killough 1/31/98: static, const
+static void W_AddFile(const char *filename,int source) // killough 1/31/98: static, const
 {
   wadinfo_t   header;
   lumpinfo_t* lump_p;
@@ -144,33 +145,19 @@ static void W_AddFile(const char *name) // killough 1/31/98: static, const
   int         startlump;
   filelump_t  *fileinfo, *fileinfo2free=NULL; //killough
   filelump_t  singleinfo;
-  char        *filename = strcpy(malloc(strlen(name)+5), name);
 
-  NormalizeSlashes(AddDefaultExtension(filename, ".wad"));  // killough 11/98
+  // open the file and add to directory
 
-  //Gibbon - Added UNIX to open the file and add to directory
-  #ifdef UNIX
-  if ((handle = open(filename,O_RDONLY | 0)) == -1)
-  #else
   if ((handle = open(filename,O_RDONLY | O_BINARY)) == -1)
-  #endif
     {
-      if (strlen(name) > 4 && !strcasecmp(name+strlen(name)-4 , ".lmp" ))
-	{
-	  free(filename);
-	  return;
-	}
-      // killough 11/98: allow .lmp extension if none existed before
-      NormalizeSlashes(AddDefaultExtension(strcpy(filename, name), ".lmp"));
-      #ifdef UNIX
-      if ((handle = open(filename,O_RDONLY | 0)) == -1)
-      #else
-      if ((handle = open(filename,O_RDONLY | O_BINARY)) == -1)
-      #endif
-	I_Error("Error: couldn't open %s\n",name);  // killough
+      if (strlen(filename)<=4 ||      // add error check -- killough
+          strcasecmp(filename+strlen(filename)-4 , ".lmp" ) )
+        I_Error("Error: couldn't open %s\n",filename);  // killough
+      return;
     }
 
-  printf(" adding %s\n",filename);   // killough 8/8/98
+  //jff 8/3/98 use logical output routine
+  printf(" adding %s\n",filename);
   startlump = numlumps;
 
   // killough:
@@ -179,7 +166,7 @@ static void W_AddFile(const char *name) // killough 1/31/98: static, const
       // single lump file
       fileinfo = &singleinfo;
       singleinfo.filepos = 0;
-      singleinfo.size = LONG(W_FileLength(handle));
+      singleinfo.size = LONG(filelength(handle));
       ExtractFileBase(filename, singleinfo.name);
       numlumps++;
     }
@@ -189,7 +176,7 @@ static void W_AddFile(const char *name) // killough 1/31/98: static, const
       read(handle, &header, sizeof(header));
       if (strncmp(header.identification,"IWAD",4) &&
           strncmp(header.identification,"PWAD",4))
-        I_Error("Wad file %s doesn't have IWAD or PWAD id\n", filename);
+        I_Error ("Wad file %s doesn't have IWAD or PWAD id\n", filename);
       header.numlumps = LONG(header.numlumps);
       header.infotableofs = LONG(header.infotableofs);
       length = header.numlumps*sizeof(filelump_t);
@@ -198,8 +185,6 @@ static void W_AddFile(const char *name) // killough 1/31/98: static, const
       read(handle, fileinfo, length);
       numlumps += header.numlumps;
     }
-
-    free(filename);           // killough 11/98
 
     // Fill in lumpinfo
     lumpinfo = realloc(lumpinfo, numlumps*sizeof(lumpinfo_t));
@@ -213,7 +198,7 @@ static void W_AddFile(const char *name) // killough 1/31/98: static, const
         lump_p->size = LONG(fileinfo->size);
         lump_p->data = NULL;                        // killough 1/31/98
         lump_p->namespace = ns_global;              // killough 4/17/98
-        lump_p->source;                    // Ty 08/29/98
+        lump_p->source = source;                    // Ty 08/29/98
         strncpy (lump_p->name, fileinfo->name, 8);
       }
 
@@ -419,7 +404,7 @@ void W_InitMultipleFiles(char *const *filenames, int *const pfilesource)
 
   // open all the files, load headers, and count lumps
   while (*filenames)
-    W_AddFile(*filenames++);
+    W_AddFile(*filenames++,*filesource++);
 
   if (!numlumps)
     I_Error ("W_InitFiles: no files found");
@@ -491,7 +476,7 @@ void W_ReadLump(int lump, void *dest)
 //
 // killough 4/25/98: simplified
 
-void *W_CacheLumpNum(int lump, int tag)
+void *W_CacheLumpNum (int lump, int tag)
 {
 #ifdef RANGECHECK
   if ((unsigned)lump >= numlumps)
@@ -529,11 +514,11 @@ void WritePredefinedLumpWad(const char *filename)
 
   // The following code writes a PWAD from the predefined lumps array
   // How to write a PWAD will not be explained here.
-#ifdef WINDOWS
-  if ((handle = open (filenam, O_RDWR | O_CREAT | O_BINARY)) != -1)
-#else
-  if ((handle = open(filenam, O_RDWR | O_CREAT | O_BINARY, S_IWUSR | S_IRUSR)) != -1)
-#endif
+#ifdef _MSC_VER // proff: In Visual C open is defined a bit different
+  if ( (handle = open (filenam, O_RDWR | O_CREAT | O_BINARY, _S_IWRITE|_S_IREAD)) != -1)
+#else //_MSC_VER
+  if ( (handle = open (filenam, O_RDWR | O_CREAT | O_BINARY, S_IWUSR|S_IRUSR)) != -1)
+#endif //_MSC_VER
   {
     wadinfo_t header = {"PWAD"};
     size_t filepos = sizeof(wadinfo_t) + num_predefined_lumps * sizeof(filelump_t);
@@ -565,3 +550,66 @@ void WritePredefinedLumpWad(const char *filename)
   }
  I_Error("Cannot open predefined lumps wad %s for output\n", filename);
 }
+
+//----------------------------------------------------------------------------
+//
+// $Log: w_wad.c,v $
+// Revision 1.22  1998/09/07  20:10:30  jim
+// Logical output routine added
+//
+// Revision 1.21  1998/08/29  22:59:55  thldrmn
+// Lump source field logic etc.
+//
+// Revision 1.20  1998/05/06  11:32:00  jim
+// Moved predefined lump writer info->w_wad
+//
+// Revision 1.19  1998/05/03  22:43:09  killough
+// beautification, header #includes
+//
+// Revision 1.18  1998/05/01  14:53:59  killough
+// beautification
+//
+// Revision 1.17  1998/04/27  02:06:41  killough
+// Program beautification
+//
+// Revision 1.16  1998/04/17  10:34:53  killough
+// Tag lumps with namespace tags to resolve collisions
+//
+// Revision 1.15  1998/04/06  04:43:59  killough
+// Add C_START/C_END support, remove non-standard C code
+//
+// Revision 1.14  1998/03/23  03:42:59  killough
+// Fix drive-letter bug and force marker lumps to 0-size
+//
+// Revision 1.12  1998/02/23  04:59:18  killough
+// Move TRANMAP init code to r_data.c
+//
+// Revision 1.11  1998/02/20  23:32:30  phares
+// Added external tranmap
+//
+// Revision 1.10  1998/02/20  22:53:25  phares
+// Moved TRANMAP initialization to w_wad.c
+//
+// Revision 1.9  1998/02/17  06:25:07  killough
+// Make numlumps static add #ifdef RANGECHECK for perf
+//
+// Revision 1.8  1998/02/09  03:20:16  killough
+// Fix garbage printed in lump error message
+//
+// Revision 1.7  1998/02/02  13:21:04  killough
+// improve hashing, add predef lumps, fix err handling
+//
+// Revision 1.6  1998/01/26  19:25:10  phares
+// First rev with no ^Ms
+//
+// Revision 1.5  1998/01/26  06:30:50  killough
+// Rewrite merge routine to use simpler, robust algorithm
+//
+// Revision 1.3  1998/01/23  20:28:11  jim
+// Basic sprite/flat functionality in PWAD added
+//
+// Revision 1.2  1998/01/22  05:55:58  killough
+// Improve hashing algorithm
+//
+//----------------------------------------------------------------------------
+

@@ -198,34 +198,37 @@ void HUlib_drawTextLine(hu_textline_t *l, boolean drawcursor)
 // Passed the hu_textline_t
 // Returns nothing
 //
-
 void HUlib_eraseTextLine(hu_textline_t* l)
 {
-  // killough 11/98: trick to shadow variables
-  int x = viewwindowx, y = viewwindowy; 
-  int viewwindowx = x, viewwindowy = y;
+  int lh;
+  int y;
+  int yoffset;
+  static boolean lastautomapactive = true;
 
   // Only erases when NOT in automap and the screen is reduced,
   // and the text must either need updating or refreshing
   // (because of a recent change back from the automap)
 
-  if (!automapactive && viewwindowx && l->needsupdate)
-    {
-      int yoffset, lh = SHORT(l->f[0]->height) + 1;
-      for (y=l->y,yoffset=y*SCREENWIDTH ; y<l->y+lh ; y++,yoffset+=SCREENWIDTH)
-        if (y < viewwindowy || y >= viewwindowy + scaledviewheight) // killough 11/98:
-          R_VideoErase(yoffset, SCREENWIDTH); // erase entire line
-        else
-          {
-            // erase left border
-            R_VideoErase(yoffset, viewwindowx);
-            // erase right border
-            R_VideoErase(yoffset + viewwindowx + scaledviewwidth, viewwindowx); // killough 11/98
-          }
+  if (!automapactive &&
+  viewwindowx && l->needsupdate)
+  {
+    lh = SHORT(l->f[0]->height) + 1;
+    for (y=l->y,yoffset=y*SCREENWIDTH ; y<l->y+lh ; y++,yoffset+=SCREENWIDTH)
+      {
+      if (y < viewwindowy || y >= viewwindowy + viewheight)
+        R_VideoErase(yoffset, SCREENWIDTH); // erase entire line
+      else
+      {
+        // erase left border
+        R_VideoErase(yoffset, viewwindowx); 
+        // erase right border
+        R_VideoErase(yoffset + viewwindowx + viewwidth, viewwindowx);
+      }
     }
+  }
 
-  if (l->needsupdate)
-    l->needsupdate--;
+  lastautomapactive = automapactive;
+  if (l->needsupdate) l->needsupdate--;
 }
 
 ////////////////////////////////////////////////////////
@@ -505,6 +508,7 @@ void HUlib_drawMText(hu_mtext_t* m)
 }
 
 //
+//
 // HUlib_eraseMBg()
 //
 // Erases background behind hu_mtext_t widget, when the screen is not fullsize
@@ -512,33 +516,33 @@ void HUlib_drawMText(hu_mtext_t* m)
 // Passed a hu_mtext_t
 // Returns nothing
 //
-
-static void HUlib_eraseMBg(hu_mtext_t *m)
+static void HUlib_eraseMBg(hu_mtext_t* m)
 {
-  // killough 11/98: trick to shadow variables
-  int x = viewwindowx, y = viewwindowy; 
-  int viewwindowx = x, viewwindowy = y;
+  int     lh;
+  int     y;
+  int     yoffset;
 
   // Only erases when NOT in automap and the screen is reduced,
   // and the text must either need updating or refreshing
   // (because of a recent change back from the automap)
 
   if (!automapactive && viewwindowx)
+  {
+    lh = SHORT(m->l[0].f[0]->height) + 1;
+    for (y=m->y,yoffset=y*SCREENWIDTH ; y<m->y+lh*(hud_msg_lines+2) ; y++,yoffset+=SCREENWIDTH)
     {
-      int yoffset, lh = SHORT(m->l[0].f[0]->height) + 1;
-      for (y=m->y, yoffset=y*SCREENWIDTH;
-           y < m->y+lh*(hud_msg_lines+2);
-           y++, yoffset+=SCREENWIDTH)
-        if (y < viewwindowy || y >= viewwindowy + scaledviewheight) // killough 11/98
-          R_VideoErase(yoffset, SCREENWIDTH); // erase entire line
-        else
-          {
-            // erase left border
-            R_VideoErase(yoffset, viewwindowx);
-            // erase right border
-            R_VideoErase(yoffset + viewwindowx + scaledviewwidth, viewwindowx); // killough 11/98
-          }
+      if (y < viewwindowy || y >= viewwindowy + viewheight)
+        R_VideoErase(yoffset, SCREENWIDTH); // erase entire line
+      else
+      {
+        // erase left border
+        R_VideoErase(yoffset, viewwindowx);
+        // erase right border
+        R_VideoErase(yoffset + viewwindowx + viewwidth, viewwindowx);
+        
+      }
     }
+  }
 }
 
 //

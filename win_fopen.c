@@ -16,6 +16,7 @@
 // DESCRIPTION:
 //      unicode paths for fopen() on Windows
 
+#ifdef WINDOWS
 #include "win_fopen.h"
 
 #ifdef WINDOWS
@@ -136,5 +137,5 @@ int D_mkdir(const char *dirname)
   if (wdir) free(wdir);
   return ret;
 }
-
+#endif
 #endif

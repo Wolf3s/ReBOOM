@@ -227,11 +227,11 @@ void D_Display(void)
             break;
         if (automapactive)
             AM_Drawer();
-        if (wipe || (scaledviewheight != 200 && fullscreen) // killough 11/98
+        if (wipe || (viewheight != 200 && fullscreen) // killough 11/98
             || (inhelpscreensstate && !inhelpscreens))
             redrawsbar = true;              // just put away the help screen
-        ST_Drawer(scaledviewheight == 200, redrawsbar);    // killough 11/98
-        fullscreen = scaledviewheight == 200;               // killough 11/98
+        ST_Drawer(viewheight == 200, redrawsbar);    // killough 11/98
+        fullscreen = viewheight == 200;               // killough 11/98
         break;
     case GS_INTERMISSION:
         WI_Drawer();
@@ -850,8 +850,11 @@ void IdentifyVersion(void)
     char* iwad;
 
     // get config file from same directory as executable
-    // killough 10/98
-    sprintf(basedefault, "%s/%s.cfg", D_DoomExeDir(), D_DoomExeName());
+#ifdef WINDOWS
+  sprintf(basedefault,"%sreboom.cfg", D_DoomExeDir());  // proff
+#else
+  sprintf(basedefault,"%s/reboom.cfg", D_DoomExeDir());  // killough
+#endif
     // set save path to -save parm or current dir
     strcpy(basesavegame, ".");       //jff 3/27/98 default to current dir
     if ((i = M_CheckParm("-save")) && i < myargc - 1) //jff 3/24/98 if -save present

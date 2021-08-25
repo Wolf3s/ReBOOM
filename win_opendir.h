@@ -13,6 +13,7 @@
 //  public domain).
 //
 
+#ifdef WINDOWS
 #ifndef I_OPNDIR_H__
 #define I_OPNDIR_H__
 
@@ -67,6 +68,7 @@ void rewinddir(DIR *);
 long telldir(DIR *);
 void seekdir(DIR *, long);
 
+#endif
 #endif
 
 // EOF

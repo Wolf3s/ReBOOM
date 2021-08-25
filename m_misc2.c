@@ -254,8 +254,11 @@ char *M_StringDuplicate(const char *orig)
 {
     char *result;
 
+#ifdef WINDOWS
     result = _strdup(orig);
-
+#else
+    result = strdup(orig);
+#endif
     if (result == NULL)
     {
         I_Error("Failed to duplicate string (length %ld)\n",

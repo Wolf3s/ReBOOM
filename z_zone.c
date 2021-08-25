@@ -1,42 +1,44 @@
-// Emacs style mode select   -*- C++ -*-
-//-----------------------------------------------------------------------------
-//
-// $Id: z_zone.c,v 1.13 1998/05/12 06:11:55 killough Exp $
-//
-//  BOOM, a modified and improved DOOM engine
-//  Copyright (C) 1999 by
-//  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
-//
-//  This program is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU General Public License
-//  as published by the Free Software Foundation; either version 2
-//  of the License, or (at your option) any later version.
-//
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
-//
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
-//  02111-1307, USA.
-//
-// DESCRIPTION:
-//      Zone Memory Allocation. Neat.
-//
-// Neat enough to be rewritten by Lee Killough...
-//
-// Must not have been real neat :)
-//
-// Made faster and more general, and added wrappers for all of Doom's
-// memory allocation functions, including malloc() and similar functions.
-// Added line and file numbers, in case of error. Added performance
-// statistics and tunables.
-//
-// Gibbon - Made even faster and more efficient, removed the stupid RAM size and a lot
-// of other crufty things.
-//-----------------------------------------------------------------------------
+/* Emacs style mode select   -*- C++ -*-
+ *-----------------------------------------------------------------------------
+ *
+ *
+ *  PrBoom: a Doom port merged with LxDoom and LSDLDoom
+ *  based on BOOM, a modified and improved DOOM engine
+ *  Copyright (C) 1999 by
+ *  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
+ *  Copyright (C) 1999-2000 by
+ *  Jess Haas, Nicolas Kalkhof, Colin Phipps, Florian Schulze
+ *  Copyright 2005, 2006 by
+ *  Florian Schulze, Colin Phipps, Neil Stevens, Andrey Budko
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+ *  02111-1307, USA.
+ *
+ * DESCRIPTION:
+ *      Zone Memory Allocation. Neat.
+ *
+ * Neat enough to be rewritten by Lee Killough...
+ *
+ * Must not have been real neat :)
+ *
+ * Made faster and more general, and added wrappers for all of Doom's
+ * memory allocation functions, including malloc() and similar functions.
+ * Added line and file numbers, in case of error. Added performance
+ * statistics and tunables.
+ *-----------------------------------------------------------------------------
+ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -46,6 +48,10 @@
 #include "m_argv.h"
 #include "v_video.h"
 #include "g_game.h"
+
+#ifdef WINDOWS
+#include "win_fopen.h"
+#endif
 
 // Tunables
 
@@ -117,10 +123,31 @@ static void Z_DrawStats(void)            // Print allocation statistics
     unsigned long total_memory = free_memory + memory_size + active_memory + purgable_memory;
     double s = 100.0 / total_memory;
 
+    doom_printf("%-5i\t%6.01f%%\tstatic\n"
+            "%-5i\t%6.01f%%\tpurgable\n"
+            "%-5i\t%6.01f%%\tfree\n"
+            "%-5li\t\ttotal\n",
+            active_memory,
+            active_memory*s,
+            purgable_memory,
+            purgable_memory*s,
+            (free_memory + memory_size),
+            (free_memory + memory_size)*s,
+            total_memory
+            );
   } else {
     unsigned long total_memory = active_memory + purgable_memory;
     double s = 100.0 / total_memory;
 
+    doom_printf("%-5i\t%6.01f%%\tstatic\n"
+            "%-5i\t%6.01f%%\tpurgable\n"
+            "%-5li\t\ttotal\n",
+            active_memory,
+            active_memory*s,
+            purgable_memory,
+            purgable_memory*s,
+            total_memory
+            );
   }
 }
 
@@ -135,12 +162,15 @@ void W_PrintLump(FILE* fp, void* p);
 void Z_DumpMemory(void)
 {
   static int dump;
-  char buf[PATH_MAX + 1];
+  char *buf;
+  int len;
   FILE* fp;
   size_t total_cache = 0, total_free = 0, total_malloc = 0;
   int tag;
 
-  sprintf(buf, "%s/memdump.%d", HEAPDUMP_DIR, dump++);
+  len = doom_snprintf(NULL, 0, "%s/memdump.%d", HEAPDUMP_DIR, dump);
+  buf = malloc(len+1);
+  doom_snprintf(buf, len+1, "%s/memdump.%d", HEAPDUMP_DIR, dump);
   fp = fopen(buf, "w");
   for (tag = PU_FREE; tag < PU_MAX; tag++)
   {
@@ -182,6 +212,8 @@ void Z_DumpMemory(void)
     total_malloc, total_cache, total_free, 
     total_malloc + total_cache + total_free);
   fclose(fp);
+  free(buf);
+  dump++;
 }
 #endif
 #endif
@@ -218,7 +250,72 @@ void Z_DumpHistory(char *buf)
         }
     }
 }
+#else
+
+void Z_DumpHistory(char *buf)
+{
+}
+
 #endif
+
+void Z_Close(void)
+{
+#if 0
+  (free)(zonebase);
+  zone = rover = zonebase = NULL;
+#endif
+}
+
+void Z_Init(void)
+{
+#if 0
+  size_t size = zone_size*1000;
+
+#ifdef HAVE_MMAP
+  return; /* cphipps - if we have mmap, we don't need our own heap */
+#endif
+
+#ifdef INSTRUMENTED
+  if (!(HEADER_SIZE >= sizeof(memblock_t) && size > HEADER_SIZE)) 
+    I_Error("Z_Init: Sanity check failed");
+#endif
+
+  size = (size+CHUNK_SIZE-1) & ~(CHUNK_SIZE-1);  // round to chunk size
+  size += HEADER_SIZE + CACHE_ALIGN;
+
+  // Allocate the memory
+
+  zonebase=(malloc)(size);
+  if (!zonebase)
+    I_Error("Z_Init: Failed on allocation of %lu bytes", (unsigned long)size);
+
+  lprintf(LO_INFO,"Z_Init : Allocated %lukb zone memory\n",
+      (long unsigned)size / 1000);
+
+  // Align on cache boundary
+
+  zone = (memblock_t *) ((char *) zonebase + CACHE_ALIGN -
+                         ((unsigned) zonebase & (CACHE_ALIGN-1)));
+
+  rover = zone;                            // Rover points to base of zone mem
+  zone->next = zone->prev = zone;          // Single node
+  zone->size = size;                       // All memory in one block
+  zone->tag = PU_FREE;                     // A free block
+  zone->vm  = 0;
+
+#ifdef ZONEIDCHECK
+  zone->id  = 0;
+#endif
+
+#ifdef INSTRUMENTED
+  free_memory = size;
+  /* cph - remove unnecessary initialisations to 0 */
+#endif
+#ifdef HEAPDUMP
+  I_AtExit(Z_DumpMemory, true);
+#endif
+#endif
+}
 
 /* Z_Malloc
  * You can pass a NULL user if the tag is < PU_PURGELEVEL.
@@ -571,3 +668,37 @@ char *(Z_Strdup)(const char *s, int tag, void **user
 {
   return strcpy((Z_Malloc)(strlen(s)+1, tag, user DA(file, line)), s);
 }
+
+void (Z_CheckHeap)(
+#ifdef INSTRUMENTED
+       const char *file, int line
+#else
+       void
+#endif
+       )
+{
+#if 0
+  memblock_t *block;   // Start at base of zone mem
+  if (block)
+  do {                        // Consistency check (last node treated special)
+    if ((block->next != zone &&
+         (memblock_t *)((char *) block+HEADER_SIZE+block->size) != block->next)
+        || block->next->prev != block || block->prev->next != block)
+      I_Error("Z_CheckHeap: Block size does not touch the next block\n"
+#ifdef INSTRUMENTED
+              "Source: %s:%d"
+              "\nSource of offending block: %s:%d"
+              , file, line, block->file, block->line
+#endif
+              );
+//#ifdef INSTRUMENTED
+// shouldn't be needed anymore, was just for testing
+#if 0
+    if (((int)block->file < 0x00001000) && (block->file != NULL) && (block->tag != 0)) {
+      block->file = NULL;
+    }
+#endif
+  } while ((block=block->next) != zone);
+#endif
+}
+

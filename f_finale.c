@@ -277,7 +277,7 @@ void F_TextWrite (void)
   // erase the entire screen to a tiled background
 
   // killough 11/98: the background-filling code was already in m_menu.c
-  M_DrawBackground(finaleflat, screens[0]);
+  M_DrawBackground(finaleflat);
 
   // draw some of the text onto the screen
   cx = 10;

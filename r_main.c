@@ -339,30 +339,38 @@ void R_ExecuteSetViewSize (void)
   if (setblocks == 11)
     {
       scaledviewwidth = SCREENWIDTH;
-      scaledviewheight = SCREENHEIGHT;                    // killough 11/98
+      viewheight = SCREENHEIGHT;
+    }
+// proff 09/24/98: Added for high-res
+  else if (setblocks == 10)
+    {
+      scaledviewwidth = SCREENWIDTH;
+      viewheight = SCREENHEIGHT-32;
     }
   else
     {
-      scaledviewwidth = setblocks*32;
-      scaledviewheight = (setblocks*168/10) & ~7;        // killough 11/98
+// proff 08/17/98: Changed for high-res
+      scaledviewwidth = setblocks*SCREENWIDTH/10;
+      viewheight = (setblocks*(SCREENHEIGHT-32)/10) & ~7;
+//      scaledviewwidth = setblocks*32;
+//      viewheight = (setblocks*168/10) & ~7;
     }
-
+    
   viewwidth = scaledviewwidth;
-  viewheight = scaledviewheight;
-
+        
   centery = viewheight/2;
   centerx = viewwidth/2;
   centerxfrac = centerx<<FRACBITS;
   centeryfrac = centery<<FRACBITS;
   projection = centerxfrac;
 
-  R_InitBuffer(scaledviewwidth, scaledviewheight);       // killough 11/98
+  R_InitBuffer (scaledviewwidth, viewheight);
         
   R_InitTextureMapping();
     
   // psprite scales
-  pspritescale = FixedDiv(viewwidth, SCREENWIDTH);       // killough 11/98
-  pspriteiscale= FixedDiv(SCREENWIDTH, viewwidth);       // killough 11/98
+  pspritescale = FRACUNIT*viewwidth/SCREENWIDTH;
+  pspriteiscale = FRACUNIT*SCREENWIDTH/viewwidth;
     
   // thing clipping
   for (i=0 ; i<viewwidth ; i++)
@@ -387,8 +395,8 @@ void R_ExecuteSetViewSize (void)
     {
       int j, startmap = ((LIGHTLEVELS-1-i)*2)*NUMCOLORMAPS/LIGHTLEVELS;
       for (j=0 ; j<MAXLIGHTSCALE ; j++)
-        {                                       // killough 11/98:
-          int t, level = startmap - j*SCREENWIDTH/scaledviewwidth/DISTMAP;
+        {
+          int t, level = startmap - j*SCREENWIDTH/viewwidth/DISTMAP;
             
           if (level < 0)
             level = 0;
@@ -513,8 +521,8 @@ void R_RenderPlayerView (player_t* player)
     { // killough 2/10/98: add flashing red HOM indicators
       char c[47*47];
       extern int lastshottic;
-      int i , color = (gametic % 20) < 9 ? 0xb0 : 0;
-      memset(*screens+viewwindowy*linesize,color,viewheight*linesize);
+      int i,color=(gametic % 20) < 9 ? 0xb0 : 0;
+      memset(*screens+viewwindowy*SCREENWIDTH,color,viewheight*SCREENWIDTH);
       for (i=0;i<47*47;i++)
         {
           char t =
@@ -575,8 +583,8 @@ void R_RenderPlayerView (player_t* player)
           c[i] = t=='/' ? color : t;
         }
       if (gametic-lastshottic < TICRATE*2 && gametic-lastshottic > TICRATE/8)
-        V_DrawBlock((viewwindowx +  viewwidth/2 - 24),
-                    (viewwindowy + viewheight/2 - 24), 0, 47, 47, c);
+        V_DrawBlock(viewwindowx +  viewwidth/2 - 24,
+                    viewwindowy + viewheight/2 - 24, 0, 47, 47, c);
       R_DrawViewBorder();
     }
 
@@ -599,3 +607,4 @@ void R_RenderPlayerView (player_t* player)
   // Check for new console commands.
   NetUpdate ();
 }
+

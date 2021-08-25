@@ -3,24 +3,17 @@
 //
 // $Id: r_draw.c,v 1.16 1998/05/03 22:41:46 killough Exp $
 //
-//  BOOM, a modified and improved DOOM engine
-//  Copyright (C) 1999 by
-//  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
+// Copyright (C) 1993-1996 by id Software, Inc.
 //
-//  This program is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU General Public License
-//  as published by the Free Software Foundation; either version 2
-//  of the License, or (at your option) any later version.
+// This source is available for distribution and/or modification
+// only under the terms of the DOOM Source Code License as
+// published by id Software. All rights reserved.
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+// The source is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// FITNESS FOR A PARTICULAR PURPOSE. See the DOOM Source Code License
+// for more details.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
-//  02111-1307, USA.
 //
 // DESCRIPTION:
 //      The actual span/column drawing functions.
@@ -29,11 +22,13 @@
 //
 //-----------------------------------------------------------------------------
 
+static const char
+rcsid[] = "$Id: r_draw.c,v 1.16 1998/05/03 22:41:46 killough Exp $";
+
 #include "doomstat.h"
 #include "w_wad.h"
 #include "r_main.h"
 #include "v_video.h"
-#include "m_menu.h"
 
 #define MAXWIDTH  MAX_SCREENWIDTH          /* kilough 2/8/98 */
 #define MAXHEIGHT MAX_SCREENHEIGHT
@@ -52,13 +47,11 @@
 byte *viewimage; 
 int  viewwidth;
 int  scaledviewwidth;
-int  scaledviewheight;        // killough 11/98
 int  viewheight;
 int  viewwindowx;
 int  viewwindowy; 
 byte *ylookup[MAXHEIGHT]; 
 int  columnofs[MAXWIDTH]; 
-int  linesize = SCREENWIDTH;  // killough 11/98
 
 // Color tables for different players,
 //  translate a limited part to another
@@ -92,7 +85,10 @@ byte    *dc_source;      // first pixel in a column (possibly virtual)
 //  be used. It has also been used with Wolfenstein 3D.
 // 
 
-#ifndef DJGPP     // killough 2/15/98
+// proff: This is in drawasm.nas
+// proff 06/30/98: I forgot NOASM
+#if !defined(DJGPP) && !defined(_WIN32) || defined(NOASM)
+//#ifndef DJGPP      // killough 2/15/98
 
 void R_DrawColumn (void) 
 { 
@@ -107,9 +103,9 @@ void R_DrawColumn (void)
     return; 
                                  
 #ifdef RANGECHECK 
-  if ((unsigned)dc_x >= MAX_SCREENWIDTH
+  if ((unsigned)dc_x >= SCREENWIDTH
       || dc_yl < 0
-      || dc_yh >= MAX_SCREENHEIGHT) 
+      || dc_yh >= SCREENHEIGHT) 
     I_Error ("R_DrawColumn: %i to %i at %i", dc_yl, dc_yh, dc_x); 
 #endif 
 
@@ -133,7 +129,7 @@ void R_DrawColumn (void)
   {
     register const byte *source = dc_source;            
     register const lighttable_t *colormap = dc_colormap; 
-    register int heightmask = dc_texheight-1;
+    register heightmask = dc_texheight-1;
     if (dc_texheight & heightmask)   // not a power of 2 -- killough
       {
         heightmask++;
@@ -153,7 +149,7 @@ void R_DrawColumn (void)
             // heightmask is the Tutti-Frutti fix -- killough
             
             *dest = colormap[source[frac>>FRACBITS]];
-            dest += linesize;                     // killough 11/98
+            dest += SCREENWIDTH; 
             if ((frac += fracstep) >= heightmask)
               frac -= heightmask;
           } 
@@ -164,10 +160,10 @@ void R_DrawColumn (void)
         while ((count-=2)>=0)   // texture height is a power of 2 -- killough
           {
             *dest = colormap[source[(frac>>FRACBITS) & heightmask]];
-            dest += linesize;   // killough 11/98
+            dest += SCREENWIDTH; 
             frac += fracstep;
             *dest = colormap[source[(frac>>FRACBITS) & heightmask]];
-            dest += linesize;   // killough 11/98
+            dest += SCREENWIDTH; 
             frac += fracstep;
           }
         if (count & 1)
@@ -190,9 +186,11 @@ void R_DrawColumn (void)
 // opaque' decision is made outside this routine, not down where the
 // actual code differences are.
 
-#ifndef DJGPP                       // killough 2/21/98: converted to x86 asm
+//#if !defined(DJGPP) && !defined(_WIN32) || defined(NOASM)
+// proff: In Win32 with VC50 it seems that R_DrawTLColumn is faster in C than in ASM
+#ifndef DJGPP      // killough 2/21/98: converted to x86 asm
 
-void R_DrawTLColumn (void)                                           
+void R_DrawTLColumn (void)
 { 
   int              count; 
   register byte    *dest;           // killough
@@ -206,9 +204,9 @@ void R_DrawTLColumn (void)
     return; 
                                  
 #ifdef RANGECHECK 
-  if ((unsigned)dc_x >= MAX_SCREENWIDTH
+  if ((unsigned)dc_x >= SCREENWIDTH
       || dc_yl < 0
-      || dc_yh >= MAX_SCREENHEIGHT) 
+      || dc_yh >= SCREENHEIGHT) 
     I_Error ("R_DrawColumn: %i to %i at %i", dc_yl, dc_yh, dc_x); 
 #endif 
 
@@ -233,7 +231,7 @@ void R_DrawTLColumn (void)
   {
     register const byte *source = dc_source;            
     register const lighttable_t *colormap = dc_colormap; 
-    register int heightmask = dc_texheight-1;
+    register heightmask = dc_texheight-1;
     if (dc_texheight & heightmask)   // not a power of 2 -- killough
       {
         heightmask++;
@@ -253,7 +251,7 @@ void R_DrawTLColumn (void)
             // heightmask is the Tutti-Frutti fix -- killough
               
             *dest = tranmap[(*dest<<8)+colormap[source[frac>>FRACBITS]]]; // phares
-            dest += linesize;          // killough 11/98
+            dest += SCREENWIDTH; 
             if ((frac += fracstep) >= heightmask)
               frac -= heightmask;
           } 
@@ -264,10 +262,10 @@ void R_DrawTLColumn (void)
         while ((count-=2)>=0)   // texture height is a power of 2 -- killough
           {
             *dest = tranmap[(*dest<<8)+colormap[source[(frac>>FRACBITS) & heightmask]]]; // phares
-            dest += linesize;   // killough 11/98
+            dest += SCREENWIDTH; 
             frac += fracstep;
             *dest = tranmap[(*dest<<8)+colormap[source[(frac>>FRACBITS) & heightmask]]]; // phares
-            dest += linesize;   // killough 11/98
+            dest += SCREENWIDTH; 
             frac += fracstep;
           }
         if (count & 1)
@@ -283,17 +281,18 @@ void R_DrawTLColumn (void)
 //
 
 #define FUZZTABLE 50 
+// proff 08/17/98: Changed for high-res
+//#define FUZZOFF (SCREENWIDTH)
+#define FUZZOFF 1
 
-/*
-// killough 11/98: convert fuzzoffset to be screenwidth-independent
 static const int fuzzoffset[FUZZTABLE] = {
-  0,-1,0,-1,0,0,-1,
-  0,0,-1,0,0,0,-1,
-  0,0,0,-1,-1,-1,-1,
-  0,-1,-1,0,0,0,0,-1,
-  0,-1,0,0,-1,-1,0,
-  0,-1,-1,-1,-1,0,0,
-  0,0,-1,0,0,-1,0 
+  FUZZOFF,-FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,
+  FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,
+  FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,-FUZZOFF,-FUZZOFF,-FUZZOFF,
+  FUZZOFF,-FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,
+  FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,-FUZZOFF,FUZZOFF,
+  FUZZOFF,-FUZZOFF,-FUZZOFF,-FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,
+  FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF 
 }; 
 
 static int fuzzpos = 0; 
@@ -306,94 +305,6 @@ static int fuzzpos = 0;
 //  could create the SHADOW effect,
 //  i.e. spectres and invisible players.
 //
-
-void R_DrawFuzzColumn(void) 
-{ 
-  int      count; 
-  byte     *dest; 
-
-  // Adjust borders. Low... 
-  if (!dc_yl) 
-    dc_yl = 1;
-
-  // .. and high.
-  if (dc_yh == viewheight-1) 
-    dc_yh = viewheight - 2; 
-                 
-  count = dc_yh - dc_yl; 
-
-  // Zero length.
-  if (count < 0) 
-    return; 
-    
-#ifdef RANGECHECK 
-  if ((unsigned) dc_x >= MAX_SCREENWIDTH
-      || dc_yl < 0 
-      || dc_yh >= MAX_SCREENHEIGHT)
-    I_Error ("R_DrawFuzzColumn: %i to %i at %i",
-             dc_yl, dc_yh, dc_x);
-#endif
-
-  // Keep till detailshift bug in blocky mode fixed,
-  //  or blocky mode removed.
-
-  // Does not work with blocky mode.
-  dest = ylookup[dc_yl] + columnofs[dc_x];
-  
-  // Looks like an attempt at dithering,
-  // using the colormap #6 (of 0-31, a bit brighter than average).
-
-  count++;        // killough 1/99: minor tuning
-
-  do 
-    {
-      // Lookup framebuffer, and retrieve
-      // a pixel that is either one row
-      // above or below the current one.
-      // Add index from colormap to index.
-      // killough 3/20/98: use fullcolormap instead of colormaps
-      // killough 11/98: use linesize
-
-      *dest = fullcolormap[6*256+dest[fuzzoffset[fuzzpos] ^ linesize]]; 
-
-      dest += linesize;             // killough 11/98
-
-      // Clamp table lookup index.
-      fuzzpos &= (fuzzpos - FUZZTABLE) >> (8*sizeof fuzzpos-1); //killough 1/99
-    } 
-  while (--count);
-}
-*/
-
-static const int fuzzoffset[FUZZTABLE] = {
-  1,0,1,0,1,1,0,
-  1,1,0,1,1,1,0,
-  1,1,1,0,0,0,0,
-  1,0,0,1,1,1,1,0,
-  1,0,1,1,0,0,1,
-  1,0,0,0,0,1,1,
-  1,1,0,1,1,0,1 
-}; 
-
-static int fuzzpos = 0; 
-
-//
-// Framebuffer postprocessing.
-// Creates a fuzzy image by copying pixels
-//  from adjacent ones to left and right.
-// Used with an all black colormap, this
-//  could create the SHADOW effect,
-//  i.e. spectres and invisible players.
-//
-
-// haleyjd: 03/24/09: from SMMU v3.10 source. Lee Killough released a patch
-// for this problem along with his "Why I Quit Doom" message, but that patch
-// was NOT applied to the archived source code on /idgames, and the patch
-// itself appears to be forever lost. I have no idea if this code from SMMU
-// matches the patch, or if fraggle just wrote it himself without knowledge
-// of the existing fix.
-
-// sf: restored original fuzz effect (changed in mbf)
 
 void R_DrawFuzzColumn(void) 
 { 
@@ -417,9 +328,9 @@ void R_DrawFuzzColumn(void)
     return; 
     
 #ifdef RANGECHECK 
-  if ((unsigned) dc_x >= MAX_SCREENWIDTH
+  if ((unsigned) dc_x >= SCREENWIDTH
       || dc_yl < 0 
-      || dc_yh >= MAX_SCREENHEIGHT)
+      || dc_yh >= SCREENHEIGHT)
     I_Error ("R_DrawFuzzColumn: %i to %i at %i",
              dc_yl, dc_yh, dc_x);
 #endif
@@ -438,27 +349,29 @@ void R_DrawFuzzColumn(void)
   // using the colormap #6 (of 0-31, a bit brighter than average).
 
   do 
-  {
-     // Lookup framebuffer, and retrieve
-     //  a pixel that is either one column
-     //  left or right of the current one.
-     // Add index from colormap to index.
-     // killough 3/20/98: use fullcolormap instead of colormaps
-     *dest = fullcolormap[6*256+
-                          dest[fuzzoffset[fuzzpos] ?   SCREENWIDTH 
-                                                   : -(SCREENWIDTH)]];
-     
-     // Clamp table lookup index.
-     if (++fuzzpos == FUZZTABLE) 
+    {
+      // Lookup framebuffer, and retrieve
+      //  a pixel that is either one column
+      //  left or right of the current one.
+      // Add index from colormap to index.
+      // killough 3/20/98: use fullcolormap instead of colormaps
+
+      *dest = fullcolormap[6*256+dest[fuzzoffset[fuzzpos]]]; 
+
+// Some varying invisibility effects can be gotten by playing // phares
+// with this logic. For example, try                          // phares
+//                                                            // phares
+//    *dest = fullcolormap[0*256+dest[FUZZOFF]];              // phares
+
+      // Clamp table lookup index.
+      if (++fuzzpos == FUZZTABLE) 
         fuzzpos = 0;
         
-     dest += SCREENWIDTH;
+      dest += SCREENWIDTH;
 
-     frac += fracstep; 
-  } 
-  while (count--); 
+      frac += fracstep; 
+    } while (count--); 
 }
-
 
 //
 // R_DrawTranslatedColumn
@@ -484,9 +397,9 @@ void R_DrawTranslatedColumn (void)
     return; 
                                  
 #ifdef RANGECHECK 
-  if ((unsigned)dc_x >= MAX_SCREENWIDTH
+  if ((unsigned)dc_x >= SCREENWIDTH
       || dc_yl < 0
-      || dc_yh >= MAX_SCREENHEIGHT)
+      || dc_yh >= SCREENHEIGHT)
     I_Error ( "R_DrawColumn: %i to %i at %i",
               dc_yl, dc_yh, dc_x);
 #endif 
@@ -497,9 +410,7 @@ void R_DrawTranslatedColumn (void)
   // Looks familiar.
   fracstep = dc_iscale; 
   frac = dc_texturemid + (dc_yl-centery)*fracstep; 
-
-  count++;        // killough 1/99: minor tuning
-
+  
   // Here we do an additional index re-mapping.
   do 
     {
@@ -510,11 +421,11 @@ void R_DrawTranslatedColumn (void)
       //  is mapped to gray, red, black/indigo. 
       
       *dest = dc_colormap[dc_translation[dc_source[frac>>FRACBITS]]];
-      dest += linesize;      // killough 11/98
+      dest += SCREENWIDTH;
         
       frac += fracstep; 
     }
-  while (--count); 
+  while (count--); 
 } 
 
 //
@@ -573,6 +484,8 @@ fixed_t ds_ystep;
 // start of a 64*64 tile image 
 byte *ds_source;        
 
+//#if !defined(DJGPP) && !defined(_WIN32) || defined(NOASM)
+// proff: In Win32 with VC50 it seems that R_DrawSan is faster in C than in ASM
 #ifndef DJGPP      // killough 2/15/98
 
 void R_DrawSpan (void) 
@@ -656,24 +569,26 @@ void R_DrawSpan (void)
 void R_InitBuffer(int width, int height)
 { 
   int i; 
+    
+  // Handle resize,
+  //  e.g. smaller view windows
+  //  with border and/or status bar.
 
-  linesize = SCREENWIDTH;    // killough 11/98
+  viewwindowx = (SCREENWIDTH-width) >> 1; 
 
   // Column offset. For windows.
 
-  for (i = width ; i--; )   // killough 11/98
+  for (i=0 ; i<width ; i++) 
     columnofs[i] = viewwindowx + i;
     
   // Same with base row offset.
 
   viewwindowy = width==SCREENWIDTH ? 0 : (SCREENHEIGHT-SBARHEIGHT-height)>>1; 
 
-  viewwindowy;   // killough 11/98
-
   // Preclaculate all row offsets.
 
-  for (i = height; i--; )
-    ylookup[i] = screens[0] + (i+viewwindowy)*linesize; // killough 11/98
+  for (i=0 ; i<height ; i++) 
+    ylookup[i] = screens[0] + (i+viewwindowy)*SCREENWIDTH; 
 } 
 
 //
@@ -685,17 +600,39 @@ void R_InitBuffer(int width, int height)
 
 void R_FillBackScreen (void) 
 { 
-  // killough 11/98: trick to shadow variables
-  int x = viewwindowx, y = viewwindowy; 
-  int viewwindowx = x, viewwindowy = y;  // killough 11/98
+  byte    *dest, *src;
+  int     x,y; 
   patch_t *patch;
 
-  if (scaledviewwidth == 320)
+  // killough 4/17/98: 
+  src = W_CacheLumpNum(firstflat +
+          R_FlatNumForName(gamemode == commercial ? "GRNROCK" : "FLOOR7_2"),
+            PU_CACHE);
+
+  dest = screens[1]; 
+         
+  for ( y = 0 ; y < SCREENHEIGHT/*-SBARHEIGHT*/; y++ ) // proff/nicolas
+//---------- draw the full screen height^^^^                          
+    { 
+      int x;
+      for (x=0 ; x<SCREENWIDTH/64 ; x++) 
+        { 
+          memcpy(dest, src+((y&63)<<6), 64); 
+          dest += 64; 
+        } 
+      if (SCREENWIDTH&63) 
+        { 
+          memcpy(dest, src+((y&63)<<6), SCREENWIDTH&63); 
+          dest += (SCREENWIDTH&63); 
+        } 
+    } 
+        
+// proff 08/17/98: Changed for high-res
+// proff/nicolas 09/20/98: Moved down for high-res
+  if (scaledviewwidth == SCREENWIDTH)
+//  if (scaledviewwidth == 320)
     return;
 
-  // killough 11/98: use the function in m_menu.c
-  M_DrawBackground(gamemode==commercial ? "GRNROCK" : "FLOOR7_2", screens[1]);
-        
   patch = W_CacheLumpName("brdr_t", PU_CACHE);
 
   for (x=0; x<scaledviewwidth; x+=8)
@@ -703,16 +640,16 @@ void R_FillBackScreen (void)
 
   patch = W_CacheLumpName("brdr_b",PU_CACHE);
 
-  for (x=0; x<scaledviewwidth; x+=8)   // killough 11/98:
-    V_DrawPatch (viewwindowx+x,viewwindowy+scaledviewheight,1,patch);
+  for (x=0; x<scaledviewwidth; x+=8)
+    V_DrawPatch (viewwindowx+x,viewwindowy+viewheight,1,patch);
 
   patch = W_CacheLumpName("brdr_l",PU_CACHE);
 
-  for (y=0; y<scaledviewheight; y+=8)             // killough 11/98
+  for (y=0; y<viewheight; y+=8)
     V_DrawPatch (viewwindowx-8,viewwindowy+y,1,patch);
   patch = W_CacheLumpName("brdr_r",PU_CACHE);
 
-  for (y=0; y<scaledviewheight; y+=8)             // killough 11/98
+  for (y=0; y<viewheight; y+=8)
     V_DrawPatch(viewwindowx+scaledviewwidth,viewwindowy+y,1,patch);
 
   // Draw beveled edge. 
@@ -727,12 +664,12 @@ void R_FillBackScreen (void)
               W_CacheLumpName("brdr_tr",PU_CACHE));
     
   V_DrawPatch(viewwindowx-8,
-              viewwindowy+scaledviewheight,             // killough 11/98
+              viewwindowy+viewheight,
               1,
               W_CacheLumpName("brdr_bl",PU_CACHE));
     
   V_DrawPatch(viewwindowx+scaledviewwidth,
-              viewwindowy+scaledviewheight,             // killough 11/98
+              viewwindowy+viewheight,
               1,
               W_CacheLumpName("brdr_br",PU_CACHE));
 } 
@@ -751,32 +688,116 @@ void R_VideoErase(unsigned ofs, int count)
 // Draws the border around the view
 //  for different size windows?
 //
-// killough 11/98: 
-// Rewritten to avoid relying on screen wraparound, so that it
-//
 
+void V_MarkRect(int x, int y, int width, int height); 
+ 
 void R_DrawViewBorder(void) 
 { 
-  int side, ofs, i;
+  int top, side, ofs, i;
+// proff/nicolas 09/20/98: Added for high-res (inspired by DosDOOM)
+  int side2;
  
-  if (scaledviewwidth == SCREENWIDTH) 
-    return;
+// proff/nicolas 09/20/98: Removed for high-res
+//  if (scaledviewwidth == SCREENWIDTH) 
+//    return; 
+  
+// proff/nicolas 09/20/98: Added for high-res (inspired by DosDOOM)
+  if (( SCREENWIDTH > 320 ) && ( SCREENHEIGHT != viewheight ))
+  {
+    ofs = ( SCREENHEIGHT - SBARHEIGHT ) * SCREENWIDTH;
+    side= ( SCREENWIDTH - 320 ) / 2; 
+	  side2 = side * 2;
 
-  // copy top
-  for (ofs = 0, i = viewwindowy; i--; ofs += SCREENWIDTH)
-    R_VideoErase(ofs, SCREENWIDTH); 
-
-  // copy sides
-  for (side = viewwindowx, i = scaledviewheight; i--;)
-    { 
-      R_VideoErase(ofs, side); 
+    R_VideoErase ( ofs, side );
+    
+    ofs += ( SCREENWIDTH - side );
+    for ( i = 1; i < SBARHEIGHT; i++ )
+	  {
+      R_VideoErase ( ofs, side2 );
       ofs += SCREENWIDTH;
-      R_VideoErase(ofs - side, side); 
+    }
+
+    R_VideoErase ( ofs, side );
+  }
+
+  if ( viewheight >= ( SCREENHEIGHT - SBARHEIGHT ))
+    return; // if high-res, don\B4t go any further!
+
+// proff/nicolas 09/20/98: End of addition
+
+  top = ((SCREENHEIGHT-SBARHEIGHT)-viewheight)/2; 
+  side = (SCREENWIDTH-scaledviewwidth)/2; 
+ 
+  // copy top and one line of left side 
+  R_VideoErase (0, top*SCREENWIDTH+side); 
+ 
+  // copy one line of right side and bottom 
+  ofs = (viewheight+top)*SCREENWIDTH-side; 
+  R_VideoErase (ofs, top*SCREENWIDTH+side); 
+  
+  // copy sides using wraparound 
+  ofs = top*SCREENWIDTH + SCREENWIDTH-side; 
+  side <<= 1;
+    
+  for (i=1 ; i<viewheight ; i++) 
+    { 
+      R_VideoErase (ofs, side); 
+      ofs += SCREENWIDTH; 
     } 
 
-  // copy bottom 
-  for (i = viewwindowy; i--; ofs += SCREENWIDTH)
-    R_VideoErase(ofs, SCREENWIDTH); 
- 
   V_MarkRect (0,0,SCREENWIDTH, SCREENHEIGHT-SBARHEIGHT); 
 } 
+
+//----------------------------------------------------------------------------
+//
+// $Log: r_draw.c,v $
+// Revision 1.16  1998/05/03  22:41:46  killough
+// beautification
+//
+// Revision 1.15  1998/04/19  01:16:48  killough
+// Tidy up last fix's code
+//
+// Revision 1.14  1998/04/17  15:26:55  killough
+// fix showstopper
+//
+// Revision 1.13  1998/04/12  01:57:51  killough
+// Add main_tranmap
+//
+// Revision 1.12  1998/03/23  03:36:28  killough
+// Use new 'fullcolormap' for fuzzy columns
+//
+// Revision 1.11  1998/02/23  04:54:59  killough
+// #ifdef out translucency code since its in asm
+//
+// Revision 1.10  1998/02/20  21:57:04  phares
+// Preliminarey sprite translucency
+//
+// Revision 1.9  1998/02/17  06:23:40  killough
+// #ifdef out code duplicated in asm for djgpp targets
+//
+// Revision 1.8  1998/02/09  03:18:02  killough
+// Change MAXWIDTH, MAXHEIGHT defintions
+//
+// Revision 1.7  1998/02/02  13:17:55  killough
+// performance tuning
+//
+// Revision 1.6  1998/01/27  16:33:59  phares
+// more testing
+//
+// Revision 1.5  1998/01/27  16:32:24  phares
+// testing
+//
+// Revision 1.4  1998/01/27  15:56:58  phares
+// Comment about invisibility
+//
+// Revision 1.3  1998/01/26  19:24:40  phares
+// First rev with no ^Ms
+//
+// Revision 1.2  1998/01/26  05:05:55  killough
+// Use unrolled version of R_DrawSpan
+//
+// Revision 1.1.1.1  1998/01/19  14:03:02  rand
+// Lee's Jan 19 sources
+//
+//
+//----------------------------------------------------------------------------

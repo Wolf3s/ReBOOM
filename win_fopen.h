@@ -16,6 +16,7 @@
 // DESCRIPTION:
 //      unicode paths for fopen() on Windows
 
+#ifdef WINDOWS
 #ifndef __WIN_D_FOPEN__
 #define __WIN_D_FOPEN__
 
@@ -54,5 +55,5 @@ int D_mkdir(const char *dirname);
 #undef  mkdir
 #define mkdir(d) D_mkdir(d)
 #endif
-
+#endif
 #endif
