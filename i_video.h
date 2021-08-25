@@ -59,5 +59,4 @@ void I_ResetScreen(void);   // killough 10/98
 
 extern int use_vsync;  // killough 2/8/98: controls whether vsync is called
 extern int page_flip;  // killough 8/15/98: enables page flipping (320x200)
-
 #endif

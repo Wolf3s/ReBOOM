@@ -65,9 +65,6 @@ extern const fixed_t finetangent[FINEANGLES/2];
 #define ANG90   0x40000000
 #define ANG180  0x80000000
 #define ANG270  0xc0000000
-#define ANG1      (ANG45/45)
-#define ANG60     (ANG180 / 3)
-#define ANGLE_MAX 0xffffffff
 
 #define SLOPERANGE 2048
 #define SLOPEBITS    11
@@ -82,37 +79,5 @@ extern const angle_t tantoangle[SLOPERANGE+1];
 
 // Utility function, called by R_PointToAngle.
 int SlopeDiv(unsigned num, unsigned den);
-
-// More utility functions, courtesy of Quasar (James Haley).
-// These are straight from Eternity so demos stay in sync.
-inline static angle_t FixedToAngle(fixed_t a)
-{
-    return (angle_t)(((unsigned long long)a * ANG1) >> FRACBITS);
-}
-
-inline static fixed_t AngleToFixed(angle_t a)
-{
-    return (fixed_t)(((unsigned long long)a << FRACBITS) / ANG1);
-}
-
-// [XA] Clamped angle->slope, for convenience
-inline static fixed_t AngleToSlope(int a)
-{
-    if (a > ANG90)
-        return finetangent[0];
-    else if (-a > ANG90)
-        return finetangent[FINEANGLES / 2 - 1];
-    else
-        return finetangent[(ANG90 - a) >> ANGLETOFINESHIFT];
-}
-
-// [XA] Ditto, using fixed-point-degrees input
-inline static fixed_t DegToSlope(fixed_t a)
-{
-    if (a >= 0)
-        return AngleToSlope(FixedToAngle(a));
-    else
-        return AngleToSlope(-(int)FixedToAngle(-a));
-}
 
 #endif

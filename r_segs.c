@@ -161,7 +161,7 @@ void R_RenderMaskedSegRange(drawseg_t *ds, int x1, int x2)
       {
         if (!fixedcolormap)      // calculate lighting
           {                             // killough 11/98:
-            unsigned index = spryscale>>(LIGHTSCALESHIFT + 1);
+            unsigned index = spryscale>>(LIGHTSCALESHIFT);
 
             if (index >=  MAXLIGHTSCALE )
               index = MAXLIGHTSCALE-1;
@@ -276,7 +276,7 @@ static void R_RenderSegLoop (void)
           texturecolumn >>= FRACBITS;
 
           // calculate lighting
-          index = rw_scale>>(LIGHTSCALESHIFT + 1);  // killough 11/98
+          index = rw_scale>>(LIGHTSCALESHIFT);  // killough 11/98
 
           if (index >=  MAXLIGHTSCALE )
             index = MAXLIGHTSCALE-1;

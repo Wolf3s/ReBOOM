@@ -239,17 +239,15 @@ void V_CopyRect(int srcx, int srcy, int srcscrn, int width,
 
   V_MarkRect (destx, desty, width, height);
 
-  width <<= 1;
-  height <<= 1;
-  src = screens[srcscrn] + SCREENWIDTH * 4 * srcy + srcx * 2;
-  dest = screens[destscrn] + SCREENWIDTH * 4 * desty + destx * 2;
+  src = screens[srcscrn]+SCREENWIDTH*srcy+srcx;
+  dest = screens[destscrn]+SCREENWIDTH*desty+destx;
 
-  for (; height > 0; height--)
-  {
-	  memcpy(dest, src, width);
-	  src += SCREENWIDTH * 2;
-	  dest += SCREENWIDTH * 2;
-  }
+  for ( ; height>0 ; height--)
+	{
+	  memcpy (dest, src, width);
+	  src += SCREENWIDTH;
+	  dest += SCREENWIDTH;
+	}
 }
 
 //
@@ -294,59 +292,48 @@ void V_DrawPatchGeneral(int x, int y, int scrn, patch_t *patch,
   if (!scrn)
     V_MarkRect (x, y, SHORT(patch->width), SHORT(patch->height));
 
-  byte* desttop = screens[scrn] + y * SCREENWIDTH * 4 + x * 2;
+      byte *desttop = screens[scrn]+y*SCREENWIDTH+x;
 
-  for (; col != colstop; col += colstep, desttop += 2)
-  {
-	  const column_t* column =
-		  (const column_t*)((byte*)patch + LONG(patch->columnofs[col]));
+      for ( ; col != colstop ; col += colstep, desttop++)
+	{
+	  const column_t *column = 
+	    (const column_t *)((byte *)patch + LONG(patch->columnofs[col]));
 
 	  // step through the posts in a column
 	  while (column->topdelta != 0xff)
-	  {
-		  // killough 2/21/98: Unrolled and performance-tuned
+	    {
+	      // killough 2/21/98: Unrolled and performance-tuned
 
-		  register const byte* source = (byte*)column + 3;
-		  register byte* dest = desttop + column->topdelta * SCREENWIDTH * 4;
-		  register int count = column->length;
+	      register const byte *source = (byte *) column + 3;
+	      register byte *dest = desttop + column->topdelta*SCREENWIDTH;
+	      register int count = column->length;
 
-		  if ((count -= 4) >= 0)
-			  do
-			  {
-				  register byte s0, s1;
-				  s0 = source[0];
-				  s1 = source[1];
-				  dest[0] = s0;
-				  dest[SCREENWIDTH * 4] = s1;
-				  dest[SCREENWIDTH * 2] = s0;
-				  dest[SCREENWIDTH * 6] = s1;
-				  dest[1] = s0;
-				  dest[SCREENWIDTH * 4 + 1] = s1;
-				  dest[SCREENWIDTH * 2 + 1] = s0;
-				  dest[SCREENWIDTH * 6 + 1] = s1;
-				  dest += SCREENWIDTH * 8;
-				  s0 = source[2];
-				  s1 = source[3];
-				  source += 4;
-				  dest[0] = s0;
-				  dest[SCREENWIDTH * 4] = s1;
-				  dest[1] = s0;
-				  dest[SCREENWIDTH * 4 + 1] = s1;
-				  dest[SCREENWIDTH * 2] = s0;
-				  dest[SCREENWIDTH * 6] = s1;
-				  dest[SCREENWIDTH * 2 + 1] = s0;
-				  dest[SCREENWIDTH * 6 + 1] = s1;
-				  dest += SCREENWIDTH * 8;
-			  } while ((count -= 4) >= 0);
-			  if (count += 4)
-				  do
-				  {
-					  dest[0] = dest[SCREENWIDTH * 2] = dest[1] =
-						  dest[SCREENWIDTH * 2 + 1] = *source++;
-					  dest += SCREENWIDTH * 4;
-				  } while (--count);
-				  column = (column_t*)(source + 1); //killough 2/21/98 even faster
-	  }
+	      if ((count-=4)>=0)
+		do
+		  {
+		    register byte s0,s1;
+		    s0 = source[0];
+		    s1 = source[1];
+		    dest[0] = s0;
+		    dest[SCREENWIDTH] = s1;
+		    dest += SCREENWIDTH*2;
+		    s0 = source[2];
+		    s1 = source[3];
+		    source += 4;
+		    dest[0] = s0;
+		    dest[SCREENWIDTH] = s1;
+		    dest += SCREENWIDTH*2;
+		  }
+		while ((count-=4)>=0);
+	      if (count+=4)
+		do
+		  {
+		    *dest = *source++;
+		    dest += SCREENWIDTH;
+		  }
+		while (--count);
+	      column = (column_t *)(source+1); //killough 2/21/98 even faster
+	    }
     }
 }
 
@@ -393,63 +380,56 @@ void V_DrawPatchTranslated(int x, int y, int scrn, patch_t *patch,
   col = 0;
   w = SHORT(patch->width);
   
-  byte* desttop = screens[scrn] + y * SCREENWIDTH * 4 + x * 2;
+      byte *desttop = screens[scrn]+y*SCREENWIDTH+x;
 
-  for (; col < w; col++, desttop += 2)
-  {
-	  const column_t* column =
-		  (const column_t*)((byte*)patch + LONG(patch->columnofs[col]));
+      for ( ; col<w ; col++, desttop++)
+	{
+	  const column_t *column =
+	    (const column_t *)((byte *)patch + LONG(patch->columnofs[col]));
 
 	  // step through the posts in a column
 	  while (column->topdelta != 0xff)
-	  {
-		  // killough 2/21/98: Unrolled and performance-tuned
+	    {
+	      // killough 2/21/98: Unrolled and performance-tuned
 
-		  register const byte* source = (byte*)column + 3;
-		  register byte* dest = desttop + column->topdelta * SCREENWIDTH * 4;
-		  register int count = column->length;
+	      register const byte *source = (byte *) column + 3;
+	      register byte *dest = desttop + column->topdelta*SCREENWIDTH;
+	      register int count = column->length;
 
-		  if ((count -= 4) >= 0)
-			  do
-			  {
-				  register byte s0, s1;
-				  s0 = source[0];
-				  s1 = source[1];
-				  s0 = outr[s0];
-				  s1 = outr[s1];
-				  dest[0] = s0;
-				  dest[SCREENWIDTH * 4] = s1;
-				  dest[SCREENWIDTH * 2] = s0;
-				  dest[SCREENWIDTH * 6] = s1;
-				  dest[1] = s0;
-				  dest[SCREENWIDTH * 4 + 1] = s1;
-				  dest[SCREENWIDTH * 2 + 1] = s0;
-				  dest[SCREENWIDTH * 6 + 1] = s1;
-				  dest += SCREENWIDTH * 8;
-				  s0 = source[2];
-				  s1 = source[3];
-				  s0 = outr[s0];
-				  s1 = outr[s1];
-				  source += 4;
-				  dest[0] = s0;
-				  dest[SCREENWIDTH * 4] = s1;
-				  dest[SCREENWIDTH * 2] = s0;
-				  dest[SCREENWIDTH * 6] = s1;
-				  dest[1] = s0;
-				  dest[SCREENWIDTH * 4 + 1] = s1;
-				  dest[SCREENWIDTH * 2 + 1] = s0;
-				  dest[SCREENWIDTH * 6 + 1] = s1;
-				  dest += SCREENWIDTH * 8;
-			  } while ((count -= 4) >= 0);
-			  if (count += 4)
-				  do
-				  {
-					  dest[0] = dest[SCREENWIDTH * 2] = dest[1] =
-						  dest[SCREENWIDTH * 2 + 1] = outr[*source++];
-					  dest += SCREENWIDTH * 4;
-				  } while (--count);
-				  column = (column_t*)(source + 1);
-	  }
+	      if ((count-=4)>=0)
+		do
+		  {
+		    register byte s0,s1;
+		    s0 = source[0];
+		    s1 = source[1];
+
+		    //jff 2/18/98 apply red->range color translation
+		    //2/18/98 don't brightness map for speed
+
+		    s0 = outr[s0];
+		    s1 = outr[s1];
+		    dest[0] = s0;
+		    dest[SCREENWIDTH] = s1;
+		    dest += SCREENWIDTH*2;
+		    s0 = source[2];
+		    s1 = source[3];
+		    s0 = outr[s0];
+		    s1 = outr[s1];
+		    source += 4;
+		    dest[0] = s0;
+		    dest[SCREENWIDTH] = s1;
+		    dest += SCREENWIDTH*2;
+		  }
+		while ((count-=4)>=0);
+	      if (count+=4)
+		do
+		  {
+		    *dest = outr[*source++];
+		    dest += SCREENWIDTH;
+		  }
+		while (--count);
+	      column = (column_t *)(source+1);
+	    }
 
     }
 }
@@ -480,18 +460,14 @@ void V_DrawBlock(int x, int y, int scrn, int width, int height, byte *src)
 
   V_MarkRect(x, y, width, height);
 
-  byte* dest = screens[scrn] + y * SCREENWIDTH * 4 + x * 2;
+      byte *dest = screens[scrn] + y*SCREENWIDTH+x;
 
-  if (width)
-	  while (height--)
-	  {
-		  byte* d = dest;
-		  int t = width;
-		  do
-			  d[SCREENWIDTH * 2] = d[SCREENWIDTH * 2 + 1] = d[0] = d[1] = *src++;
-		  while (d += 2, --t);
-		  dest += SCREENWIDTH * 4;
-	  }
+      while (height--)
+	{
+	  memcpy (dest, src, width);
+	  src += width;
+	  dest += SCREENWIDTH;
+	}
 }
 
 //
@@ -517,15 +493,13 @@ void V_GetBlock(int x, int y, int scrn, int width, int height, byte *dest)
     I_Error ("Bad V_DrawBlock");
 #endif
 
-  y <<= 2, x <<= 1, width <<= 1, height <<= 1;
-
-  src = screens[scrn] + y * SCREENWIDTH + x;
+  src = screens[scrn] + y*SCREENWIDTH+x;
   while (height--)
-  {
-	  memcpy(dest, src, width);
-	  src += SCREENWIDTH << 1;
-	  dest += width;
-  }
+    {
+      memcpy (dest, src, width);
+      src += SCREENWIDTH;
+      dest += width;
+    }
 }
 
 //
@@ -536,7 +510,8 @@ void V_GetBlock(int x, int y, int scrn, int width, int height, byte *dest)
 
 void V_Init(void)
 {
-   int size = 1 ? SCREENWIDTH * SCREENHEIGHT * 4 : SCREENWIDTH * SCREENHEIGHT;
+   // Gibbon - removed stupid hires completely
+   int size = SCREENWIDTH*SCREENHEIGHT;
    static byte *s;
    
    if(s)

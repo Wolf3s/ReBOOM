@@ -390,13 +390,12 @@ P_UseSpecialLine
         
     case 11:
       // Exit level
-
       // killough 10/98: prevent zombies from exiting levels
-      if (thing->player && thing->player->health <= 0)
-  {
-    S_StartSound(thing, sfx_noway);
-    return false;
-  }
+        if (thing->player && thing->player->health <= 0)
+        {
+            S_StartSound(thing, sfx_noway);
+            return false;
+        }
  
       P_ChangeSwitchTexture(line,0);
       G_ExitLevel ();
@@ -472,12 +471,11 @@ P_UseSpecialLine
       // Secret EXIT
 
       // killough 10/98: prevent zombies from exiting levels
-      if (thing->player && thing->player->health <= 0)
-  {
-    S_StartSound(thing, sfx_noway);
-    return false;
-  }
- 
+        if (thing->player && thing->player->health <= 0)
+        {
+            S_StartSound(thing, sfx_noway);
+            return false;
+        }
       P_ChangeSwitchTexture(line,0);
       G_SecretExitLevel ();
       break;
@@ -502,7 +500,7 @@ P_UseSpecialLine
         
     case 103:
       // Open Door
-      if (EV_DoDoor(line,doorOpen))
+      if (EV_DoDoor(line, doorOpen))
         P_ChangeSwitchTexture(line,0);
       break;
         
@@ -1015,7 +1013,7 @@ P_UseSpecialLine
         
     case 61:
       // Open Door
-      if (EV_DoDoor(line,doorOpen))
+      if (EV_DoDoor(line, doorOpen))
         P_ChangeSwitchTexture(line,1);
       break;
         

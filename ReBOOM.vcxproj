@@ -452,7 +452,6 @@
     <ClCompile Include="m_cheat.c" />
     <ClCompile Include="m_menu.c" />
     <ClCompile Include="m_misc.c" />
-    <ClCompile Include="m_misc2.c" />
     <ClCompile Include="m_random.c" />
     <ClCompile Include="p_ceilng.c" />
     <ClCompile Include="p_doors.c" />
@@ -491,8 +490,6 @@
     <ClCompile Include="txt_utf8.c" />
     <ClCompile Include="version.c" />
     <ClCompile Include="v_video.c" />
-    <ClCompile Include="win_fopen.c" />
-    <ClCompile Include="win_opendir.c" />
     <ClCompile Include="wi_stuff.c" />
     <ClCompile Include="w_wad.c" />
     <ClCompile Include="z_zone.c" />
@@ -533,7 +530,6 @@
     <ClInclude Include="m_fixed.h" />
     <ClInclude Include="m_menu.h" />
     <ClInclude Include="m_misc.h" />
-    <ClInclude Include="m_misc2.h" />
     <ClInclude Include="m_random.h" />
     <ClInclude Include="m_swap.h" />
     <ClInclude Include="p_enemy.h" />
@@ -567,8 +563,6 @@
     <ClInclude Include="txt_utf8.h" />
     <ClInclude Include="version.h" />
     <ClInclude Include="v_video.h" />
-    <ClInclude Include="win_fopen.h" />
-    <ClInclude Include="win_opendir.h" />
     <ClInclude Include="wi_stuff.h" />
     <ClInclude Include="w_wad.h" />
     <ClInclude Include="z_zone.h" />

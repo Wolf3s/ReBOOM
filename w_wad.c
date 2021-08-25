@@ -155,11 +155,7 @@ static void W_AddFile(const char *name) // killough 1/31/98: static, const
   if ((handle = open(filename,O_RDONLY | O_BINARY)) == -1)
   #endif
     {
-#ifdef WINDOWS
-      if (strlen(name) > 4 && !_stricmp(name+strlen(name)-4 , ".lmp" ))
-#else
-      if (strlen(name) > 4 && !strcasecmp(name + strlen(name) - 4, ".lmp"))
-#endif
+      if (strlen(name) > 4 && !strcasecmp(name+strlen(name)-4 , ".lmp" ))
 	{
 	  free(filename);
 	  return;
@@ -178,11 +174,7 @@ static void W_AddFile(const char *name) // killough 1/31/98: static, const
   startlump = numlumps;
 
   // killough:
-#ifdef WINDOWS
-  if (strlen(filename)<=4 || _stricmp(filename+strlen(filename)-4, ".wad" ))
-#else
-  if (strlen(filename) <= 4 || strcasecmp(filename + strlen(filename) - 4, ".wad"))
-#endif
+  if (strlen(filename)<=4 || strcasecmp(filename+strlen(filename)-4, ".wad" ))
     {
       // single lump file
       fileinfo = &singleinfo;
@@ -237,13 +229,8 @@ static void W_AddFile(const char *name) // killough 1/31/98: static, const
 
 static int IsMarker(const char *marker, const char *name)
 {
-#ifdef WINDOWS
-  return !_strnicmp(name, marker, 8) ||
-    (*name == *marker && !_strnicmp(name+1, marker, 7));
-#else
-    return !strncasecmp(name, marker, 8) ||
-        (*name == *marker && !strncasecmp(name + 1, marker, 7));
-#endif
+  return !strncasecmp(name, marker, 8) ||
+    (*name == *marker && !strncasecmp(name+1, marker, 7));
 }
 
 // killough 4/17/98: add namespace tags
@@ -350,13 +337,8 @@ int (W_CheckNumForName)(register const char *name, register int namespace)
   // worth the overhead, considering namespace collisions are rare in
   // Doom wads.
 
-#ifdef WINDOWS
-  while (i >= 0 && (_strnicmp(lumpinfo[i].name, name, 8) ||
-                    lumpinfo[i].namespace != namespace))
-#else
   while (i >= 0 && (strncasecmp(lumpinfo[i].name, name, 8) ||
-      lumpinfo[i].namespace != namespace))
-#endif
+                    lumpinfo[i].namespace != namespace))
     i = lumpinfo[i].next;
 
   // Return the matching lump, or -1 if none found.

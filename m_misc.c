@@ -119,6 +119,20 @@ default_t defaults[] = {
     "code used by Allegro to select sounds driver, -1 is autodetect"
   },
 
+  { // killough 8/15/98: page flipping option
+    "page_flip",
+    (config_t*)&page_flip, NULL,
+    {1}, {0,1}, number, ss_none, wad_no,
+    "1 to enable page flipping to avoid display tearing"
+  },
+
+  {
+    "use_vsync",
+    (config_t*)&use_vsync, NULL,
+    {1}, {0,1}, number, ss_none, wad_no,
+    "1 to enable wait for vsync to avoid display tearing"
+  },
+
   {
     "music_card",
     (config_t *) &default_mus_card, NULL,
@@ -1380,11 +1394,7 @@ default_t *M_LookupDefault(const char *name)
 
   // Look up name in hash table
   for (dp = defaults[default_hash(name)].first;
-#ifdef WINDOWS
-       dp && _stricmp(name, dp->name); dp = dp->next);
-#else
-      dp&& strcasecmp(name, dp->name); dp = dp->next);
-#endif
+       dp && strcasecmp(name, dp->name); dp = dp->next);
 
   return dp;
 }

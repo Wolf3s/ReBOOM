@@ -86,7 +86,7 @@ typedef struct
 #pragma pack(pop)
 #endif
 
-#define MAXANIMS 128                   // no longer a strict limit -- killough
+#define MAXANIMS 32                   // no longer a strict limit -- killough
 static anim_t *lastanim, *anims;      // new structure w/o limits -- killough
 static size_t maxanims;
 

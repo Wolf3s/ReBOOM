@@ -193,8 +193,6 @@ int wipe_ScreenWipe(int wipeno, int x, int y, int width, int height, int ticks)
 {
   static boolean go;                               // when zero, stop the wipe
 
-  width <<= 1, height <<= 1, ticks <<= 1;
-
   if (!go)                                         // initial stuff
     {
       go = 1;

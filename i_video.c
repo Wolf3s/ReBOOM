@@ -47,15 +47,14 @@
 #include "wi_stuff.h"
 #include "i_video.h"
 
-static SDL_Surface *sdlscreen;
+SDL_Surface *sdlscreen;
 
 // [FG] rendering window, renderer, intermediate ARGB frame buffer and texture
 
-static SDL_Window* screen;
-static SDL_Renderer* renderer;
-static SDL_Surface* argbbuffer;
-static SDL_Texture* texture;
-static SDL_Rect blit_rect = { 0 };
+SDL_Window *screen;
+SDL_Renderer *renderer;
+SDL_Surface *argbbuffer;
+SDL_Texture *texture;
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -159,6 +158,8 @@ int grabmouse = 1;
 boolean screenvisible;
 static boolean window_focused;
 static boolean fullscreen;
+int page_flip;     // killough 8/15/98: enables page flipping
+static int in_page_flip;
 
 //
 // MouseShouldBeGrabbed
@@ -516,10 +517,9 @@ void I_UpdateNoBlit (void)
 {
 }
 
-// Adam - Making vsync and page flipping permanent, no reason to have them off
-int use_vsync = 1;     // killough 2/8/98: controls whether vsync is called
-int page_flip = 1;     // killough 8/15/98: enables page flipping
-static int in_page_flip;
+
+int use_vsync;     // killough 2/8/98: controls whether vsync is called
+
 static int in_graphics_mode;
 static int linear;
 static int scroll_offset;
@@ -546,21 +546,13 @@ void I_FinishUpdate(void)
       lasttic = i;
       if (tics > 20)
          tics = 20;
-      for (i = 0; i < tics * 2; i += 2)
-          s[(SCREENHEIGHT - 1) * SCREENWIDTH * 4 + i] =
-          s[(SCREENHEIGHT - 1) * SCREENWIDTH * 4 + i + 1] =
-          s[(SCREENHEIGHT - 1) * SCREENWIDTH * 4 + i + SCREENWIDTH * 2] =
-          s[(SCREENHEIGHT - 1) * SCREENWIDTH * 4 + i + SCREENWIDTH * 2 + 1] =
-          0xff;
-      for (; i < 20 * 2; i += 2)
-          s[(SCREENHEIGHT - 1) * SCREENWIDTH * 4 + i] =
-          s[(SCREENHEIGHT - 1) * SCREENWIDTH * 4 + i + 1] =
-          s[(SCREENHEIGHT - 1) * SCREENWIDTH * 4 + i + SCREENWIDTH * 2] =
-          s[(SCREENHEIGHT - 1) * SCREENWIDTH * 4 + i + SCREENWIDTH * 2 + 1] =
-          0x0;
+         for (i=0 ; i<tics*2 ; i+=2)
+            s[(SCREENHEIGHT-1)*SCREENWIDTH + i] = 0xff;
+         for ( ; i<20*2 ; i+=2)
+            s[(SCREENHEIGHT-1)*SCREENWIDTH + i] = 0x0;
    }
 
-   SDL_LowerBlit(sdlscreen, &blit_rect, argbbuffer, &blit_rect);
+   SDL_BlitSurface(sdlscreen, NULL, argbbuffer, NULL);
 
    SDL_UpdateTexture(texture, NULL, argbbuffer->pixels, argbbuffer->pitch);
 
@@ -575,7 +567,7 @@ void I_FinishUpdate(void)
 
 void I_ReadScreen(byte *scr)
 {
-    int size = 1 ? SCREENWIDTH * SCREENHEIGHT * 4 : SCREENWIDTH * SCREENHEIGHT;
+   int size = SCREENWIDTH*SCREENHEIGHT;
 
    // haleyjd
    memcpy(scr, *screens, size);
@@ -643,12 +635,6 @@ static void I_InitGraphicsMode(void)
       firsttime = false;
    }
 
-    v_w = SCREENWIDTH*2;
-    v_h = SCREENHEIGHT*2;
-
-    blit_rect.w = v_w;
-    blit_rect.h = v_h;
-
    // haleyjd 10/09/05: from Chocolate DOOM
    // mouse grabbing   
    if(M_CheckParm("-grabmouse"))
@@ -666,17 +652,6 @@ static void I_InitGraphicsMode(void)
       fullscreen = true; // 5/11/09: forgotten O_O
       flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
    }
-
-   if (M_CheckParm("-1"))
-       scalefactor = 1;
-   else if (M_CheckParm("-2"))
-       scalefactor = 2;
-   else if (M_CheckParm("-3"))
-       scalefactor = 3;
-   else if (M_CheckParm("-4"))
-       scalefactor = 4;
-   else if (M_CheckParm("-5"))
-       scalefactor = 5;
 
    if(M_CheckParm("-aspect"))
       useaspect = true;
@@ -734,17 +709,14 @@ static void I_InitGraphicsMode(void)
        use_vsync = false;
    }
 
-   // [FG] create renderer
-
    if (renderer != NULL)
    {
-       SDL_DestroyRenderer(renderer);
-       texture = NULL;
+      SDL_DestroyRenderer(renderer);
+      texture = NULL;
    }
 
    renderer = SDL_CreateRenderer(screen, -1, flags);
 
-   // [FG] try again without hardware acceleration
    if (renderer == NULL && page_flip)
    {
        flags |= SDL_RENDERER_SOFTWARE;
@@ -761,8 +733,8 @@ static void I_InitGraphicsMode(void)
 
    if (renderer == NULL)
    {
-       I_Error("Error creating renderer for screen window: %s",
-           SDL_GetError());
+      I_Error("Error creating renderer for screen window: %s",
+              SDL_GetError());
    }
 
    SDL_RenderSetLogicalSize(renderer, v_w, actualheight);
@@ -850,6 +822,7 @@ void I_ResetScreen(void)
    I_ShutdownGraphics();     // Switch out of old graphics mode
    
    changeres = true; // haleyjd 05/11/09
+   in_page_flip = page_flip;
 
    I_InitGraphicsMode();     // Switch to new graphics mode
    
@@ -881,8 +854,6 @@ void I_InitGraphics(void)
   //
 
   atexit(I_ShutdownGraphics);
-
-  in_page_flip = page_flip;
 
   I_InitGraphicsMode();    // killough 10/98
 }

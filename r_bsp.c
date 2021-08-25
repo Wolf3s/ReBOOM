@@ -88,7 +88,7 @@ typedef struct {
 // have anything to do with visplanes, but it had everything to do with these
 // clip posts.
 
-#define MAXSEGS 4096
+#define MAXSEGS (MAX_SCREENWIDTH/2+1)   /* killough 1/11/98, 2/8/98 */
 
 // newend is one past the last valid seg
 static cliprange_t *newend;

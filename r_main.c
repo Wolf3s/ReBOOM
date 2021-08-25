@@ -347,8 +347,8 @@ void R_ExecuteSetViewSize (void)
       scaledviewheight = (setblocks*168/10) & ~7;        // killough 11/98
     }
 
-  viewwidth = scaledviewwidth << 1;
-  viewheight = scaledviewheight << 1;
+  viewwidth = scaledviewwidth;
+  viewheight = scaledviewheight;
 
   centery = viewheight/2;
   centerx = viewwidth/2;
@@ -575,8 +575,8 @@ void R_RenderPlayerView (player_t* player)
           c[i] = t=='/' ? color : t;
         }
       if (gametic-lastshottic < TICRATE*2 && gametic-lastshottic > TICRATE/8)
-        V_DrawBlock((viewwindowx +  viewwidth/2 - 24) >> 1,
-                    (viewwindowy + viewheight/2 - 24) >> 1, 0, 47, 47, c);
+        V_DrawBlock((viewwindowx +  viewwidth/2 - 24),
+                    (viewwindowy + viewheight/2 - 24), 0, 47, 47, c);
       R_DrawViewBorder();
     }
 

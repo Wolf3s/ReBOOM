@@ -54,7 +54,7 @@
 #define SIL_TOP     2
 #define SIL_BOTH    3
 
-#define MAXDRAWSEGS   8192
+#define MAXDRAWSEGS   256
 
 //
 // INTERNAL MAP TYPES

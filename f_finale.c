@@ -601,16 +601,15 @@ static void F_DrawPatchCol(int x, patch_t *patch, int col)
 
   // step through the posts in a column
     while (column->topdelta != 0xff)
-    {
-        byte* desttop = screens[0] + x * 2;
-        const byte* source = (byte*)column + 3;
-        byte* dest = desttop + column->topdelta * SCREENWIDTH * 4;
-        int count = column->length;
-        for (; count--; dest += SCREENWIDTH * 4)
-            dest[0] = dest[SCREENWIDTH * 2] = dest[1] = dest[SCREENWIDTH * 2 + 1] =
-            *source++;
-        column = (column_t*)(source + 1);
-    }
+      {
+	byte *desttop = screens[0] + x;
+	const byte *source = (byte *) column + 3;
+	byte *dest = desttop + column->topdelta*SCREENWIDTH;
+	int count = column->length;
+	for (;count--; dest += SCREENWIDTH)
+	  *dest = *source++;
+	column = (column_t *)(source+1);
+      }
 }
 
 

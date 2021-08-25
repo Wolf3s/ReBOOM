@@ -110,9 +110,6 @@ size_t     num_deathmatchstarts;   // killough
 mapthing_t *deathmatch_p;
 mapthing_t playerstarts[MAXPLAYERS];
 
-int blockmapxneg = -257;
-int blockmapyneg = -257;
-
 //
 // P_LoadVertexes
 //
@@ -501,11 +498,7 @@ void P_LoadSideDefs2(int lump)
           break;
 
         case 260: // killough 4/11/98: apply translucency to 2s normal texture
-#ifdef WINDOWS
-          sd->midtexture = _stricmp("TRANMAP", msd->midtexture, 8) ?
-#else
           sd->midtexture = strncasecmp("TRANMAP", msd->midtexture, 8) ?
-#endif
             (sd->special = W_CheckNumForName(msd->midtexture)) < 0 ||
             W_LumpLength(sd->special) != 65536 ?
             sd->special=0, R_TextureNumForName(msd->midtexture) :

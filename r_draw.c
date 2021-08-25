@@ -283,18 +283,96 @@ void R_DrawTLColumn (void)
 //
 
 #define FUZZTABLE 50 
-// proff 08/17/98: Changed for high-res
-//#define FUZZOFF (SCREENWIDTH)
-#define FUZZOFF 1
+
+/*
+// killough 11/98: convert fuzzoffset to be screenwidth-independent
+static const int fuzzoffset[FUZZTABLE] = {
+  0,-1,0,-1,0,0,-1,
+  0,0,-1,0,0,0,-1,
+  0,0,0,-1,-1,-1,-1,
+  0,-1,-1,0,0,0,0,-1,
+  0,-1,0,0,-1,-1,0,
+  0,-1,-1,-1,-1,0,0,
+  0,0,-1,0,0,-1,0 
+}; 
+
+static int fuzzpos = 0; 
+
+//
+// Framebuffer postprocessing.
+// Creates a fuzzy image by copying pixels
+//  from adjacent ones to left and right.
+// Used with an all black colormap, this
+//  could create the SHADOW effect,
+//  i.e. spectres and invisible players.
+//
+
+void R_DrawFuzzColumn(void) 
+{ 
+  int      count; 
+  byte     *dest; 
+
+  // Adjust borders. Low... 
+  if (!dc_yl) 
+    dc_yl = 1;
+
+  // .. and high.
+  if (dc_yh == viewheight-1) 
+    dc_yh = viewheight - 2; 
+                 
+  count = dc_yh - dc_yl; 
+
+  // Zero length.
+  if (count < 0) 
+    return; 
+    
+#ifdef RANGECHECK 
+  if ((unsigned) dc_x >= MAX_SCREENWIDTH
+      || dc_yl < 0 
+      || dc_yh >= MAX_SCREENHEIGHT)
+    I_Error ("R_DrawFuzzColumn: %i to %i at %i",
+             dc_yl, dc_yh, dc_x);
+#endif
+
+  // Keep till detailshift bug in blocky mode fixed,
+  //  or blocky mode removed.
+
+  // Does not work with blocky mode.
+  dest = ylookup[dc_yl] + columnofs[dc_x];
+  
+  // Looks like an attempt at dithering,
+  // using the colormap #6 (of 0-31, a bit brighter than average).
+
+  count++;        // killough 1/99: minor tuning
+
+  do 
+    {
+      // Lookup framebuffer, and retrieve
+      // a pixel that is either one row
+      // above or below the current one.
+      // Add index from colormap to index.
+      // killough 3/20/98: use fullcolormap instead of colormaps
+      // killough 11/98: use linesize
+
+      *dest = fullcolormap[6*256+dest[fuzzoffset[fuzzpos] ^ linesize]]; 
+
+      dest += linesize;             // killough 11/98
+
+      // Clamp table lookup index.
+      fuzzpos &= (fuzzpos - FUZZTABLE) >> (8*sizeof fuzzpos-1); //killough 1/99
+    } 
+  while (--count);
+}
+*/
 
 static const int fuzzoffset[FUZZTABLE] = {
-  FUZZOFF,-FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,
-  FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,
-  FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,-FUZZOFF,-FUZZOFF,-FUZZOFF,
-  FUZZOFF,-FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,
-  FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,-FUZZOFF,FUZZOFF,
-  FUZZOFF,-FUZZOFF,-FUZZOFF,-FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,
-  FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF 
+  1,0,1,0,1,1,0,
+  1,1,0,1,1,1,0,
+  1,1,1,0,0,0,0,
+  1,0,0,1,1,1,1,0,
+  1,0,1,1,0,0,1,
+  1,0,0,0,0,1,1,
+  1,1,0,1,1,0,1 
 }; 
 
 static int fuzzpos = 0; 
@@ -366,17 +444,15 @@ void R_DrawFuzzColumn(void)
      //  left or right of the current one.
      // Add index from colormap to index.
      // killough 3/20/98: use fullcolormap instead of colormaps
-
-                //sf : hires
      *dest = fullcolormap[6*256+
-                          dest[fuzzoffset[fuzzpos] ?   SCREENWIDTH<<1 
-                                                   : -(SCREENWIDTH<<1)]];
+                          dest[fuzzoffset[fuzzpos] ?   SCREENWIDTH 
+                                                   : -(SCREENWIDTH)]];
      
      // Clamp table lookup index.
      if (++fuzzpos == FUZZTABLE) 
         fuzzpos = 0;
         
-     dest += SCREENWIDTH<<1;
+     dest += SCREENWIDTH;
 
      frac += fracstep; 
   } 
@@ -581,28 +657,22 @@ void R_InitBuffer(int width, int height)
 { 
   int i; 
 
-  linesize = SCREENWIDTH << 1;    // killough 11/98
-
-  // Handle resize,
-  //  e.g. smaller view windows
-  //  with border and/or status bar.
-
-  viewwindowx = (SCREENWIDTH - width) >> !1;
+  linesize = SCREENWIDTH;    // killough 11/98
 
   // Column offset. For windows.
 
-  for (i = width << 1 ; i--; )   // killough 11/98
+  for (i = width ; i--; )   // killough 11/98
     columnofs[i] = viewwindowx + i;
     
   // Same with base row offset.
 
   viewwindowy = width==SCREENWIDTH ? 0 : (SCREENHEIGHT-SBARHEIGHT-height)>>1; 
 
-  viewwindowy <<= 1;   // killough 11/98
+  viewwindowy;   // killough 11/98
 
   // Preclaculate all row offsets.
 
-  for (i = height << 1; i--; )
+  for (i = height; i--; )
     ylookup[i] = screens[0] + (i+viewwindowy)*linesize; // killough 11/98
 } 
 
@@ -617,7 +687,7 @@ void R_FillBackScreen (void)
 { 
   // killough 11/98: trick to shadow variables
   int x = viewwindowx, y = viewwindowy; 
-  int viewwindowx = x >> 1, viewwindowy = y >> 1;  // killough 11/98
+  int viewwindowx = x, viewwindowy = y;  // killough 11/98
   patch_t *patch;
 
   if (scaledviewwidth == 320)
@@ -672,10 +742,8 @@ void R_FillBackScreen (void)
 //
 
 void R_VideoErase(unsigned ofs, int count)
-{
-  ofs = ofs * 4 - (ofs % SCREENWIDTH) * 2;   // recompose offset
-  memcpy(screens[0] + ofs, screens[1] + ofs, count *= 2);   // LFB copy.
-  ofs += SCREENWIDTH * 2;
+{ 
+  memcpy(screens[0]+ofs, screens[1]+ofs, count);   // LFB copy.
 } 
 
 //
@@ -695,11 +763,11 @@ void R_DrawViewBorder(void)
     return;
 
   // copy top
-  for (ofs = 0, i = viewwindowy >> 1; i--; ofs += SCREENWIDTH)
+  for (ofs = 0, i = viewwindowy; i--; ofs += SCREENWIDTH)
     R_VideoErase(ofs, SCREENWIDTH); 
 
   // copy sides
-  for (side = viewwindowx >> 1, i = scaledviewheight; i--;)
+  for (side = viewwindowx, i = scaledviewheight; i--;)
     { 
       R_VideoErase(ofs, side); 
       ofs += SCREENWIDTH;
@@ -707,7 +775,7 @@ void R_DrawViewBorder(void)
     } 
 
   // copy bottom 
-  for (i = viewwindowy >> 1; i--; ofs += SCREENWIDTH)
+  for (i = viewwindowy; i--; ofs += SCREENWIDTH)
     R_VideoErase(ofs, SCREENWIDTH); 
  
   V_MarkRect (0,0,SCREENWIDTH, SCREENHEIGHT-SBARHEIGHT); 

@@ -738,11 +738,7 @@ void R_InitColormaps(void)
 int R_ColormapNumForName(const char *name)
 {
   register int i = 0;
-#ifdef WINDOWS
-  if (_strnicmp(name,"COLORMAP",8))     // COLORMAP predefined to return 0
-#else
-  if (strncasecmp(name, "COLORMAP", 8))     // COLORMAP predefined to return 0
-#endif
+  if (strncasecmp(name,"COLORMAP",8))     // COLORMAP predefined to return 0
     if ((i = (W_CheckNumForName)(name, ns_colormaps)) != -1)
       i -= firstcolormaplump;
   return i;
@@ -921,11 +917,7 @@ int R_CheckTextureNumForName(const char *name)
   if (*name != '-')     // "NoTexture" marker.
     {
       i = textures[W_LumpNameHash(name) % (unsigned) numtextures]->index;
-#ifdef WINDOWS
-      while (i >= 0 && _strnicmp(textures[i]->name,name,8))
-#else
-      while (i >= 0 && strncasecmp(textures[i]->name, name, 8))
-#endif
+      while (i >= 0 && strncasecmp(textures[i]->name,name,8))
         i = textures[i]->next;
     }
   return i;

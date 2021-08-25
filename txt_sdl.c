@@ -110,6 +110,7 @@ static const SDL_Color ega_colors[] =
 };
 
 #ifdef WINDOWS
+
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
