@@ -1633,7 +1633,7 @@ menuitem_t Generic_Setup[] =
 menu_t  SetupDef =
 {
   set_setup_end, // number of Setup Menu items (Key Bindings, etc.)
-  &MainDef,      // menu to return to when BACKSPACE is hit on this menu
+  &OptionsDef,    // menu to return to when BACKSPACE is hit on this menu
   SetupMenu,     // definition of items to show on the Setup Screen
   M_DrawSetup,   // program that draws the Setup Screen
   59,37,         // x,y position of the skull (modified when the skull is

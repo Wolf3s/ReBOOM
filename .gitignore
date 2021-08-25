@@ -105,3 +105,5 @@ x64/Release/ReBOOM.vcxproj.FileListAbsolute.txt
 *.obj
 *.bak
 *.tlog
+*.pdb
+*.ilk

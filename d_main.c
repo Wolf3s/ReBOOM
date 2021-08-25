@@ -853,28 +853,9 @@ void IdentifyVersion (void)
 
   // get config file from same directory as executable
   // killough 10/98
-  // Gibbon - let UNIX-like systems save it in ~/.config/<file>.cfg
-  #ifdef UNIX_NOT_MAC
-  char *unix_config_home;
-  unix_config_home = getenv("HOME");
-  strcpy(basedefault,getenv("HOME"));
-  sprintf(basedefault,"%s/.config/%s.cfg", unix_config_home, D_DoomExeName());
-  #endif
-  #ifdef __APPLE__
-  char *unix_config_home;
-  unix_config_home = getenv("HOME");
-  strcpy(basedefault,getenv("HOME"));
-  sprintf(basedefault,"%s/Library/Application Support/%s.cfg", unix_config_home, D_DoomExeName());
-  #else
   sprintf(basedefault,"%s/%s.cfg", D_DoomExeDir(), D_DoomExeName());
-  #endif
-
   // set save path to -save parm or current dir
-  #ifdef UNIX
-  strcpy(basesavegame,getenv("HOME"));
-  #else
   strcpy(basesavegame,".");       //jff 3/27/98 default to current dir
-  #endif
   if ((i=M_CheckParm("-save")) && i<myargc-1) //jff 3/24/98 if -save present
     {
       if (!stat(myargv[i+1],&sbuf) && S_ISDIR(sbuf.st_mode)) // and is a dir
