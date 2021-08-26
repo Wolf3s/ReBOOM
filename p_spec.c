@@ -999,6 +999,8 @@ void P_CrossSpecialLine(line_t *line, int side, mobj_t *thing)
       case MT_BRUISERSHOT:
         return;
         break;
+
+      default: break;
       }
 
   //jff 02/04/98 add check here for generalized lindef types
