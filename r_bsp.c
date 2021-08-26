@@ -412,7 +412,7 @@ static void R_AddLine (seg_t *line)
       // Totally off the left edge?
       if (tspan >= span)
         return;
-      angle2 = 0 - clipangle;
+      angle2 = -clipangle;
     }
 
   // The seg is in the view range,
@@ -446,21 +446,21 @@ static void R_AddLine (seg_t *line)
       || backsector->floorheight >= frontsector->ceilingheight)
     goto clipsolid;
 
-  // This fixes the automap floor height bug -- killough 1/18/98:
-  // killough 4/7/98: optimize: save result in doorclosed for use in r_segs.c
+    // This fixes the automap floor height bug -- killough 1/18/98:
+    // killough 4/7/98: optimize: save result in doorclosed for use in r_segs.c
   if ((doorclosed = R_DoorClosed()))
     goto clipsolid;
 
-  // Window.
+    // Window.
   if (backsector->ceilingheight != frontsector->ceilingheight
       || backsector->floorheight != frontsector->floorheight)
     goto clippass;
 
-  // Reject empty lines used for triggers
-  //  and special events.
-  // Identical floor and ceiling on both sides,
-  // identical light levels on both sides,
-  // and no middle texture.
+    // Reject empty lines used for triggers
+    //  and special events.
+    // Identical floor and ceiling on both sides,
+    // identical light levels on both sides,
+    // and no middle texture.
   if (backsector->ceilingpic == frontsector->ceilingpic
       && backsector->floorpic == frontsector->floorpic
       && backsector->lightlevel == frontsector->lightlevel
@@ -561,7 +561,7 @@ static boolean R_CheckBBox(fixed_t *bspcoord) // killough 1/28/98: static
       if (tspan >= span)
         return false;
 
-      angle2 = 0 - clipangle;
+      angle2 = -clipangle;
     }
 
   // Find the first clippost
@@ -613,6 +613,7 @@ static void R_Subsector(int num)
   frontsector = sub->sector;
   count = sub->numlines;
   line = &segs[sub->firstline];
+
   // killough 3/8/98, 4/4/98: Deep water / fake ceiling effect
   frontsector = R_FakeFlat(frontsector, &tempsec, &floorlightlevel,
                            &ceilinglightlevel, false);   // killough 4/11/98
@@ -629,6 +630,7 @@ static void R_Subsector(int num)
                 frontsector->floor_xoffs,       // killough 3/7/98
                 frontsector->floor_yoffs
                 ) : NULL;
+
   ceilingplane = frontsector->ceilingheight > viewz ||
     frontsector->ceilingpic == skyflatnum ||
     (frontsector->heightsec != -1 &&
@@ -640,24 +642,11 @@ static void R_Subsector(int num)
                 frontsector->ceiling_yoffs
                 ) : NULL;
 
-  // killough 9/18/98: Fix underwater slowdown, by passing real sector 
-  // instead of fake one. Improve sprite lighting by basing sprite
-  // lightlevels on floor & ceiling lightlevels in the surrounding area.
-  //
-  // 10/98 killough:
-  //
-  // NOTE: TeamTNT fixed this bug incorrectly, messing up sprite lighting!!!
-  // That is part of the 242 effect!!!  If you simply pass sub->sector to
-  // the old code you will not get correct lighting for underwater sprites!!!
-  // Either you must pass the fake sector and handle validcount here, on the
-  // real sector, or you must account for the lighting in some other way, 
-  // like passing it as an argument.
-
-  R_AddSprites(sub->sector, (floorlightlevel+ceilinglightlevel)/2);
-
+  R_AddSprites (sub->sector); //jff 9/11/98 passing frontsector here was
+                              //causing the underwater fireball medusa problem
+                              //when R_FakeFlat substituted a fake sector
   while (count--)
     R_AddLine (line++);
-
 }
 
 //
@@ -682,10 +671,11 @@ void R_RenderBSPNode(int bspnum)
 
       // Possibly divide back space.
 
-      if (!R_CheckBBox(bsp->bbox[side^=1]))
+      if (!R_CheckBBox(bsp->bbox[side^1]))
         return;
 
-      bspnum = bsp->children[side];
+      bspnum = bsp->children[side^1];
     }
   R_Subsector(bspnum == -1 ? 0 : bspnum & ~NF_SUBSECTOR);
 }
+

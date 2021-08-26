@@ -19,6 +19,8 @@
 #include "p_inter.h"
 #include "g_game.h"
 #include "d_think.h"
+#include "w_wad.h"
+#include "d_io.h"
 
 #define TRUE 1
 #define FALSE 0

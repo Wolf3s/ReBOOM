@@ -27,8 +27,6 @@
 //
 //-----------------------------------------------------------------------------
 
-//static const char rcsid[] = "$Id: am_map.c,v 1.24 1998/05/10 12:05:24 jim Exp $";
-
 #include "doomstat.h"
 #include "st_stuff.h"
 #include "r_main.h"
@@ -88,7 +86,7 @@ extern int  key_map_clear;                                          //    |
 extern int  key_map_grid;                                           // phares
 
 // scale on entry
-#define INITSCALEMTOF (int)(.2*FRACUNIT)
+#define INITSCALEMTOF (.2*FRACUNIT)
 // how much the automap moves window per tic in frame-buffer coordinates
 // moves 140 pixels in 1 second
 #define F_PANINC  4
@@ -523,11 +521,9 @@ void AM_initVariables(void)
 //
 // Sets the marknums[i] variables to the patches for each digit
 // Passed nothing, returns nothing;
-// Gibbon - No need for this anymore
 //
 void AM_loadPics(void)
 {
-/*
   int i;
   char namebuf[9];
 
@@ -536,7 +532,6 @@ void AM_loadPics(void)
     sprintf(namebuf, "AMMNUM%d", i);
     marknums[i] = W_CacheLumpName(namebuf, PU_STATIC);
   }
-  */
 }
 
 //
@@ -545,16 +540,13 @@ void AM_loadPics(void)
 // Makes the mark patches purgable
 //
 // Passed nothing, returns nothing
-// Gibbon - No need for this anymore
 //
 void AM_unloadPics(void)
 {
-/*
   int i;
 
   for (i=0;i<10;i++)
     Z_ChangeTag(marknums[i], PU_CACHE);
-*/
 }
 
 //
@@ -581,7 +573,6 @@ void AM_clearMarks(void)
 //
 void AM_LevelInit(void)
 {
-
   leveljuststarted = 0;
 
   f_x = f_y = 0;
@@ -898,7 +889,7 @@ void AM_clearFB(int color)
 // clipping on them in the lines frame coordinates.
 // Returns true if any part of line was not clipped
 //
-static boolean AM_clipMline
+boolean AM_clipMline
 ( mline_t*  ml,
   fline_t*  fl )
 {
@@ -1037,15 +1028,15 @@ void AM_drawFline
 ( fline_t*  fl,
   int   color )
 {
-  int x;
-  int y;
-  int dx;
-  int dy;
-  int sx;
-  int sy;
-  int ax;
-  int ay;
-  int d;
+  register int x;
+  register int y;
+  register int dx;
+  register int dy;
+  register int sx;
+  register int sy;
+  register int ax;
+  register int ay;
+  register int d;
 
 #ifdef RANGECHECK         // killough 2/22/98    
   static int fuck = 0;
@@ -1059,7 +1050,8 @@ void AM_drawFline
     || fl->b.y < 0 || fl->b.y >= f_h
   )
   {
-    fprintf(stderr, "fuck %d \r", fuck++);
+    //jff 8/3/98 use logical output routine
+    printf("fuck %d \r", fuck++);
     return;
   }
 #endif
@@ -1122,7 +1114,7 @@ void AM_drawFline
 // in the defaults file.
 // Returns nothing.
 //
-static void AM_drawMline
+void AM_drawMline
 ( mline_t*  ml,
   int   color )
 {
@@ -1200,7 +1192,7 @@ void AM_drawGrid(int color)
 //
 // jff 4/3/98 add routine to get color of generalized keyed door
 //
-static int AM_DoorColor(int type)
+int AM_DoorColor(int type)
 {
   if (GenLockedBase <= type && type< GenDoorBase)
   {
@@ -1750,3 +1742,4 @@ void AM_Drawer (void)
 
   V_MarkRect(f_x, f_y, f_w, f_h);
 }
+
