@@ -30,9 +30,6 @@
 //
 
 #ifdef WINDOWS
-#ifndef _MSC_VER
-#error i_opndir.c is for Microsoft Visual C++ only
-#endif
 
 #include <stdlib.h>
 #include <errno.h>
