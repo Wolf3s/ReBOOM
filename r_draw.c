@@ -91,8 +91,6 @@ byte    *dc_source;      // first pixel in a column (possibly virtual)
 // 
 
 // proff: This is in drawasm.nas
-// proff 06/30/98: I forgot NOASM
-#if !defined(DJGPP) && !defined(_WIN32) || defined(NOASM)
 //#ifndef DJGPP      // killough 2/15/98
 
 void R_DrawColumn (void) 
@@ -177,8 +175,6 @@ void R_DrawColumn (void)
   }
 } 
 
-#endif
-
 // Here is the version of R_DrawColumn that deals with translucent  // phares
 // textures and sprites. It's identical to R_DrawColumn except      //    |
 // for the spot where the color index is stuffed into *dest. At     //    V
@@ -193,8 +189,6 @@ void R_DrawColumn (void)
 
 //#if !defined(DJGPP) && !defined(_WIN32) || defined(NOASM)
 // proff: In Win32 with VC50 it seems that R_DrawTLColumn is faster in C than in ASM
-#ifndef DJGPP      // killough 2/21/98: converted to x86 asm
-
 void R_DrawTLColumn (void)
 { 
   int              count; 
@@ -278,8 +272,6 @@ void R_DrawTLColumn (void)
       }
   }
 } 
-
-#endif  // killough 2/21/98: converted to x86 asm
 
 //
 // Spectre/Invisibility.
