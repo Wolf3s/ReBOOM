@@ -850,11 +850,7 @@ void IdentifyVersion(void)
     char* iwad;
 
     // get config file from same directory as executable
-#ifdef WINDOWS
-  sprintf(basedefault,"%sreboom.cfg", D_DoomExeDir());  // proff
-#else
-  sprintf(basedefault,"%s/reboom.cfg", D_DoomExeDir());  // killough
-#endif
+    sprintf(basedefault,"reboom.cfg");
     // set save path to -save parm or current dir
     strcpy(basesavegame, ".");       //jff 3/27/98 default to current dir
     if ((i = M_CheckParm("-save")) && i < myargc - 1) //jff 3/24/98 if -save present
