@@ -3305,139 +3305,86 @@ void M_DrawExtHelp(void)
 // M_GetKeyString finds the correct string to represent the key binding
 // for the current item being drawn.
 
-int M_GetKeyString(int c, int offset)
+int M_GetKeyString(int c,int offset)
 {
-	char* s;
+  const char* s;
 
-	if (c >= 33 && c <= 126)
-	{
+  if (c >= 33 && c <= 126) {
 
-		// The '=', ',', and '.' keys originally meant the shifted
-		// versions of those keys, but w/o having to shift them in
-		// the game. Any actions that are mapped to these keys will
-		// still mean their shifted versions. Could be changed later
-		// if someone can come up with a better way to deal with them.
+    // The '=', ',', and '.' keys originally meant the shifted
+    // versions of those keys, but w/o having to shift them in
+    // the game. Any actions that are mapped to these keys will
+    // still mean their shifted versions. Could be changed later
+    // if someone can come up with a better way to deal with them.
 
-		if (c == '=')      // probably means the '+' key?
-			c = '+';
-		else if (c == ',') // probably means the '<' key?
-			c = '<';
-		else if (c == '.') // probably means the '>' key?
-			c = '>';
-		menu_buffer[offset++] = c; // Just insert the ascii key
-		menu_buffer[offset] = 0;
-	}
-	else
-	{
+    if (c == '=')      // probably means the '+' key?
+      c = '+';
+    else if (c == ',') // probably means the '<' key?
+      c = '<';
+    else if (c == '.') // probably means the '>' key?
+      c = '>';
+    menu_buffer[offset++] = c; // Just insert the ascii key
+    menu_buffer[offset] = 0;
 
-		// Retrieve 4-letter (max) string representing the key
+  } else {
 
-		switch (c)
-		{
-		case KEYD_TAB:
-			s = "TAB";
-			break;
-		case KEYD_ENTER:
-			s = "ENTR";
-			break;
-		case KEYD_ESCAPE:
-			s = "ESC";
-			break;
-		case KEYD_SPACEBAR:
-			s = "SPAC";
-			break;
-		case KEYD_BACKSPACE:
-			s = "BACK";
-			break;
-		case KEYD_RCTRL:
-			s = "CTRL";
-			break;
-		case KEYD_LEFTARROW:
-			s = "LARR";
-			break;
-		case KEYD_UPARROW:
-			s = "UARR";
-			break;
-		case KEYD_RIGHTARROW:
-			s = "RARR";
-			break;
-		case KEYD_DOWNARROW:
-			s = "DARR";
-			break;
-		case KEYD_RSHIFT:
-			s = "SHFT";
-			break;
-		case KEYD_RALT:
-			s = "ALT";
-			break;
-		case KEYD_CAPSLOCK:
-			s = "CAPS";
-			break;
-		case KEYD_F1:
-			s = "F1";
-			break;
-		case KEYD_F2:
-			s = "F2";
-			break;
-		case KEYD_F3:
-			s = "F3";
-			break;
-		case KEYD_F4:
-			s = "F4";
-			break;
-		case KEYD_F5:
-			s = "F5";
-			break;
-		case KEYD_F6:
-			s = "F6";
-			break;
-		case KEYD_F7:
-			s = "F7";
-			break;
-		case KEYD_F8:
-			s = "F8";
-			break;
-		case KEYD_F9:
-			s = "F9";
-			break;
-		case KEYD_F10:
-			s = "F10";
-			break;
-		case KEYD_SCROLLLOCK:
-			s = "SCRL";
-			break;
-		case KEYD_HOME:
-			s = "HOME";
-			break;
-		case KEYD_PAGEUP:
-			s = "PGUP";
-			break;
-		case KEYD_END:
-			s = "END";
-			break;
-		case KEYD_PAGEDOWN:
-			s = "PGDN";
-			break;
-		case KEYD_INSERT:
-			s = "INST";
-			break;
-		case KEYD_F11:
-			s = "F11";
-			break;
-		case KEYD_F12:
-			s = "F12";
-			break;
-		case KEYD_PAUSE:
-			s = "PAUS";
-			break;
-		default:
-			s = "JUNK";
-			break;
-		}
-		strcpy(&menu_buffer[offset], s); // string to display
-		offset += strlen(s);
-	}
-	return offset;
+    // Retrieve 4-letter (max) string representing the key
+
+    // cph - Keypad keys, general code reorganisation to
+    //  make this smaller and neater.
+    if ((0x100 <= c) && (c < 0x200)) {
+      if (c == KEYD_KEYPADENTER)
+  s = "PADE";
+      else {
+  strcpy(&menu_buffer[offset], "PAD");
+  offset+=4;
+  menu_buffer[offset-1] = c & 0xff;
+  menu_buffer[offset] = 0;
+      }
+    } else if ((KEYD_F1 <= c) && (c < KEYD_F10)) {
+      menu_buffer[offset++] = 'F';
+      menu_buffer[offset++] = '1' + c - KEYD_F1;
+      menu_buffer[offset]   = 0;
+    } else {
+      switch(c) {
+      case KEYD_TAB:      s = "TAB";  break;
+      case KEYD_ENTER:      s = "ENTR"; break;
+      case KEYD_ESCAPE:     s = "ESC";  break;
+      case KEYD_SPACEBAR:   s = "SPAC"; break;
+      case KEYD_BACKSPACE:  s = "BACK"; break;
+      case KEYD_RCTRL:      s = "CTRL"; break;
+      case KEYD_LEFTARROW:  s = "LARR"; break;
+      case KEYD_UPARROW:    s = "UARR"; break;
+      case KEYD_RIGHTARROW: s = "RARR"; break;
+      case KEYD_DOWNARROW:  s = "DARR"; break;
+      case KEYD_RSHIFT:     s = "SHFT"; break;
+      case KEYD_RALT:       s = "ALT";  break;
+      case KEYD_CAPSLOCK:   s = "CAPS"; break;
+      case KEYD_SCROLLLOCK: s = "SCRL"; break;
+      case KEYD_HOME:       s = "HOME"; break;
+      case KEYD_PAGEUP:     s = "PGUP"; break;
+      case KEYD_END:        s = "END";  break;
+      case KEYD_PAGEDOWN:   s = "PGDN"; break;
+      case KEYD_INSERT:     s = "INST"; break;
+      case KEYD_DEL:        s = "DEL"; break;
+      case KEYD_F10:        s = "F10";  break;
+      case KEYD_F11:        s = "F11";  break;
+      case KEYD_F12:        s = "F12";  break;
+      case KEYD_PAUSE:      s = "PAUS"; break;
+      case KEYD_MWHEELDOWN: s = "MWDN"; break;
+      case KEYD_MWHEELUP:   s = "MWUP"; break;
+      case KEYD_PRINTSC:    s = "PRSC"; break;
+      case 0:               s = "NONE"; break;
+      default:              s = "JUNK"; break;
+      }
+
+      if (s) { // cph - Slight code change
+  strcpy(&menu_buffer[offset],s); // string to display
+  offset += strlen(s);
+      }
+    }
+  }
+  return offset;
 }
 
 //

@@ -82,7 +82,6 @@ void I_JoystickEvents(void)
    event_t event;
    int joy_b1, joy_b2, joy_b3, joy_b4;
    Sint16 joy_x, joy_y;
-   static int old_joy_b1, old_joy_b2, old_joy_b3, old_joy_b4;
    
    if(!joystickpresent || !usejoystick || !sdlJoystick)
       return;
@@ -244,47 +243,78 @@ static void UpdateGrab(void)
 
 extern void I_InitKeyboard();      // i_system.c
 
+/////////////////////////////////////////////////////////////////////////////////
+// Keyboard handling
+
 //
-// I_TranslateKey
-//
-// haleyjd
-// For SDL, translates from SDL keysyms to DOOM key values.
+//  Translates the key currently in key
 //
 
-// [FG] updated to scancode-based approach from Chocolate Doom 3.0
-
-static const int scancode_translate_table[] = SCANCODE_TO_KEYS_ARRAY;
-
-static int I_TranslateKey(SDL_Keysym *sym)
+static int I_TranslateKey(SDL_Keysym* key)
 {
-   int scancode = sym->scancode;
+  int rc = 0;
 
-   switch (scancode)
-   {
-      case SDL_SCANCODE_LCTRL:
-      case SDL_SCANCODE_RCTRL:
-         return KEYD_RCTRL;
+  switch (key->sym) {
+  case SDLK_LEFT: rc = KEYD_LEFTARROW;  break;
+  case SDLK_RIGHT:  rc = KEYD_RIGHTARROW; break;
+  case SDLK_DOWN: rc = KEYD_DOWNARROW;  break;
+  case SDLK_UP:   rc = KEYD_UPARROW;  break;
+  case SDLK_ESCAPE: rc = KEYD_ESCAPE; break;
+  case SDLK_RETURN: rc = KEYD_ENTER;  break;
+  case SDLK_TAB:  rc = KEYD_TAB;    break;
+  case SDLK_F1:   rc = KEYD_F1;   break;
+  case SDLK_F2:   rc = KEYD_F2;   break;
+  case SDLK_F3:   rc = KEYD_F3;   break;
+  case SDLK_F4:   rc = KEYD_F4;   break;
+  case SDLK_F5:   rc = KEYD_F5;   break;
+  case SDLK_F6:   rc = KEYD_F6;   break;
+  case SDLK_F7:   rc = KEYD_F7;   break;
+  case SDLK_F8:   rc = KEYD_F8;   break;
+  case SDLK_F9:   rc = KEYD_F9;   break;
+  case SDLK_F10:  rc = KEYD_F10;    break;
+  case SDLK_F11:  rc = KEYD_F11;    break;
+  case SDLK_F12:  rc = KEYD_F12;    break;
+  case SDLK_BACKSPACE:  rc = KEYD_BACKSPACE;  break;
+  case SDLK_DELETE: rc = KEYD_DEL;  break;
+  case SDLK_INSERT: rc = KEYD_INSERT; break;
+  case SDLK_PAGEUP: rc = KEYD_PAGEUP; break;
+  case SDLK_PAGEDOWN: rc = KEYD_PAGEDOWN; break;
+  case SDLK_HOME: rc = KEYD_HOME; break;
+  case SDLK_END:  rc = KEYD_END;  break;
+  case SDLK_PAUSE:  rc = KEYD_PAUSE;  break;
+  case SDLK_EQUALS: rc = KEYD_EQUALS; break;
+  case SDLK_MINUS:  rc = KEYD_MINUS;  break;
+  case SDLK_KP_0:  rc = KEYD_KEYPAD0;  break;
+  case SDLK_KP_1:  rc = KEYD_KEYPAD1;  break;
+  case SDLK_KP_2:  rc = KEYD_KEYPAD2;  break;
+  case SDLK_KP_3:  rc = KEYD_KEYPAD3;  break;
+  case SDLK_KP_4:  rc = KEYD_KEYPAD4;  break;
+  case SDLK_KP_5:  rc = KEYD_KEYPAD5;  break;
+  case SDLK_KP_6:  rc = KEYD_KEYPAD6;  break;
+  case SDLK_KP_7:  rc = KEYD_KEYPAD7;  break;
+  case SDLK_KP_8:  rc = KEYD_KEYPAD8;  break;
+  case SDLK_KP_9:  rc = KEYD_KEYPAD9;  break;
+  case SDLK_KP_PLUS:  rc = KEYD_KEYPADPLUS; break;
+  case SDLK_KP_MINUS: rc = KEYD_KEYPADMINUS;  break;
+  case SDLK_KP_DIVIDE:  rc = KEYD_KEYPADDIVIDE; break;
+  case SDLK_KP_MULTIPLY: rc = KEYD_KEYPADMULTIPLY; break;
+  case SDLK_KP_ENTER: rc = KEYD_KEYPADENTER;  break;
+  case SDLK_KP_PERIOD:  rc = KEYD_KEYPADPERIOD; break;
+  case SDLK_LSHIFT:
+  case SDLK_RSHIFT: rc = KEYD_RSHIFT; break;
+  case SDLK_LCTRL:
+  case SDLK_RCTRL:  rc = KEYD_RCTRL;  break;
+  case SDLK_LALT:
+  case SDLK_LGUI:
+  case SDLK_RALT:
+  case SDLK_RGUI:  rc = KEYD_RALT;   break;
+  case SDLK_CAPSLOCK: rc = KEYD_CAPSLOCK; break;
+  case SDLK_PRINTSCREEN: rc = KEYD_PRINTSC; break;
+  default:    rc = key->sym;    break;
+  }
 
-      case SDL_SCANCODE_LSHIFT:
-      case SDL_SCANCODE_RSHIFT:
-         return KEYD_RSHIFT;
+  return rc;
 
-      case SDL_SCANCODE_LALT:
-         return KEYD_LALT;
-
-      case SDL_SCANCODE_RALT:
-         return KEYD_RALT;
-
-      default:
-         if (scancode >= 0 && scancode < arrlen(scancode_translate_table))
-         {
-            return scancode_translate_table[scancode];
-         }
-         else
-         {
-            return 0;
-         }
-   }
 }
 
 int I_ScanCode2DoomCode (int a)
@@ -306,8 +336,6 @@ int I_DoomCode2ScanCode (int a)
 
 static void HandleWindowEvent(SDL_WindowEvent *event)
 {
-    int i;
-
     switch (event->event)
     {
         // Don't render the screen when the window is minimized:
@@ -381,11 +409,10 @@ extern int usemouse;
 void I_GetEvent()
 {
    SDL_Event event;
-   event_t   d_event;   
+   event_t   d_event;
    
    event_t mouseevent = { ev_mouse, 0, 0, 0 };
    static int buttons = 0;
-   
    int sendmouseevent = 0;
    
    while(SDL_PollEvent(&event))
@@ -473,7 +500,7 @@ void I_GetEvent()
          }
          D_PostEvent(&d_event);
          break;
-
+        
       case SDL_QUIT:
          exit(0);
          break;
@@ -519,12 +546,7 @@ void I_UpdateNoBlit (void)
 
 
 int use_vsync;     // killough 2/8/98: controls whether vsync is called
-
 static int in_graphics_mode;
-static int linear;
-static int scroll_offset;
-static unsigned long screen_base_addr;
-static unsigned destscreen;
 
 void I_FinishUpdate(void)
 {
@@ -545,7 +567,9 @@ void I_FinishUpdate(void)
       int tics = i - lasttic;
       lasttic = i;
       if (tics > 20)
+      {
          tics = 20;
+      }
          for (i=0 ; i<tics*2 ; i+=2)
             s[(SCREENHEIGHT-1)*SCREENWIDTH + i] = 0xff;
          for ( ; i<20*2 ; i+=2)
