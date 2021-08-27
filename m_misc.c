@@ -1659,13 +1659,23 @@ void M_LoadDefaults (void)
 
   // check for a custom default file
 
-  if (!defaultfile)
-    if ((i = M_CheckParm("-config")) && i < myargc-1)
-      printf(" default file: %s\n", defaultfile = strdup(myargv[i+1]));
-    else
-      defaultfile = strdup(basedefault);
+  #define BOOM_CFG "reboom.cfg"
 
-  NormalizeSlashes(defaultfile);
+  i = M_CheckParm ("-config");
+  if (i && i < myargc-1)
+  {
+    defaultfile = strdup(myargv[i+1]);
+  }
+  else
+  {
+    const char* exedir = D_DoomExeDir();
+    /* get config file from same directory as executable */
+    int len = snprintf(NULL, 0, "%s" BOOM_CFG, exedir);
+    defaultfile = malloc(len+1);
+    snprintf(defaultfile, len+1, "%s" BOOM_CFG, exedir);
+  }
+
+  printf("default file: %s\n",defaultfile);
 
   // read the file in, overriding any set defaults
   //
