@@ -73,7 +73,8 @@ int EV_Teleport(line_t *line, int side, mobj_t *thing)
           if (!P_TeleportMove(thing, m->x, m->y))
             return 0;
 
-          thing->z = thing->floorz;
+         if (compatibility)
+            thing->z = thing->floorz;
 
           if (player)
             player->viewz = thing->z + player->viewheight;

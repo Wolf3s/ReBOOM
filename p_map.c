@@ -89,29 +89,35 @@ extern boolean onground; // whether you're on the ground, for ice purposes
 //
 // PIT_StompThing
 //
-
-static boolean telefrag;   // killough 8/9/98: whether to telefrag at exit
-
-static boolean PIT_StompThing (mobj_t *thing)
-{
+static boolean PIT_StompThing (mobj_t* thing)
+  {
   fixed_t blockdist;
+
+  // phares 9/10/98: moved this self-check to start of routine
+
+  // don't clip against self
+
+  if (thing == tmthing)
+    return true;
 
   if (!(thing->flags & MF_SHOOTABLE)) // Can't shoot it? Can't stomp it!
     return true;
 
   blockdist = thing->radius + tmthing->radius;
 
+  // proff: Changed abs to D_abs (see m_fixed.h)
   if (abs(thing->x - tmx) >= blockdist || abs(thing->y - tmy) >= blockdist)
     return true; // didn't hit it
 
   // monsters don't stomp things except on boss level
-  if (!telefrag)  // killough 8/9/98: make consistent across all levels
+
+  if (!tmthing->player && gamemap != 30)
     return false;
 
   P_DamageMobj (thing, tmthing, tmthing, 10000); // Stomp!
 
   return true;
-}
+  }
 
 //
 // killough 8/28/98:
