@@ -573,7 +573,7 @@ char* D_DoomExeDir(void)
     }
     return base;
 }
-#else
+#elif defined UNIX
 // cph - V.Aguilar (5/30/99) suggested return ~/.lxdoom/, creating
 //  if non-existant
 static const char prboom_dir[] = { "/.reboom/" };
