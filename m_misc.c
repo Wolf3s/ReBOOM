@@ -1670,9 +1670,16 @@ void M_LoadDefaults (void)
   {
     const char* exedir = D_DoomExeDir();
     /* get config file from same directory as executable */
-    int len = snprintf(NULL, 0, "%s" BOOM_CFG, exedir);
+#ifdef WINDOWS
+    int len = snprintf(NULL, 0, "%s\\" BOOM_CFG, exedir);
     defaultfile = malloc(len+1);
-    snprintf(defaultfile, len+1, "%s" BOOM_CFG, exedir);
+    snprintf(defaultfile, len+1, "%s/" BOOM_CFG, exedir);
+#else
+    int len = snprintf(NULL, 0, "%s" BOOM_CFG, exedir);
+    defaultfile = malloc(len + 1);
+    snprintf(defaultfile, len + 1, "%s" BOOM_CFG, exedir);
+#endif
+
   }
 
   printf("default file: %s\n",defaultfile);

@@ -549,19 +549,53 @@ void D_AddFile(char* file, int source)
 
 }
 // Return the path where the executable lies -- Lee Killough
+#ifdef WINDOWS
+char* D_DoomExeDir(void)
+{
+    static const char current_dir_dummy[] = { "\\" };
+    static char* base;
+    if (!base)        // cache multiple requests
+    {
+        size_t len = strlen(*myargv);
+        char* p = (base = malloc(len + 1)) + len - 1;
+        strcpy(base, *myargv);
+        while (p > base && *p != '/' && *p != '\\')
+            *p-- = 0;
+        if (*p == '/' || *p == '\\')
+            *p-- = 0;
+        if (strlen(base) < 2)
+        {
+            free(base);
+            base = malloc(1024);
+            if (!getcwd(base, 1024))
+                strcpy(base, current_dir_dummy);
+        }
+    }
+    return base;
+}
+#else
+// cph - V.Aguilar (5/30/99) suggested return ~/.lxdoom/, creating
+//  if non-existant
+static const char prboom_dir[] = { "/.prboom/" };
+
 char* D_DoomExeDir(void)
 {
     static char* base;
     if (!base)        // cache multiple requests
     {
-        size_t len = strlen(*myargv);
-        char* p = (base = malloc(len + 1)) + len;
-        strcpy(base, *myargv);
-        while (p > base && *p != '/' && *p != '\\')
-            *p-- = 0;
+        char* home = getenv("HOME");
+        size_t len = strlen(home);
+
+        base = malloc(len + strlen(prboom_dir) + 1);
+        strcpy(base, home);
+        // I've had trouble with trailing slashes before...
+        if (base[len - 1] == '/') base[len - 1] = 0;
+        strcat(base, prboom_dir);
+        mkdir(base, S_IRUSR | S_IWUSR | S_IXUSR); // Make sure it exists
     }
     return base;
 }
+#endif
 
 // killough 10/98: return the name of the program the exe was invoked as
 char* D_DoomExeName(void)
