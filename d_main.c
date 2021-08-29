@@ -576,7 +576,7 @@ char* D_DoomExeDir(void)
 #else
 // cph - V.Aguilar (5/30/99) suggested return ~/.lxdoom/, creating
 //  if non-existant
-static const char prboom_dir[] = { "/.prboom/" };
+static const char prboom_dir[] = { "/.reboom/" };
 
 char* D_DoomExeDir(void)
 {
