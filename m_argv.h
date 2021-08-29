@@ -27,17 +27,16 @@
 //    
 //-----------------------------------------------------------------------------
 
+#ifndef __M_ARGV_H__
+#define __M_ARGV_H__
 
-#ifndef __M_ARGV__
-#define __M_ARGV__
+extern int  myargc;
+extern const char** myargv;
 
 //
 // MISC
 //
-extern int  myargc;
-extern char **myargv;
 
-// Returns the position of the given parameter in the arg list (0 if not found).
-int M_CheckParm(const char *check);
+int M_CheckParm(const char*);
 
 #endif
