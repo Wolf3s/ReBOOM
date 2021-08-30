@@ -28,6 +28,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include "d_io.h"
 #include "m_argv.h"
 
 int  myargc;
