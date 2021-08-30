@@ -19,7 +19,7 @@ Windows Visual Studio project files for 2019 Community
 # where is the data?
 
 1. Transmaps are saved (for UNIX) in HOME as a hidden file.  On Windows, they are saved in the location of the binary as a non-hidden file.
-2. Config files (.cfg) are saved (for UNIX) in HOME (.config/reboom.cfg).  MacOS places them in ~/Library/Application Support/reboom.cfg and Windows has them in the same location as the binary.
+2. Config files (.cfg) are saved (for UNIX/Linux and MacOS) in HOME (/home/$USER/.reboom/reboom.cfg) and Windows has them in the same location as the binary.
 3. WAD files are to always be placed in the same location as the binary, for all platforms.
 4. Save games (.dsg) are saved in HOME for both UNIX and MacOS as a hidden file (.reboom_savX.dsg).  For Windows they are saved in the same location as the binary as a non-hidden file.
 
