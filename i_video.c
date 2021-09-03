@@ -597,6 +597,31 @@ void I_ReadScreen(byte *scr)
    memcpy(scr, *screens, size);
 }
 
+//
+// killough 10/98: init disk icon
+//
+
+int disk_icon;
+
+static void I_InitDiskFlash(void)
+{
+}
+
+//
+// killough 10/98: draw disk icon
+//
+
+void I_BeginRead(void)
+{
+}
+
+//
+// killough 10/98: erase disk icon
+//
+
+void I_EndRead(void)
+{
+}
 
 void I_SetPalette(byte *palette)
 {
@@ -830,6 +855,8 @@ static void I_InitGraphicsMode(void)
    in_graphics_mode = 1;
    in_page_flip = true;
    setsizeneeded = true;
+   
+   I_InitDiskFlash();        // Initialize disk icon 
      
    I_SetPalette(W_CacheLumpName("PLAYPAL",PU_CACHE));
 }

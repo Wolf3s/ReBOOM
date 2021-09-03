@@ -830,7 +830,11 @@ void R_InitTranMap(int progress)
                 if (!(i & 31) && progress)
 		  putchar('.');
 
-		if (!(~i & 15))
+		  if (i & 32)       // killough 10/98: display flashing disk
+		    I_EndRead();
+		  else
+		    I_BeginRead();
+
                 for (j=0;j<256;j++,tp++)
                   {
                     register int color = 255;

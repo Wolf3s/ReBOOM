@@ -464,10 +464,12 @@ void W_ReadLump(int lump, void *dest)
 
       // killough 1/31/98: Reload hack (-wart) removed
 
+      I_BeginRead();
       lseek(l->handle, l->position, SEEK_SET);
       c = read(l->handle, dest, l->size);
       if (c < l->size)
         I_Error("W_ReadLump: only read %i of %i on lump %i", c, l->size, lump);
+      I_EndRead();
     }
 }
 

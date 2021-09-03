@@ -81,7 +81,7 @@ extern int forceFlipPan;
 extern int grabmouse;
 extern int cfg_scalefactor; // haleyjd 05/11/09
 extern int cfg_aspectratio; // haleyjd 05/11/09
-
+extern int disk_icon;
 extern char *chat_macros[];
 
 //jff 3/3/98 added min, max, and help string to all entries
@@ -152,6 +152,13 @@ default_t defaults[] = {
     (config_t *) &realtic_clock_rate, NULL,
     {100}, {10,1000}, number, ss_none, wad_no,
     "Percentage of normal speed (35 fps) realtic clock runs at"
+  },
+
+  { // killough 10/98
+    "disk_icon",
+    (config_t *) &disk_icon, NULL,
+    {1}, {0,1}, number, ss_none, wad_no,
+    "1 to enable flashing icon during disk IO"
   },
 
   { // killough 2/21/98
@@ -1786,8 +1793,10 @@ boolean M_WriteFile(char const *name, void *source, int length)
   if (!(fp = fopen(name, "wb")))       // Try opening file
     return 0;                          // Could not open file for writing
 
+  I_BeginRead();                       // Disk icon on
   length = fwrite(source, 1, length, fp) == length;   // Write data
   fclose(fp);
+  I_EndRead();                         // Disk icon off
 
   if (!length)                         // Remove partially written file
     remove(name);
@@ -1810,6 +1819,7 @@ int M_ReadFile(char const *name, byte **buffer)
     {
       size_t length;
 
+      I_BeginRead();
       fseek(fp, 0, SEEK_END);
       length = ftell(fp);
       fseek(fp, 0, SEEK_SET);
@@ -1817,6 +1827,7 @@ int M_ReadFile(char const *name, byte **buffer)
       if (fread(*buffer, 1, length, fp) == length)
         {
           fclose(fp);
+          I_EndRead();
           return length;
         }
       fclose(fp);
@@ -1969,7 +1980,7 @@ typedef struct tagBITMAPINFOHEADER
 
 #define SafeWrite(data,size,number,st) do {   \
     if (fwrite(data,size,number,st) < (number)) \
-   return fclose(st), false; } while(0)
+   return fclose(st), I_EndRead(), false; } while(0)
 
 //
 // WriteBMPfile
@@ -1987,6 +1998,9 @@ boolean WriteBMPfile(char *filename, byte *data, int width,
   char zero=0;
   ubyte_t c;
 
+
+  I_BeginRead();              // killough 10/98
+  
   fhsiz = sizeof(BITMAPFILEHEADER);
   ihsiz = sizeof(BITMAPINFOHEADER);
   wid = 4*((width+3)/4);
@@ -2048,7 +2062,7 @@ boolean WriteBMPfile(char *filename, byte *data, int width,
 
       fclose(st);
     }
-  return true;       // killough 10/98
+  return I_EndRead(), true;       // killough 10/98
 }
 
 //
