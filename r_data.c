@@ -770,7 +770,7 @@ void R_InitTranMap(int progress)
       char fname[PATH_MAX+1], *D_DoomExeDir(void);
       struct {
         unsigned char pct;
-        unsigned char playpal[256];
+        unsigned char playpal[256*3];
       } cache;
 
       #ifdef UNIX
@@ -854,7 +854,7 @@ void R_InitTranMap(int progress)
           if (cachefp)        // write out the cached translucency map
             {
               cache.pct = tran_filter_pct;
-              memcpy(cache.playpal, playpal, 256);
+              memcpy(cache.playpal, playpal, sizeof cache.playpal);
               fseek(cachefp, 0, SEEK_SET);
               fwrite(&cache, 1, sizeof cache, cachefp);
               fwrite(main_tranmap, 256, 256, cachefp);
