@@ -33,6 +33,7 @@
 #include <sys/stat.h>
 
 #include "w_wad.h"
+#include "i_video.h"
 
 //
 // GLOBALS
