@@ -565,9 +565,19 @@
     <ClInclude Include="txt_utf8.h" />
     <ClInclude Include="version.h" />
     <ClInclude Include="v_video.h" />
+    <ClInclude Include="win32\afxres.h" />
+    <ClInclude Include="win32\resource.h" />
+    <ClInclude Include="win32\winres.h" />
     <ClInclude Include="wi_stuff.h" />
     <ClInclude Include="w_wad.h" />
     <ClInclude Include="z_zone.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="win32\reboom.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="win32\deadguy.bmp" />
+    <Image Include="win32\icon1.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
