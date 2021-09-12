@@ -29,6 +29,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "m_argv.h"
+#include "d_io.h"
 
 int  myargc;
 const char** myargv;

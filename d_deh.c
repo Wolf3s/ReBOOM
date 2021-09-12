@@ -42,6 +42,7 @@
 #include "w_wad.h"
 #include "d_io.h"
 #include "m_misc2.h"
+#include "m_argv.h"
 
 #ifdef _WIN64
 #include "win_fopen.h"

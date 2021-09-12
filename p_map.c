@@ -1398,7 +1398,7 @@ static boolean PIT_RadiusAttack(mobj_t *thing)
 // Source is the creature that caused the explosion at spot.
 //
 
-void P_RadiusAttack(mobj_t *spot, mobj_t *source, int damage)
+void P_RadiusAttack(mobj_t *spot, mobj_t *source, int damage, int distance, boolean damageSource)
 {
   fixed_t dist = (damage+MAXRADIUS)<<FRACBITS;
   int yh = (spot->y + dist - bmaporgy)>>MAPBLOCKSHIFT;

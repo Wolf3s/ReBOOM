@@ -75,9 +75,9 @@ typedef struct
 
 extern int weapon_preferences[2][NUMWEAPONS+1];      // killough 5/2/98
 int P_WeaponPreferred(int w1, int w2);
-void P_SetPspritePtr(struct player_s* player, pspdef_t* psp, statenum_t stnum);
 
 struct player_s;
+void P_SetPspritePtr(struct player_s* player, pspdef_t* psp, statenum_t stnum);
 int P_SwitchWeapon(struct player_s *player);
 boolean P_CheckAmmo(struct player_s *player);
 void P_SetupPsprites(struct player_s *curplayer);

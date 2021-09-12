@@ -673,7 +673,7 @@ void A_PosAttack(mobj_t *actor)
     return;
   A_FaceTarget(actor);
   angle = actor->angle;
-  slope = P_AimLineAttack(actor, angle, MISSILERANGE); // killough 8/2/98
+  slope = P_AimLineAttack(actor, angle, MISSILERANGE); /* killough 8/2/98 */
   S_StartSound(actor, sfx_pistol);
 
   // killough 5/5/98: remove dependence on order of evaluation:
@@ -1247,7 +1247,7 @@ void A_VileAttack(mobj_t *actor)
   // move the fire between the vile and the player
   fire->x = actor->target->x - FixedMul (24*FRACUNIT, finecosine[an]);
   fire->y = actor->target->y - FixedMul (24*FRACUNIT, finesine[an]);
-  P_RadiusAttack(fire, actor, 70);
+  P_RadiusAttack(fire, actor, 70, 70, true);
 }
 
 //
@@ -1513,7 +1513,15 @@ void A_Fall(mobj_t *actor)
 //
 void A_Explode(mobj_t *thingy)
 {
-  P_RadiusAttack( thingy, thingy->target, 128 );
+  int damage;
+  int distance;
+  boolean damageSelf;
+
+  damage = 128;
+  distance = 128;
+  damageSelf = true;
+
+  P_RadiusAttack(thingy, thingy->target, damage, distance, damageSelf);
 }
 
 //
@@ -2017,7 +2025,7 @@ void A_MonsterBulletAttack(mobj_t* actor)
     A_FaceTarget(actor);
     S_StartSound(actor, actor->info->attacksound);
 
-    aimslope = P_AimLineAttack(actor, actor->angle, MISSILERANGE, 0);
+    aimslope = P_AimLineAttack(actor, actor->angle, MISSILERANGE);
 
     for (i = 0; i < numbullets; i++)
     {
@@ -2027,6 +2035,22 @@ void A_MonsterBulletAttack(mobj_t* actor)
 
         P_LineAttack(actor, angle, MISSILERANGE, slope, damage);
     }
+}
+
+//
+// P_CheckRange
+//
+
+static boolean P_CheckRange(mobj_t* actor, fixed_t range)
+{
+    mobj_t* pl = actor->target;
+
+    return  // killough 7/18/98: friendly monsters don't attack other friends
+        pl &&
+        !(actor->flags & pl->flags) &&
+        P_AproxDistance(pl->x - actor->x, pl->y - actor->y) < range &&
+        P_CheckSight(actor, actor->target) && // finite height!
+        (pl->z <= actor->z + actor->height && actor->z <= pl->z + pl->height);
 }
 
 //
@@ -2291,20 +2315,4 @@ void A_RemoveFlags(mobj_t* actor)
 
     actor->flags &= ~flags;
     actor->flags2 &= ~flags2;
-}
-
-//
-// P_CheckRange
-//
-
-static boolean P_CheckRange(mobj_t* actor, fixed_t range)
-{
-    mobj_t* pl = actor->target;
-
-    return  // killough 7/18/98: friendly monsters don't attack other friends
-        pl &&
-        !(actor->flags & pl->flags) &&
-        P_AproxDistance(pl->x - actor->x, pl->y - actor->y) < range &&
-        P_CheckSight(actor, actor->target) && // finite height!
-        (pl->z <= actor->z + actor->height && actor->z <= pl->z + pl->height);
 }

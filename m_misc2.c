@@ -42,6 +42,8 @@
 #include "win_fopen.h"
 #endif
 
+#include "d_io.h"
+
 //
 // Create a directory
 //
@@ -253,8 +255,11 @@ void M_ForceLowercase(char *text)
 char *M_StringDuplicate(const char *orig)
 {
     char *result;
-
+#ifdef WINDOWS
     result = _strdup(orig);
+#else
+    result = strdup(orig);
+#endif
 
     if (result == NULL)
     {
@@ -267,7 +272,7 @@ char *M_StringDuplicate(const char *orig)
 
 // String replace function.
 
-static char *M_StringReplace(const char *haystack, const char *needle,
+char *M_StringReplace(const char *haystack, const char *needle,
                       const char *replacement)
 {
     char *result, *dst;

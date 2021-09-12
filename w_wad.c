@@ -32,6 +32,7 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 
+#include "i_video.h"
 #include "w_wad.h"
 
 //

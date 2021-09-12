@@ -33,6 +33,7 @@
 #include "r_main.h"
 #include "r_sky.h"
 #include "d_io.h"
+#include "i_video.h"
 
 //
 // Graphics.

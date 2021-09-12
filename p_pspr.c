@@ -884,7 +884,7 @@ void A_WeaponMeleeAttack(player_t* player, pspdef_t* psp)
     // make autoaim prefer enemies
     slope = P_AimLineAttack(player->mo, angle, range);
     if (!linetarget)
-        slope = P_AimLineAttack(player->mo, angle, range, 0);
+        slope = P_AimLineAttack(player->mo, angle, range);
 
     // attack, dammit!
     P_LineAttack(player->mo, angle, range, slope, damage);
