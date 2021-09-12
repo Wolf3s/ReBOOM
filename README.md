@@ -25,7 +25,7 @@ Windows Visual Studio project files for 2019 Community
 
 # where did you get the logo for the Windows binary?
 
-That would be the work of Charlie Love (see his amazing FDWL source port here: https://github.com/CharlesLove/from-doom-with-love).  I'm using the logo he designed on the binaries, but I am keeping the original one I did for this readme file.  Just to show the lineage of ReBOOM and 'where it came from'.
+That would be the work of Charles Love (see his amazing FDWL source port here: https://github.com/CharlesLove/from-doom-with-love).  I'm using the logo he designed on the binaries, but I am keeping the original one I did for this readme file.  Just to show the lineage of ReBOOM and 'where it came from'.
 
 Thanks!
 
