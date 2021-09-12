@@ -23,6 +23,10 @@ Windows Visual Studio project files for 2019 Community
 3. WAD files are to always be placed in the same location as the binary, for all platforms.
 4. Save games (.dsg) are saved in HOME for both UNIX and MacOS as a hidden file (.reboom_savX.dsg).  For Windows they are saved in the same location as the binary as a non-hidden file.
 
+# where did you get the logo for the Windows binary?
+
+That would be the work of Charlie Love (see his amazing FDWL source port here: https://github.com/CharlesLove/from-doom-with-love).  I'm using the logo he designed on the binaries, but I am keeping the original one I did for this readme file.  Just to show the lineage of ReBOOM and 'where it came from'.
+
 Thanks!
 
 Enjoy it :)
