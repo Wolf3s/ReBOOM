@@ -26,11 +26,12 @@
 //
 //-----------------------------------------------------------------------------
 
-#include "d_io.h"
+#include <stdio.h>
 #include <string.h>
+#include "m_argv.h"
 
-int    myargc;
-char **myargv;
+int  myargc;
+const char** myargv;
 
 //
 // M_CheckParm
@@ -40,11 +41,20 @@ char **myargv;
 // or 0 if not present
 //
 
-int M_CheckParm(const char *check)
+// Adam - cleaned up and made C++ compliant (still compiled as C though)
+
+int M_CheckParm(const char* check)
 {
-  int i;
-  for (i=1; i<myargc; i++)
-    if (!strcasecmp(check, myargv[i]))
-      return i;
-  return 0;
+	for (signed i = 1; i < myargc; ++i) // fixed a signed/unsigned comparison mismatch, for args signed is fine
+	{
+#ifdef WINDOWS
+		if (NULL == _stricmp(check, myargv[i]))
+#else
+		if (NULL == stricmp(check, myargv[i]))
+#endif
+		{
+			return i;
+		}
+	}
+	return 0;
 }

@@ -738,7 +738,11 @@ void R_InitColormaps(void)
 int R_ColormapNumForName(const char *name)
 {
   register int i = 0;
-  if (strncasecmp(name,"COLORMAP",8))     // COLORMAP predefined to return 0
+#ifdef WINDOWS
+  if (_strnicmp(name,"COLORMAP",8))     // COLORMAP predefined to return 0
+#else
+  if (strncasecmp(name, "COLORMAP", 8))     // COLORMAP predefined to return 0
+#endif
     if ((i = (W_CheckNumForName)(name, ns_colormaps)) != -1)
       i -= firstcolormaplump;
   return i;
@@ -770,7 +774,7 @@ void R_InitTranMap(int progress)
       char fname[PATH_MAX+1], *D_DoomExeDir(void);
       struct {
         unsigned char pct;
-        unsigned char playpal[256];
+        unsigned char playpal[256*3];
       } cache;
 
       #ifdef UNIX
@@ -830,7 +834,11 @@ void R_InitTranMap(int progress)
                 if (!(i & 31) && progress)
 		  putchar('.');
 
-		if (!(~i & 15))
+                if (!(~i & 15))
+                    if (i & 32)       // killough 10/98: display flashing disk
+                        I_EndRead();
+                    else
+                        I_BeginRead();
                 for (j=0;j<256;j++,tp++)
                   {
                     register int color = 255;
@@ -850,7 +858,7 @@ void R_InitTranMap(int progress)
           if (cachefp)        // write out the cached translucency map
             {
               cache.pct = tran_filter_pct;
-              memcpy(cache.playpal, playpal, 256);
+              memcpy(cache.playpal, playpal, sizeof cache.playpal);
               fseek(cachefp, 0, SEEK_SET);
               fwrite(&cache, 1, sizeof cache, cachefp);
               fwrite(main_tranmap, 256, 256, cachefp);
@@ -917,7 +925,11 @@ int R_CheckTextureNumForName(const char *name)
   if (*name != '-')     // "NoTexture" marker.
     {
       i = textures[W_LumpNameHash(name) % (unsigned) numtextures]->index;
-      while (i >= 0 && strncasecmp(textures[i]->name,name,8))
+#ifdef WINDOWS
+      while (i >= 0 && _strnicmp(textures[i]->name,name,8))
+#else
+      while (i >= 0 && strncasecmp(textures[i]->name, name, 8))
+#endif
         i = textures[i]->next;
     }
   return i;

@@ -155,7 +155,11 @@ static void W_AddFile(const char *name) // killough 1/31/98: static, const
   if ((handle = open(filename,O_RDONLY | O_BINARY)) == -1)
   #endif
     {
-      if (strlen(name) > 4 && !strcasecmp(name+strlen(name)-4 , ".lmp" ))
+#ifdef WINDOWS
+      if (strlen(name) > 4 && !_stricmp(name+strlen(name)-4 , ".lmp" ))
+#else
+      if (strlen(name) > 4 && !strcasecmp(name + strlen(name) - 4, ".lmp"))
+#endif
 	{
 	  free(filename);
 	  return;
@@ -174,7 +178,11 @@ static void W_AddFile(const char *name) // killough 1/31/98: static, const
   startlump = numlumps;
 
   // killough:
-  if (strlen(filename)<=4 || strcasecmp(filename+strlen(filename)-4, ".wad" ))
+#ifdef WINDOWS
+  if (strlen(filename)<=4 || _stricmp(filename+strlen(filename)-4, ".wad" ))
+#else
+  if (strlen(filename) <= 4 || strcasecmp(filename + strlen(filename) - 4, ".wad"))
+#endif
     {
       // single lump file
       fileinfo = &singleinfo;
@@ -229,8 +237,13 @@ static void W_AddFile(const char *name) // killough 1/31/98: static, const
 
 static int IsMarker(const char *marker, const char *name)
 {
-  return !strncasecmp(name, marker, 8) ||
-    (*name == *marker && !strncasecmp(name+1, marker, 7));
+#ifdef WINDOWS
+  return !_strnicmp(name, marker, 8) ||
+    (*name == *marker && !_strnicmp(name+1, marker, 7));
+#else
+    return !strncasecmp(name, marker, 8) ||
+        (*name == *marker && !strncasecmp(name + 1, marker, 7));
+#endif
 }
 
 // killough 4/17/98: add namespace tags
@@ -337,8 +350,13 @@ int (W_CheckNumForName)(register const char *name, register int namespace)
   // worth the overhead, considering namespace collisions are rare in
   // Doom wads.
 
-  while (i >= 0 && (strncasecmp(lumpinfo[i].name, name, 8) ||
+#ifdef WINDOWS
+  while (i >= 0 && (_strnicmp(lumpinfo[i].name, name, 8) ||
                     lumpinfo[i].namespace != namespace))
+#else
+  while (i >= 0 && (strncasecmp(lumpinfo[i].name, name, 8) ||
+      lumpinfo[i].namespace != namespace))
+#endif
     i = lumpinfo[i].next;
 
   // Return the matching lump, or -1 if none found.
@@ -478,11 +496,12 @@ void W_ReadLump(int lump, void *dest)
       int c;
 
       // killough 1/31/98: Reload hack (-wart) removed
-
+      I_BeginRead();
       lseek(l->handle, l->position, SEEK_SET);
       c = read(l->handle, dest, l->size);
       if (c < l->size)
         I_Error("W_ReadLump: only read %i of %i on lump %i", c, l->size, lump);
+      I_EndRead();
     }
 }
 
@@ -529,7 +548,7 @@ void WritePredefinedLumpWad(const char *filename)
 
   // The following code writes a PWAD from the predefined lumps array
   // How to write a PWAD will not be explained here.
-#ifdef _WIN64
+#ifdef WINDOWS
   if ((handle = open (filenam, O_RDWR | O_CREAT | O_BINARY)) != -1)
 #else
   if ((handle = open(filenam, O_RDWR | O_CREAT | O_BINARY, S_IWUSR | S_IRUSR)) != -1)

@@ -81,7 +81,7 @@ extern int forceFlipPan;
 extern int grabmouse;
 extern int cfg_scalefactor; // haleyjd 05/11/09
 extern int cfg_aspectratio; // haleyjd 05/11/09
-
+extern int disk_icon;
 extern char *chat_macros[];
 
 //jff 3/3/98 added min, max, and help string to all entries
@@ -138,6 +138,13 @@ default_t defaults[] = {
     (config_t *) &realtic_clock_rate, NULL,
     {100}, {10,1000}, number, ss_none, wad_no,
     "Percentage of normal speed (35 fps) realtic clock runs at"
+  },
+
+  { // killough 10/98
+    "disk_icon",
+    (config_t*)&disk_icon, NULL,
+    {1}, {0,1}, number, ss_none, wad_no,
+    "1 to enable flashing icon during disk IO"
   },
 
   { // killough 2/21/98
@@ -1380,7 +1387,11 @@ default_t *M_LookupDefault(const char *name)
 
   // Look up name in hash table
   for (dp = defaults[default_hash(name)].first;
-       dp && strcasecmp(name, dp->name); dp = dp->next);
+#ifdef WINDOWS
+       dp && _stricmp(name, dp->name); dp = dp->next);
+#else
+      dp&& strcasecmp(name, dp->name); dp = dp->next);
+#endif
 
   return dp;
 }
@@ -1645,13 +1656,23 @@ void M_LoadDefaults (void)
 
   // check for a custom default file
 
-  if (!defaultfile)
-    if ((i = M_CheckParm("-config")) && i < myargc-1)
-      printf(" default file: %s\n", defaultfile = strdup(myargv[i+1]));
-    else
-      defaultfile = strdup(basedefault);
+#define BOOM_CFG "reboom.cfg"
 
-  NormalizeSlashes(defaultfile);
+  i = M_CheckParm("-config");
+  if (i && i < myargc - 1)
+  {
+      defaultfile = strdup(myargv[i + 1]);
+  }
+  else
+  {
+      const char* exedir = D_DoomExeDir();
+      /* get config file from same directory as executable */
+      int len = snprintf(NULL, 0, "%s" BOOM_CFG, exedir);
+      defaultfile = malloc(len + 1);
+      snprintf(defaultfile, len + 1, "%s" BOOM_CFG, exedir);
+  }
+
+  printf("default file: %s\n", defaultfile);
 
   // read the file in, overriding any set defaults
   //
@@ -1754,10 +1775,10 @@ boolean M_WriteFile(char const *name, void *source, int length)
   
   if (!(fp = fopen(name, "wb")))       // Try opening file
     return 0;                          // Could not open file for writing
-
+  I_BeginRead();                       // Disk icon on
   length = fwrite(source, 1, length, fp) == length;   // Write data
   fclose(fp);
-
+  I_EndRead();                         // Disk icon off
   if (!length)                         // Remove partially written file
     remove(name);
 
@@ -1778,7 +1799,7 @@ int M_ReadFile(char const *name, byte **buffer)
   if ((fp = fopen(name, "rb")))
     {
       size_t length;
-
+      I_BeginRead();
       fseek(fp, 0, SEEK_END);
       length = ftell(fp);
       fseek(fp, 0, SEEK_SET);
@@ -1786,6 +1807,7 @@ int M_ReadFile(char const *name, byte **buffer)
       if (fread(*buffer, 1, length, fp) == length)
         {
           fclose(fp);
+          I_EndRead();
           return length;
         }
       fclose(fp);
@@ -1901,7 +1923,7 @@ typedef uint32_t dword_t; // [FG] unsigned long
 typedef int32_t long_t; // [FG] long
 typedef unsigned char ubyte_t;
 
-#ifdef _WIN64
+#ifdef WINDOWS
 #pragma pack(push, 1)
 #endif
 
@@ -1929,7 +1951,7 @@ typedef struct tagBITMAPINFOHEADER
   dword_t biClrImportant;
 } __attribute__ ((packed)) BITMAPINFOHEADER;
 
-#ifdef _WIN64
+#ifdef WINDOWS
 #pragma pack(pop)
 #endif
 
@@ -1938,7 +1960,7 @@ typedef struct tagBITMAPINFOHEADER
 
 #define SafeWrite(data,size,number,st) do {   \
     if (fwrite(data,size,number,st) < (number)) \
-   return fclose(st), false; } while(0)
+   return fclose(st), I_EndRead(), false; } while(0)
 
 //
 // WriteBMPfile
@@ -1955,7 +1977,7 @@ boolean WriteBMPfile(char *filename, byte *data, int width,
   FILE *st;
   char zero=0;
   ubyte_t c;
-
+  I_BeginRead();              // killough 10/98
   fhsiz = sizeof(BITMAPFILEHEADER);
   ihsiz = sizeof(BITMAPINFOHEADER);
   wid = 4*((width+3)/4);
@@ -2017,7 +2039,7 @@ boolean WriteBMPfile(char *filename, byte *data, int width,
 
       fclose(st);
     }
-  return true;       // killough 10/98
+  return I_EndRead(), true;       // killough 10/98
 }
 
 //

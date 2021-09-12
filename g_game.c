@@ -1142,7 +1142,7 @@ void G_SaveGameName(char *name, int slot)
   // Ty 05/04/98 - use savegamename variable (see d_deh.c)
   // killough 12/98: add .7 to truncate savegamename
 
-#ifndef __unix__
+#ifndef UNIX
   if (M_CheckParm("-cdrom"))
     sprintf(name, "c:/doomdata/%.12s%d.dsg", savegamename, slot);
 #endif

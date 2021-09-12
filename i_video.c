@@ -581,6 +581,32 @@ void I_ReadScreen(byte *scr)
    memcpy(scr, *screens, size);
 }
 
+//
+// killough 10/98: init disk icon
+//
+
+int disk_icon;
+
+static void I_InitDiskFlash(void)
+{
+}
+
+//
+// killough 10/98: draw disk icon
+//
+
+void I_BeginRead(void)
+{
+}
+
+//
+// killough 10/98: erase disk icon
+//
+
+void I_EndRead(void)
+{
+}
+
 
 void I_SetPalette(byte *palette)
 {
@@ -597,7 +623,7 @@ void I_SetPalette(byte *palette)
       colors[i].g = gammatable[usegamma][*palette++];
       colors[i].b = gammatable[usegamma][*palette++];
    }
-   
+   I_InitDiskFlash();        // Initialize disk icon 
    SDL_SetPaletteColors(sdlscreen->format->palette, colors, 0, 256);
 }
 
