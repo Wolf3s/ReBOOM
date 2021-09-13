@@ -1969,7 +1969,7 @@ void G_RecordDemo(char *name)
   AddDefaultExtension(strcpy(demoname, name), ".lmp");  // 1/18/98 killough
   i = M_CheckParm ("-maxdemo");
   if (i && i<myargc-1)
-    maxdemosize = atoi(myargv[i+1])*1024;
+    maxdemosize = atoll(myargv[i+1])*1024;
   if (maxdemosize < 0x20000)  // killough
     maxdemosize = 0x20000;
   demobuffer = malloc(maxdemosize); // killough

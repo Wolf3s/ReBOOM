@@ -184,7 +184,7 @@ static const crdef_t crdefs[] = {
 // killough 5/2/98: tiny engine driven by table above
 void V_InitColorTranslation(void)
 {
-  register const crdef_t *p;
+  const crdef_t *p;
   for (p=crdefs; p->name; p++)
     *p->map1 = *p->map2 = W_CacheLumpName(p->name, PU_STATIC);
 }
@@ -304,14 +304,14 @@ void V_DrawPatchGeneral(int x, int y, int scrn, patch_t *patch,
 	    {
 	      // killough 2/21/98: Unrolled and performance-tuned
 
-	      register const byte *source = (byte *) column + 3;
-	      register byte *dest = desttop + column->topdelta*SCREENWIDTH;
-	      register int count = column->length;
+	      const byte *source = (byte *) column + 3;
+	      byte *dest = desttop + column->topdelta*SCREENWIDTH;
+	      int count = column->length;
 
 	      if ((count-=4)>=0)
 		do
 		  {
-		    register byte s0,s1;
+		    byte s0,s1;
 		    s0 = source[0];
 		    s1 = source[1];
 		    dest[0] = s0;
@@ -392,14 +392,14 @@ void V_DrawPatchTranslated(int x, int y, int scrn, patch_t *patch,
 	    {
 	      // killough 2/21/98: Unrolled and performance-tuned
 
-	      register const byte *source = (byte *) column + 3;
-	      register byte *dest = desttop + column->topdelta*SCREENWIDTH;
-	      register int count = column->length;
+	      const byte *source = (byte *) column + 3;
+	      byte *dest = desttop + column->topdelta*SCREENWIDTH;
+	      int count = column->length;
 
 	      if ((count-=4)>=0)
 		do
 		  {
-		    register byte s0,s1;
+		    byte s0,s1;
 		    s0 = source[0];
 		    s1 = source[1];
 

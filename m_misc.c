@@ -1388,7 +1388,7 @@ static unsigned default_hash(const char *name)
 default_t *M_LookupDefault(const char *name)
 {
   static int hash_init;
-  register default_t *dp;
+  default_t *dp;
 
   // Initialize hash table if not initialized already
   if (!hash_init)
@@ -1413,7 +1413,7 @@ default_t *M_LookupDefault(const char *name)
 void M_SaveDefaults (void)
 {
   char tmpfile[PATH_MAX+1];
-  register default_t *dp;
+  default_t *dp;
   int line, blanks;
   FILE *f;
 
@@ -1645,7 +1645,7 @@ void M_LoadOptions(void)
 
 void M_LoadDefaults (void)
 {
-  register default_t *dp;
+  default_t *dp;
   int i;
   FILE *f;
 

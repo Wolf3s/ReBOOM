@@ -1167,11 +1167,11 @@ typedef enum
 typedef struct
 {
   spritenum_t sprite;       // sprite number to show
-  long        frame;        // which frame/subframe of the sprite is shown
-  long        tics;         // number of gametics this frame should last
+  long long   frame;        // which frame/subframe of the sprite is shown
+  long long   tics;         // number of gametics this frame should last
   void        (*action)();  // code pointer to function for action if any
   statenum_t  nextstate;    // linked list pointer to next state or zero
-  long        misc1, misc2; // used for psprite positioning
+  long long   misc1, misc2; // used for psprite positioning
 } state_t;
 
 // these are in info.c

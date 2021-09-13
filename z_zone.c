@@ -120,13 +120,13 @@ static void Z_DrawStats(void)            // Print allocation statistics
     return;
 
   if (memory_size > 0) {
-    unsigned long total_memory = free_memory + memory_size + active_memory + purgable_memory;
+    unsigned long long total_memory = free_memory + memory_size + active_memory + purgable_memory;
     double s = 100.0 / total_memory;
 
     doom_printf("%-5i\t%6.01f%%\tstatic\n"
             "%-5i\t%6.01f%%\tpurgable\n"
             "%-5i\t%6.01f%%\tfree\n"
-            "%-5li\t\ttotal\n",
+            "%-5lli\t\ttotal\n",
             active_memory,
             active_memory*s,
             purgable_memory,
@@ -136,12 +136,12 @@ static void Z_DrawStats(void)            // Print allocation statistics
             total_memory
             );
   } else {
-    unsigned long total_memory = active_memory + purgable_memory;
+    unsigned long long total_memory = active_memory + purgable_memory;
     double s = 100.0 / total_memory;
 
     doom_printf("%-5i\t%6.01f%%\tstatic\n"
             "%-5i\t%6.01f%%\tpurgable\n"
-            "%-5li\t\ttotal\n",
+            "%-5lli\t\ttotal\n",
             active_memory,
             active_memory*s,
             purgable_memory,
@@ -290,7 +290,7 @@ void Z_Init(void)
     I_Error("Z_Init: Failed on allocation of %lu bytes", (unsigned long)size);
 
   lprintf(LO_INFO,"Z_Init : Allocated %lukb zone memory\n",
-      (long unsigned)size / 1000);
+      (long long unsigned)size / 1000);
 
   // Align on cache boundary
 

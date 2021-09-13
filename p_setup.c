@@ -81,10 +81,10 @@ side_t   *sides;
 int       bmapwidth, bmapheight;  // size in mapblocks
 
 // killough 3/1/98: remove blockmap limit internally:
-long      *blockmap;              // was short -- killough
+long long     *blockmap;              // was short -- killough
 
 // offsets in blockmap are from here
-long      *blockmaplump;          // was short -- killough
+long long     *blockmaplump;          // was short -- killough
 
 fixed_t   bmaporgx, bmaporgy;     // origin of block map
 
@@ -426,7 +426,7 @@ void P_LoadLineDefs (int lump)
 void P_LoadLineDefs2(int lump)
 {
   int i = numlines;
-  register line_t *ld = lines;
+  line_t *ld = lines;
   for (;i--;ld++)
     {
       ld->frontsector = ld->sidenum[0]!=-1 ? sides[ld->sidenum[0]].sector : 0;
@@ -471,9 +471,9 @@ void P_LoadSideDefs2(int lump)
 
   for (i=0; i<numsides; i++)
     {
-      register mapsidedef_t *msd = (mapsidedef_t *) data + i;
-      register side_t *sd = sides + i;
-      register sector_t *sec;
+      mapsidedef_t *msd = (mapsidedef_t *) data + i;
+      side_t *sd = sides + i;
+      sector_t *sec;
 
       sd->textureoffset = SHORT(msd->textureoffset)<<FRACBITS;
       sd->rowoffset = SHORT(msd->rowoffset)<<FRACBITS;
@@ -532,7 +532,7 @@ void P_LoadSideDefs2(int lump)
 
 static void P_CreateBlockMap(void)
 {
-  register int i;
+  int i;
   fixed_t minx = INT_MAX, miny = INT_MAX, maxx = INT_MIN, maxy = INT_MIN;
 
   // First find limits of map
@@ -690,13 +690,13 @@ static void P_CreateBlockMap(void)
 
 void P_LoadBlockMap (int lump)
 {
-  long count;
+  long long count;
 
   if (M_CheckParm("-blockmap") || (count = W_LumpLength(lump)/2) >= 0x10000)
     P_CreateBlockMap();
   else
     {
-      long i;
+      long long i;
       short *wadblockmaplump = W_CacheLumpNum (lump, PU_LEVEL);
       blockmaplump = Z_Malloc(sizeof(*blockmaplump) * count, PU_LEVEL, 0);
 
@@ -707,13 +707,13 @@ void P_LoadBlockMap (int lump)
 
       blockmaplump[0] = SHORT(wadblockmaplump[0]);
       blockmaplump[1] = SHORT(wadblockmaplump[1]);
-      blockmaplump[2] = (long)(SHORT(wadblockmaplump[2])) & 0xffff;
-      blockmaplump[3] = (long)(SHORT(wadblockmaplump[3])) & 0xffff;
+      blockmaplump[2] = (long long)(SHORT(wadblockmaplump[2])) & 0xffff;
+      blockmaplump[3] = (long long)(SHORT(wadblockmaplump[3])) & 0xffff;
 
       for (i=4 ; i<count ; i++)
         {
           short t = SHORT(wadblockmaplump[i]);          // killough 3/1/98
-          blockmaplump[i] = t == -1 ? -1l : (long) t & 0xffff;
+          blockmaplump[i] = t == -1 ? -1l : (long long) t & 0xffff;
         }
 
       Z_Free(wadblockmaplump);

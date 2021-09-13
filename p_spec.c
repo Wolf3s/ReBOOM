@@ -670,7 +670,7 @@ int P_FindLineFromLineTag(const line_t *line, int start)
 // Hash the sector tags across the sectors and linedefs.
 static void P_InitTagLists(void)
 {
-  register int i;
+  int i;
 
   for (i=numsectors; --i>=0; )        // Initially make all slots empty.
     sectors[i].firsttag = -1;
@@ -2283,7 +2283,7 @@ void P_SpawnSpecials (void)
   if (i && deathmatch)
     {
       int time;
-      time = atoi(myargv[i+1]) * 60 * TICRATE;
+      time = atoll(myargv[i+1]) * 60 * TICRATE;
       levelTimer = true;
       levelTimeCount = time;
     }
@@ -2294,7 +2294,7 @@ void P_SpawnSpecials (void)
   if (i && deathmatch)
     {
       int frags;
-      frags = atoi(myargv[i+1]);
+      frags = atoll(myargv[i+1]);
       if (frags <= 0) frags = 10;  // default 10 if no count provided
       levelFragLimit = true;
       levelFragLimitCount = frags;
@@ -2619,7 +2619,7 @@ static void P_SpawnScrollers(void)
 
       switch (special)
         {
-          register int s;
+          int s;
 
         case 250:   // scroll effect ceiling
           for (s=-1; (s = P_FindSectorFromLineTag(l,s)) >= 0;)
@@ -3069,7 +3069,7 @@ static void P_SpawnPushers(void)
 {
   int i;
   line_t *l = lines;
-  register int s;
+  int s;
   mobj_t* thing;
 
   for (i = 0 ; i < numlines ; i++,l++)

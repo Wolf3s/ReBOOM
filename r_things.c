@@ -188,7 +188,7 @@ void R_InitSpriteDefs(char** namelist)
             maxframe = -1;
             do
             {
-                register lumpinfo_t* lump = lumpinfo + j + firstspritelump;
+                lumpinfo_t* lump = lumpinfo + j + firstspritelump;
 
                 // Fast portable comparison -- killough
                 // (using int pointer cast is nonportable):

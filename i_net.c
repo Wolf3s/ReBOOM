@@ -81,11 +81,11 @@ unsigned short net_to_host16(unsigned int value)
 	return SDLNet_Read16(&s);
 }
 
-unsigned long host_to_net32(unsigned int value)
+unsigned long long host_to_net32(unsigned int value)
 {
 	union
 	{
-		unsigned long l;
+		unsigned long long l;
 		char b[4];
 	} data;
 
@@ -94,9 +94,9 @@ unsigned long host_to_net32(unsigned int value)
 	return data.l;
 }
 
-unsigned long net_to_host32(unsigned int value)
+unsigned long long net_to_host32(unsigned int value)
 {
-	unsigned long l = value;
+	unsigned long long l = value;
 
 	return SDLNet_Read32(&l);
 }
@@ -235,7 +235,7 @@ void I_InitNetwork (void)
 	p = M_CheckParm ("-port");
 	if (p && p<myargc-1)
 	{
-		DOOMPORT = atoi (myargv[p+1]);
+		DOOMPORT = atoll (myargv[p+1]);
 		printf ("using alternative port %i\n", DOOMPORT);
 	}
 

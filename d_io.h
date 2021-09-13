@@ -39,8 +39,6 @@
   #define W_OK 2
   #define R_OK 4
   #define S_ISDIR(x) (((sbuf.st_mode & S_IFDIR)==S_IFDIR)?1:0)
-  #define strcasecmp _stricmp
-  #define strncasecmp _strnicmp
   #ifndef PATH_MAX
      #define PATH_MAX _MAX_PATH
   #endif
@@ -50,8 +48,7 @@
   #ifndef O_BINARY
     #define O_BINARY 0
   #endif
-  #define stricmp strcasecmp
-  #define strnicmp strncasecmp
+  #define PATH_MAX 4096 // linux has it in linux/limits.h but this is non portable
   static inline char *strlwr (char *str) {
     char *c = str;
     while (*str != '\0')
