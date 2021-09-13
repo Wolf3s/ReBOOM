@@ -145,6 +145,8 @@
     <ClInclude Include="win32\resource.h">
       <Filter>Win32 Files</Filter>
     </ClInclude>
+    <ClInclude Include="win32\afxres.h" />
+    <ClInclude Include="win32\winres.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Win32 Files">
@@ -158,5 +160,8 @@
     <Image Include="win32\icon1.ico">
       <Filter>Win32 Files</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="win32\reboom.rc" />
   </ItemGroup>
 </Project>

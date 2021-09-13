@@ -29,6 +29,7 @@
 //
 //-----------------------------------------------------------------------------
 
+#include <errno.h>
 #include "doomstat.h"
 #include "m_argv.h"
 #include "g_game.h"
@@ -46,9 +47,7 @@
 #include "s_sound.h"
 #include "sounds.h"
 #include "d_main.h"
-
 #include "d_io.h"
-#include <errno.h>
 
 //
 // DEFAULTS
@@ -1401,8 +1400,11 @@ default_t *M_LookupDefault(const char *name)
 
   // Look up name in hash table
   for (dp = defaults[default_hash(name)].first;
-       dp && strcasecmp(name, dp->name); dp = dp->next);
-
+#ifdef WINDOWS
+       dp && _stricmp(name, dp->name); dp = dp->next);
+#else
+       dp&& strcasecmp(name, dp->name); dp = dp->next);
+#endif
   return dp;
 }
 

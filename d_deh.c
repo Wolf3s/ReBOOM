@@ -1491,7 +1491,7 @@ void ProcessDehFile(char* filename, char* outfilename, int lumpnum)
 
         for (i = 0; i < DEH_BLOCKMAX; i++)
 #ifdef WINDOWS
-            if (!_stricmp(inbuffer, deh_blocks[i].key, strlen(deh_blocks[i].key)))
+            if (!_strnicmp(inbuffer, deh_blocks[i].key, strlen(deh_blocks[i].key)))
 #else
             if (!strncasecmp(inbuffer, deh_blocks[i].key, strlen(deh_blocks[i].key)))
 #endif
@@ -1739,43 +1739,72 @@ void deh_procFrame(DEHFILE* fpin, FILE* fpout, char* line)
             if (fpout) fprintf(fpout, "Bad data pair in '%s'\n", inbuffer);
             continue;
         }
+#ifdef WINDOWS
+        if (!_stricmp(key, deh_state[0]))  // Sprite number
+#else
         if (!strcasecmp(key, deh_state[0]))  // Sprite number
+#endif
         {
             if (fpout) fprintf(fpout, " - sprite = %lld\n", value);
             states[indexnum].sprite = (spritenum_t)value;
         }
         else
+#ifdef WINDOWS
+            if (!_stricmp(key, deh_state[1]))  // Sprite subnumber
+#else
             if (!strcasecmp(key, deh_state[1]))  // Sprite subnumber
+#endif
             {
                 if (fpout) fprintf(fpout, " - frame = %lld\n", value);
                 states[indexnum].frame = value; // long
             }
             else
+#ifdef WINDOWS
+                if (!_stricmp(key, deh_state[2]))  // Duration
+#else
                 if (!strcasecmp(key, deh_state[2]))  // Duration
+#endif
+
                 {
                     if (fpout) fprintf(fpout, " - tics = %lld\n", value);
                     states[indexnum].tics = value; // long
                 }
                 else
+#ifdef WINDOWS
+                    if (!_stricmp(key, deh_state[3]))  // Next frame
+#else
                     if (!strcasecmp(key, deh_state[3]))  // Next frame
+#endif
                     {
                         if (fpout) fprintf(fpout, " - nextstate = %lld\n", value);
                         states[indexnum].nextstate = (statenum_t)value;
                     }
                     else
+#ifdef WINDOWS
+                        if (!_stricmp(key, deh_state[4]))  // Codep frame (not set in Frame deh block)
+#else
                         if (!strcasecmp(key, deh_state[4]))  // Codep frame (not set in Frame deh block)
+#endif
                         {
                             if (fpout) fprintf(fpout, " - codep, should not be set in Frame section!\n");
                             /* nop */;
                         }
                         else
+#ifdef WINDOWS
+                            if (!_stricmp(key, deh_state[5]))  // Unknown 1
+#else
                             if (!strcasecmp(key, deh_state[5]))  // Unknown 1
+#endif
                             {
                                 if (fpout) fprintf(fpout, " - misc1 = %lld\n", value);
                                 states[indexnum].misc1 = value; // long
                             }
                             else
+#ifdef WINDOWS
+                                if (!_stricmp(key, deh_state[6]))  // Unknown 2
+#else
                                 if (!strcasecmp(key, deh_state[6]))  // Unknown 2
+#endif
                                 {
                                     if (fpout) fprintf(fpout, " - misc2 = %lld\n", value);
                                     states[indexnum].misc2 = value; // long
@@ -1837,8 +1866,11 @@ void deh_procPointer(DEHFILE* fpin, FILE* fpout, char* line) // done
                 fprintf(fpout, "Bad pointer number %lld of %d\n", value, NUMSTATES);
             return;
         }
-
+#ifdef WINDOWS
+        if (!_stricmp(key, deh_state[4]))  // Codep frame (not set in Frame deh block)
+#else
         if (!strcasecmp(key, deh_state[4]))  // Codep frame (not set in Frame deh block)
+#endif
         {
             states[indexnum].action = deh_codeptr[value];
             if (fpout) fprintf(fpout, " - applied %p from codeptr[%lld] to states[%d]\n", deh_codeptr[value], value, indexnum);
@@ -1895,35 +1927,63 @@ void deh_procSounds(DEHFILE* fpin, FILE* fpout, char* line)
             if (fpout) fprintf(fpout, "Bad data pair in '%s'\n", inbuffer);
             continue;
         }
+#ifdef WINDOWS
+        if (!_stricmp(key, deh_sfxinfo[0]))  // Offset
+            /* nop */;  // we don't know what this is, I don't think
+        else
+        if (!_stricmp(key, deh_sfxinfo[1]))  // Zero/One
+                S_sfx[indexnum].singularity = value;
+        else
+        if (!_stricmp(key, deh_sfxinfo[2]))  // Value
+                S_sfx[indexnum].priority = value;
+        else
+        if (!_stricmp(key, deh_sfxinfo[3]))  // Zero 1
+                S_sfx[indexnum].link = (sfxinfo_t*)(intptr_t)value;
+        else
+        if (!_stricmp(key, deh_sfxinfo[4]))  // Zero 2
+                S_sfx[indexnum].pitch = value;
+        else
+        if (!_stricmp(key, deh_sfxinfo[5]))  // Zero 3
+                S_sfx[indexnum].volume = value;
+        else
+        if (!_stricmp(key, deh_sfxinfo[6]))  // Zero 4
+                S_sfx[indexnum].data = (void*)(intptr_t)value; // killough 5/3/98: changed cast
+        else
+        if (!_stricmp(key, deh_sfxinfo[7]))  // Neg. One 1
+                S_sfx[indexnum].usefulness = value;
+        else
+        if (!_stricmp(key, deh_sfxinfo[8]))  // Neg. One 2
+                S_sfx[indexnum].lumpnum = value;
+#else
         if (!strcasecmp(key, deh_sfxinfo[0]))  // Offset
             /* nop */;  // we don't know what this is, I don't think
         else
-            if (!strcasecmp(key, deh_sfxinfo[1]))  // Zero/One
+        if (!strcasecmp(key, deh_sfxinfo[1]))  // Zero/One
                 S_sfx[indexnum].singularity = value;
-            else
-                if (!strcasecmp(key, deh_sfxinfo[2]))  // Value
-                    S_sfx[indexnum].priority = value;
-                else
-                    if (!strcasecmp(key, deh_sfxinfo[3]))  // Zero 1
-                        S_sfx[indexnum].link = (sfxinfo_t*)(intptr_t)value;
-                    else
-                        if (!strcasecmp(key, deh_sfxinfo[4]))  // Zero 2
-                            S_sfx[indexnum].pitch = value;
-                        else
-                            if (!strcasecmp(key, deh_sfxinfo[5]))  // Zero 3
-                                S_sfx[indexnum].volume = value;
-                            else
-                                if (!strcasecmp(key, deh_sfxinfo[6]))  // Zero 4
-                                    S_sfx[indexnum].data = (void*)(intptr_t)value; // killough 5/3/98: changed cast
-                                else
-                                    if (!strcasecmp(key, deh_sfxinfo[7]))  // Neg. One 1
-                                        S_sfx[indexnum].usefulness = value;
-                                    else
-                                        if (!strcasecmp(key, deh_sfxinfo[8]))  // Neg. One 2
-                                            S_sfx[indexnum].lumpnum = value;
-                                        else
-                                            if (fpout) fprintf(fpout,
-                                                "Invalid sound string index for '%s'\n", key);
+        else
+        if (!strcasecmp(key, deh_sfxinfo[2]))  // Value
+                S_sfx[indexnum].priority = value;
+        else
+        if (!strcasecmp(key, deh_sfxinfo[3]))  // Zero 1
+                S_sfx[indexnum].link = (sfxinfo_t*)(intptr_t)value;
+        else
+        if (!strcasecmp(key, deh_sfxinfo[4]))  // Zero 2
+                S_sfx[indexnum].pitch = value;
+        else
+        if (!strcasecmp(key, deh_sfxinfo[5]))  // Zero 3
+                S_sfx[indexnum].volume = value;
+        else
+        if (!strcasecmp(key, deh_sfxinfo[6]))  // Zero 4
+                S_sfx[indexnum].data = (void*)(intptr_t)value; // killough 5/3/98: changed cast
+        else
+        if (!strcasecmp(key, deh_sfxinfo[7]))  // Neg. One 1
+                S_sfx[indexnum].usefulness = value;
+        else
+        if (!strcasecmp(key, deh_sfxinfo[8]))  // Neg. One 2
+                S_sfx[indexnum].lumpnum = value;
+#endif
+        else
+        if (fpout) fprintf(fpout, "Invalid sound string index for '%s'\n", key);
     }
     return;
 }
@@ -1941,16 +2001,16 @@ void deh_procAmmo(DEHFILE* fpin, FILE* fpout, char* line)
     char key[DEH_MAXKEYLEN];
     char inbuffer[DEH_BUFFERMAX];
     long long value;      // All deh values are ints or longs
-    int indexnum;
+    long long indexnum;
 
     strncpy(inbuffer, line, DEH_BUFFERMAX);
 
     // killough 8/98: allow hex numbers in input:
-    sscanf(inbuffer, "%s %i", key, &indexnum);
-    if (fpout) fprintf(fpout, "Processing Ammo at index %d: %s\n",
+    sscanf(inbuffer, "%s %lli", key, &indexnum);
+    if (fpout) fprintf(fpout, "Processing Ammo at index %lld: %s\n",
         indexnum, key);
     if (indexnum < 0 || indexnum >= NUMAMMO)
-        if (fpout) fprintf(fpout, "Bad ammo number %d of %d\n",
+        if (fpout) fprintf(fpout, "Bad ammo number %lld of %d\n",
             indexnum, NUMAMMO);
 
     while (!dehfeof(fpin) && *inbuffer && (*inbuffer != ' '))
@@ -1963,10 +2023,18 @@ void deh_procAmmo(DEHFILE* fpin, FILE* fpout, char* line)
             if (fpout) fprintf(fpout, "Bad data pair in '%s'\n", inbuffer);
             continue;
         }
+#ifdef WINDOWS
+        if (!_stricmp(key, deh_ammo[0]))  // Max ammo
+#else
         if (!strcasecmp(key, deh_ammo[0]))  // Max ammo
+#endif
             maxammo[indexnum] = value;
         else
+#ifdef WINDOWS
+            if (!_stricmp(key, deh_ammo[1]))  // Per ammo
+#else
             if (!strcasecmp(key, deh_ammo[1]))  // Per ammo
+#endif
                 clipammo[indexnum] = value;
             else
                 if (fpout) fprintf(fpout, "Invalid ammo string index for '%s'\n", key);
@@ -1987,16 +2055,16 @@ void deh_procWeapon(DEHFILE* fpin, FILE* fpout, char* line)
     char key[DEH_MAXKEYLEN];
     char inbuffer[DEH_BUFFERMAX];
     long long value;      // All deh values are ints or longs
-    int indexnum;
+    long long indexnum;
 
     strncpy(inbuffer, line, DEH_BUFFERMAX);
 
     // killough 8/98: allow hex numbers in input:
-    sscanf(inbuffer, "%s %i", key, &indexnum);
-    if (fpout) fprintf(fpout, "Processing Weapon at index %d: %s\n",
+    sscanf(inbuffer, "%s %lli", key, &indexnum);
+    if (fpout) fprintf(fpout, "Processing Weapon at index %lld: %s\n",
         indexnum, key);
     if (indexnum < 0 || indexnum >= NUMWEAPONS)
-        if (fpout) fprintf(fpout, "Bad weapon number %d of %d\n",
+        if (fpout) fprintf(fpout, "Bad weapon number %lld of %d\n",
             indexnum, NUMAMMO);
 
     while (!dehfeof(fpin) && *inbuffer && (*inbuffer != ' '))
@@ -2009,25 +2077,45 @@ void deh_procWeapon(DEHFILE* fpin, FILE* fpout, char* line)
             if (fpout) fprintf(fpout, "Bad data pair in '%s'\n", inbuffer);
             continue;
         }
+#ifdef WINDOWS
+        if (!_stricmp(key, deh_weapon[0]))  // Ammo type
+            weaponinfo[indexnum].ammo = value;
+        else
+         if (!_stricmp(key, deh_weapon[1]))  // Deselect frame
+            weaponinfo[indexnum].upstate = value;
+         else
+         if (!_stricmp(key, deh_weapon[2]))  // Select frame
+            weaponinfo[indexnum].downstate = value;
+         else
+         if (!_stricmp(key, deh_weapon[3]))  // Bobbing frame
+            weaponinfo[indexnum].readystate = value;
+         else
+         if (!_stricmp(key, deh_weapon[4]))  // Shooting frame
+            weaponinfo[indexnum].atkstate = value;
+         else
+         if (!_stricmp(key, deh_weapon[5]))  // Firing frame
+            weaponinfo[indexnum].flashstate = value;
+#else
         if (!strcasecmp(key, deh_weapon[0]))  // Ammo type
             weaponinfo[indexnum].ammo = value;
         else
-            if (!strcasecmp(key, deh_weapon[1]))  // Deselect frame
-                weaponinfo[indexnum].upstate = value;
-            else
-                if (!strcasecmp(key, deh_weapon[2]))  // Select frame
-                    weaponinfo[indexnum].downstate = value;
-                else
-                    if (!strcasecmp(key, deh_weapon[3]))  // Bobbing frame
-                        weaponinfo[indexnum].readystate = value;
-                    else
-                        if (!strcasecmp(key, deh_weapon[4]))  // Shooting frame
-                            weaponinfo[indexnum].atkstate = value;
-                        else
-                            if (!strcasecmp(key, deh_weapon[5]))  // Firing frame
-                                weaponinfo[indexnum].flashstate = value;
-                            else
-                                if (fpout) fprintf(fpout, "Invalid weapon string index for '%s'\n", key);
+         if (!strcasecmp(key, deh_weapon[1]))  // Deselect frame
+            weaponinfo[indexnum].upstate = value;
+         else
+         if (!strcasecmp(key, deh_weapon[2]))  // Select frame
+            weaponinfo[indexnum].downstate = value;
+         else
+         if (!strcasecmp(key, deh_weapon[3]))  // Bobbing frame
+            weaponinfo[indexnum].readystate = value;
+         else
+         if (!strcasecmp(key, deh_weapon[4]))  // Shooting frame
+            weaponinfo[indexnum].atkstate = value;
+         else
+         if (!strcasecmp(key, deh_weapon[5]))  // Firing frame
+            weaponinfo[indexnum].flashstate = value;
+#endif
+         else
+         if (fpout) fprintf(fpout, "Invalid weapon string index for '%s'\n", key);
     }
     return;
 }
@@ -2102,7 +2190,11 @@ void deh_procPars(DEHFILE* fpin, FILE* fpout, char* line) // extension
     while (!dehfeof(fpin) && *inbuffer && (*inbuffer != ' '))
     {
         if (!dehfgets(inbuffer, sizeof(inbuffer), fpin)) break;
+#ifdef WINDOWS
+        lfstrip(_strlwr(inbuffer)); // lowercase it
+#else
         lfstrip(strlwr(inbuffer)); // lowercase it
+#endif
         if (!*inbuffer) break;      // killough 11/98
         if (3 != sscanf(inbuffer, "par %i %i %i", &episode, &level, &partime))
         { // not 3
@@ -2262,56 +2354,104 @@ void deh_procMisc(DEHFILE* fpin, FILE* fpout, char* line) // done
         // Otherwise it's ok
         if (fpout) fprintf(fpout, "Processing Misc item '%s'\n", key);
 
+#ifdef WINDOWS
+        if (!_stricmp(key, deh_misc[0]))  // Initial Health
+            initial_health = value;
+        else
+        if (!_stricmp(key, deh_misc[1]))  // Initial Bullets
+            initial_bullets = value;
+        else
+        if (!_stricmp(key, deh_misc[2]))  // Max Health
+            maxhealth = value;
+        else
+        if (!_stricmp(key, deh_misc[3]))  // Max Armor
+            max_armor = value;
+        else
+        if (!_stricmp(key, deh_misc[4]))  // Green Armor Class
+            green_armor_class = value;
+        else
+        if (!_stricmp(key, deh_misc[5]))  // Blue Armor Class
+            blue_armor_class = value;
+        else
+        if (!_stricmp(key, deh_misc[6]))  // Max Soulsphere
+            max_soul = value;
+        else
+        if (!_stricmp(key, deh_misc[7]))  // Soulsphere Health
+            soul_health = value;
+        else
+        if (!_stricmp(key, deh_misc[8]))  // Megasphere Health
+            mega_health = value;
+        else
+        if (!_stricmp(key, deh_misc[9]))  // God Mode Health
+            god_health = value;
+        else
+        if (!_stricmp(key, deh_misc[10]))  // IDFA Armor
+            idfa_armor = value;
+        else
+        if (!_stricmp(key, deh_misc[11]))  // IDFA Armor Class
+            idfa_armor_class = value;
+        else
+        if (!_stricmp(key, deh_misc[12]))  // IDKFA Armor
+            idkfa_armor = value;
+        else
+        if (!_stricmp(key, deh_misc[13]))  // IDKFA Armor Class
+            idkfa_armor_class = value;
+        else
+        if (!_stricmp(key, deh_misc[14]))  // BFG Cells/Shot
+            bfgcells = value;
+        else
+        if (!_stricmp(key, deh_misc[15]))  // Monsters Infight
+#else
         if (!strcasecmp(key, deh_misc[0]))  // Initial Health
             initial_health = value;
         else
-            if (!strcasecmp(key, deh_misc[1]))  // Initial Bullets
-                initial_bullets = value;
-            else
-                if (!strcasecmp(key, deh_misc[2]))  // Max Health
-                    maxhealth = value;
-                else
-                    if (!strcasecmp(key, deh_misc[3]))  // Max Armor
-                        max_armor = value;
-                    else
-                        if (!strcasecmp(key, deh_misc[4]))  // Green Armor Class
-                            green_armor_class = value;
-                        else
-                            if (!strcasecmp(key, deh_misc[5]))  // Blue Armor Class
-                                blue_armor_class = value;
-                            else
-                                if (!strcasecmp(key, deh_misc[6]))  // Max Soulsphere
-                                    max_soul = value;
-                                else
-                                    if (!strcasecmp(key, deh_misc[7]))  // Soulsphere Health
-                                        soul_health = value;
-                                    else
-                                        if (!strcasecmp(key, deh_misc[8]))  // Megasphere Health
-                                            mega_health = value;
-                                        else
-                                            if (!strcasecmp(key, deh_misc[9]))  // God Mode Health
-                                                god_health = value;
-                                            else
-                                                if (!strcasecmp(key, deh_misc[10]))  // IDFA Armor
-                                                    idfa_armor = value;
-                                                else
-                                                    if (!strcasecmp(key, deh_misc[11]))  // IDFA Armor Class
-                                                        idfa_armor_class = value;
-                                                    else
-                                                        if (!strcasecmp(key, deh_misc[12]))  // IDKFA Armor
-                                                            idkfa_armor = value;
-                                                        else
-                                                            if (!strcasecmp(key, deh_misc[13]))  // IDKFA Armor Class
-                                                                idkfa_armor_class = value;
-                                                            else
-                                                                if (!strcasecmp(key, deh_misc[14]))  // BFG Cells/Shot
-                                                                    bfgcells = value;
-                                                                else
-                                                                    if (!strcasecmp(key, deh_misc[15]))  // Monsters Infight
-                                                                        /* No such switch in DOOM - nop */;
-                                                                    else
-                                                                        if (fpout) fprintf(fpout,
-                                                                            "Invalid misc item string index for '%s'\n", key);
+        if (!strcasecmp(key, deh_misc[1]))  // Initial Bullets
+            initial_bullets = value;
+        else
+        if (!strcasecmp(key, deh_misc[2]))  // Max Health
+            maxhealth = value;
+        else
+        if (!strcasecmp(key, deh_misc[3]))  // Max Armor
+            max_armor = value;
+        else
+        if (!strcasecmp(key, deh_misc[4]))  // Green Armor Class
+            green_armor_class = value;
+        else
+        if (!strcasecmp(key, deh_misc[5]))  // Blue Armor Class
+            blue_armor_class = value;
+        else
+        if (!strcasecmp(key, deh_misc[6]))  // Max Soulsphere
+            max_soul = value;
+        else
+        if (!strcasecmp(key, deh_misc[7]))  // Soulsphere Health
+            soul_health = value;
+        else
+        if (!strcasecmp(key, deh_misc[8]))  // Megasphere Health
+            mega_health = value;
+        else
+        if (!strcasecmp(key, deh_misc[9]))  // God Mode Health
+            god_health = value;
+        else
+        if (!strcasecmp(key, deh_misc[10]))  // IDFA Armor
+            idfa_armor = value;
+        else
+        if (!strcasecmp(key, deh_misc[11]))  // IDFA Armor Class
+            idfa_armor_class = value;
+        else
+        if (!strcasecmp(key, deh_misc[12]))  // IDKFA Armor
+            idkfa_armor = value;
+        else
+        if (!strcasecmp(key, deh_misc[13]))  // IDKFA Armor Class
+            idkfa_armor_class = value;
+        else
+        if (!strcasecmp(key, deh_misc[14]))  // BFG Cells/Shot
+            bfgcells = value;
+        else
+        if (!strcasecmp(key, deh_misc[15]))  // Monsters Infight
+#endif
+        /* No such switch in DOOM - nop */;
+        else
+        if (fpout) fprintf(fpout, "Invalid misc item string index for '%s'\n", key);
     }
     return;
 }

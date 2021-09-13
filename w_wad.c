@@ -154,7 +154,11 @@ static void W_AddFile(const char *filename,int source) // killough 1/31/98: stat
   if ((handle = open(filename,O_RDONLY | O_BINARY)) == -1)
     {
       if (strlen(filename)<=4 ||      // add error check -- killough
-          strcasecmp(filename+strlen(filename)-4 , ".lmp" ) )
+#ifdef WINDOWS
+          _stricmp(filename+strlen(filename)-4 , ".lmp" ) )
+#else
+          strcasecmp(filename + strlen(filename) - 4, ".lmp") )
+#endif
         I_Error("Error: couldn't open %s\n",filename);  // killough
       return;
     }
@@ -164,7 +168,11 @@ static void W_AddFile(const char *filename,int source) // killough 1/31/98: stat
   startlump = numlumps;
 
   // killough:
-  if (strlen(filename)<=4 || strcasecmp(filename+strlen(filename)-4, ".wad" ))
+#ifdef WINDOWS
+  if (strlen(filename)<=4 || _stricmp(filename+strlen(filename)-4, ".wad" ))
+#else
+  if (strlen(filename) <= 4 || strcasecmp(filename + strlen(filename) - 4, ".wad"))
+#endif
     {
       // single lump file
       fileinfo = &singleinfo;
@@ -217,8 +225,11 @@ static void W_AddFile(const char *filename,int source) // killough 1/31/98: stat
 
 static int IsMarker(const char *marker, const char *name)
 {
-  return !strncasecmp(name, marker, 8) ||
-    (*name == *marker && !strncasecmp(name+1, marker, 7));
+#ifdef WINDOWS
+  return !_strnicmp(name, marker, 8) || (*name == *marker && !_strnicmp(name+1, marker, 7));
+#else
+    return !strncasecmp(name, marker, 8) || (*name == *marker && !strncasecmp(name + 1, marker, 7));
+#endif
 }
 
 // killough 4/17/98: add namespace tags
@@ -325,8 +336,11 @@ int (W_CheckNumForName)(const char *name, int namespace)
   // worth the overhead, considering namespace collisions are rare in
   // Doom wads.
 
-  while (i >= 0 && (strncasecmp(lumpinfo[i].name, name, 8) ||
-                    lumpinfo[i].namespace != namespace))
+#ifdef WINDOWS
+  while (i >= 0 && (_strnicmp(lumpinfo[i].name, name, 8) || lumpinfo[i].namespace != namespace))
+#else
+  while (i >= 0 && (strncasecmp(lumpinfo[i].name, name, 8) || lumpinfo[i].namespace != namespace))
+#endif
     i = lumpinfo[i].next;
 
   // Return the matching lump, or -1 if none found.
