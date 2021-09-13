@@ -27,7 +27,9 @@
 //
 //-----------------------------------------------------------------------------
 
+#ifndef WINDOWS
 #include <strings.h>
+#endif
 #include <fcntl.h>
 #include <sys/stat.h>
 #include "doomstat.h"

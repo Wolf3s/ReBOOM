@@ -33,7 +33,9 @@
 
 // killough 5/2/98: fixed headers, removed rendunant external declarations:
 
+#ifndef WINDOWS
 #include <strings.h>
+#endif
 #include "doomdef.h"
 #include "doomstat.h"
 #include "sounds.h"
@@ -1488,7 +1490,11 @@ void ProcessDehFile(char* filename, char* outfilename, int lumpnum)
         }
 
         for (i = 0; i < DEH_BLOCKMAX; i++)
+#ifdef WINDOWS
+            if (!_stricmp(inbuffer, deh_blocks[i].key, strlen(deh_blocks[i].key)))
+#else
             if (!strncasecmp(inbuffer, deh_blocks[i].key, strlen(deh_blocks[i].key)))
+#endif
             { // matches one
                 if (fileout)
                     fprintf(fileout, "Processing function [%d] for %s\n",
@@ -1645,9 +1651,17 @@ void deh_procThing(DEHFILE* fpin, FILE* fpout, char* line)
         }
         for (ix = 0; ix < DEH_MOBJINFOMAX; ix++)
         {
+#ifdef WINDOWS
+            if (!_stricmp(key, deh_mobjinfo[ix]))  // killough 8/98
+#else
             if (!strcasecmp(key, deh_mobjinfo[ix]))  // killough 8/98
+#endif
             {
+#ifdef WINDOWS
+                if (!_stricmp(key, "bits") && !value) // killough 10/98
+#else
                 if (!strcasecmp(key, "bits") && !value) // killough 10/98
+#endif
                 {
                     // figure out what the bits are
                     value = 0;
@@ -1661,7 +1675,11 @@ void deh_procThing(DEHFILE* fpin, FILE* fpout, char* line)
                     {
                         int iy;
                         for (iy = 0; iy < DEH_MOBJFLAGMAX; iy++)
+#ifdef WINDOWS
+                            if (!_stricmp(strval, deh_mobjflags[iy].name))
+#else
                             if (!strcasecmp(strval, deh_mobjflags[iy].name))
+#endif
                             {
                                 if (fpout)
                                     fprintf(fpout, "ORed value 0x%08llx %s\n",
@@ -2196,7 +2214,11 @@ void deh_procCheat(DEHFILE* fpin, FILE* fpout, char* line) // done
                         int i;
                         for (i = 0; cheat[i].cheat; i++)
                             if (cheat[i].when & not_deh &&
+#ifdef WINDOWS
+                                !_strnicmp(cheat[i].cheat,
+#else
                                 !strncasecmp(cheat[i].cheat,
+#endif
                                     cheat[iy].cheat,
                                     strlen(cheat[i].cheat)) && i != iy)
                                 cheat[i].deh_modified = true;
