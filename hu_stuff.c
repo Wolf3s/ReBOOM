@@ -48,6 +48,7 @@ int hud_displayed;    //jff 2/23/98 turns heads-up display on/off
 int hud_nosecrets;    //jff 2/18/98 allows secrets line to be disabled in HUD
 int hud_distributed;  //jff 3/4/98 display HUD in different places on screen
 int hud_graph_keys = 1; //jff 3/7/98 display HUD keys as graphics
+int boom_hud_stats_always_on;    //Adam - always show hud stats
 
 //
 // Locally used constants, shortcuts.
@@ -646,6 +647,34 @@ void HU_Drawer(void)
     int i, doit;
 
     plr = &players[displayplayer];         // killough 3/7/98
+
+    if (!hud_nosecrets && boom_hud_stats_always_on && viewheight != SCREENHEIGHT)
+    {
+        // map title
+        HUlib_drawTextLine(&w_title, false);
+
+        // clear the internal widget text buffer
+        HUlib_clearTextLine(&w_monsec);
+        //jff 3/26/98 use ESC not '\' for paths
+        // build the init string with fixed colors
+        sprintf
+        (
+            hud_monsecstr,
+            "STS: \x1b\x36K: \x1b\x33%d/%d \x1b\x37I: \x1b\x33%d/%d \x1b\x35S: \x1b\x33%d/%d",
+            plr->killcount, totalkills,
+            plr->itemcount, totalitems,
+            plr->secretcount, totalsecret
+        );
+        // transfer the init string to the widget
+        s = hud_monsecstr;
+        while (*s)
+            HUlib_addCharToTextLine(&w_monsec, *(s++));
+
+        // display the kills/items/secrets each frame
+        if (hud_active > 1)
+            HUlib_drawTextLine(&w_monsec, false);
+    }
+
     // draw the automap widgets if automap is displayed
     if (automapactive)
     {
@@ -690,6 +719,7 @@ void HU_Drawer(void)
             hud_displayed &&                 // hud on from fullscreen key
             viewheight == SCREENHEIGHT &&      // fullscreen mode is active
             !automapactive                   // automap is not active
+            && !boom_hud_stats_always_on     // Adam - new Boom hud stats are not always visible
             )
     {
         doit = !(gametic & 1); //jff 3/4/98 speed update up for slow systems
@@ -1128,7 +1158,7 @@ void HU_Drawer(void)
         }
 
         // display the hud kills/items/secret display if optioned
-        if (!hud_nosecrets)
+        if (!hud_nosecrets && !boom_hud_stats_always_on)
         {
             if (hud_active > 1 && doit)
             {
