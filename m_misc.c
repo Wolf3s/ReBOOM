@@ -1220,7 +1220,7 @@ default_t defaults[] = {
   { // no secrets/items/kills HUD line
     "hud_nosecrets",
     (config_t *) &hud_nosecrets, NULL,
-    {1}, {0,1}, number, ss_stat, wad_yes,
+    {0}, {0,1}, number, ss_stat, wad_yes,
     "1 to disable display of kills/items/secrets on HUD"
   },
 
@@ -1228,7 +1228,7 @@ default_t defaults[] = {
     "boom_hud_stats_always_on",
     (config_t *) &boom_hud_stats_always_on, NULL,
     {1}, {0,1}, number, ss_stat, wad_yes,
-    "0 to disable permanent hud stats on screen - cannot be enabled with hide secrets"
+    "0 to disable permanent hud stats on screen - cannot be enabled with hud_nosecrets set to 1"
   },
 
   {  // killough 2/8/98: weapon preferences set by user:
