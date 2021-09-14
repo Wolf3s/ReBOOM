@@ -1087,6 +1087,10 @@ extern char* startup5;
 // from g_game.c, prefix for savegame name like "boomsav"
 extern char* savegamename;
 
+#ifndef WINDOWS
+char* strlwr(char* s);
+#endif
+
 #endif
 
 //--------------------------------------------------------------------

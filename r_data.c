@@ -32,7 +32,6 @@
 #include "w_wad.h"
 #include "r_main.h"
 #include "r_sky.h"
-#include "d_io.h"
 #include "i_video.h"
 
 //
@@ -738,8 +737,12 @@ void R_InitColormaps(void)
 
 int R_ColormapNumForName(const char *name)
 {
-  register int i = 0;
-  if (strncasecmp(name,"COLORMAP",8))     // COLORMAP predefined to return 0
+  int i = 0;
+#ifdef WINDOWS
+  if (_strnicmp(name,"COLORMAP",8))     // COLORMAP predefined to return 0
+#else
+  if (strncasecmp(name, "COLORMAP", 8))     // COLORMAP predefined to return 0
+#endif
     if ((i = (W_CheckNumForName)(name, ns_colormaps)) != -1)
       i -= firstcolormaplump;
   return i;
@@ -792,19 +795,19 @@ void R_InitTranMap(int progress)
           memcmp(cache.playpal, playpal, sizeof cache.playpal) ||
           fread(main_tranmap, 256, 256, cachefp) != 256 ) // killough 4/11/98
         {
-          long pal[3][256], tot[256], pal_w1[3][256];
-          long w1 = ((unsigned long) tran_filter_pct<<TSC)/100;
-          long w2 = (1l<<TSC)-w1;
+          long long pal[3][256], tot[256], pal_w1[3][256];
+          long long w1 = ((unsigned long) tran_filter_pct<<TSC)/100;
+          long long w2 = (1l<<TSC)-w1;
 
-          // First, convert playpal into long int type, and transpose array,
+          // First, convert playpal into long long int type, and transpose array,
           // for fast inner-loop calculations. Precompute tot array.
 
           {
-            register int i = 255;
-            register const unsigned char *p = playpal+255*3;
+            int i = 255;
+            const unsigned char *p = playpal+255*3;
             do
               {
-                register long t,d;
+                long long t,d;
                 pal_w1[0][i] = (pal[0][i] = t = p[0]) * w1;
                 d = t*t;
                 pal_w1[1][i] = (pal[1][i] = t = p[1]) * w1;
@@ -824,9 +827,9 @@ void R_InitTranMap(int progress)
             byte *tp = main_tranmap;
             for (i=0;i<256;i++)
               {
-                long r1 = pal[0][i] * w2;
-                long g1 = pal[1][i] * w2;
-                long b1 = pal[2][i] * w2;
+                long long r1 = pal[0][i] * w2;
+                long long g1 = pal[1][i] * w2;
+                long long b1 = pal[2][i] * w2;
 
                 if (!(i & 31) && progress)
 		  putchar('.');
@@ -838,12 +841,12 @@ void R_InitTranMap(int progress)
 
                 for (j=0;j<256;j++,tp++)
                   {
-                    register int color = 255;
-                    register long err;
-                    long r = pal_w1[0][j] + r1;
-                    long g = pal_w1[1][j] + g1;
-                    long b = pal_w1[2][j] + b1;
-                    long best = LONG_MAX;
+                    int color = 255;
+                    long long err;
+                    long long r = pal_w1[0][j] + r1;
+                    long long g = pal_w1[1][j] + g1;
+                    long long b = pal_w1[2][j] + b1;
+                    long long best = LONG_MAX;
                     do
                       if ((err = tot[color] - pal[0][color]*r
                           - pal[1][color]*g - pal[2][color]*b) < best)
@@ -922,7 +925,11 @@ int R_CheckTextureNumForName(const char *name)
   if (*name != '-')     // "NoTexture" marker.
     {
       i = textures[W_LumpNameHash(name) % (unsigned) numtextures]->index;
-      while (i >= 0 && strncasecmp(textures[i]->name,name,8))
+#ifdef WINDOWS
+      while (i >= 0 && _strnicmp(textures[i]->name,name,8))
+#else
+      while (i >= 0 && strncasecmp(textures[i]->name, name, 8))
+#endif
         i = textures[i]->next;
     }
   return i;
@@ -951,8 +958,8 @@ int R_TextureNumForName(const char *name)  // const added -- killough
 
 void R_PrecacheLevel(void)
 {
-  register int i;
-  register byte *hitlist;
+  int i;
+  byte *hitlist;
 
   if (demoplayback)
     return;

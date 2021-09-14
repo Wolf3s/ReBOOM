@@ -215,7 +215,7 @@ fixed_t R_ScaleFromGlobalAngle(angle_t visangle)
 
 static void R_InitTextureMapping (void)
 {
-  register int i,x;
+  int i,x;
   fixed_t focallength;
     
   // Use tangent table to generate viewangletox:

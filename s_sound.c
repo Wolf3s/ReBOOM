@@ -563,7 +563,7 @@ void S_ChangeMusic(int musicnum, int looping)
       music->lumpnum = W_GetNumForName(namebuf);
    }
    
-   // load & register it
+   // load & it
    music->data   = W_CacheLumpNum(music->lumpnum, PU_STATIC);
    // julian: added lump length
    music->handle = I_RegisterSong(music->data, W_LumpLength(music->lumpnum));

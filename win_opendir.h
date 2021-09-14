@@ -25,7 +25,7 @@
 
 struct dirent
 {
-   long		  d_ino;    /* Always zero. */
+   long long      d_ino;    /* Always zero. */
    unsigned short d_reclen; /* Always zero. */
    unsigned short d_namlen; /* Length of name in d_name. */
    char           d_name[FILENAME_MAX]; /* File name. */
@@ -65,8 +65,8 @@ DIR *opendir(const char *);
 struct dirent *readdir(DIR *);
 int closedir(DIR *);
 void rewinddir(DIR *);
-long telldir(DIR *);
-void seekdir(DIR *, long);
+long long telldir(DIR *);
+void seekdir(DIR *, long long);
 
 #endif
 #endif

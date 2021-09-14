@@ -51,6 +51,12 @@
 #include "m_swap.h"
 #include "version.h"
 
+#ifdef UNIX
+#include <unistd.h>
+#include <stdio.h>
+#include <ctype.h>
+#endif
+
 // Game mode handling - identify IWAD version
 //  to handle IWAD dependend animations etc.
 typedef enum {
@@ -77,6 +83,16 @@ typedef enum {
   german,
   unknown
 } Language_t;
+
+// Directory scanning
+
+#ifdef _MSC_VER
+#define S_ISDIR(x) (((sbuf.st_mode & S_IFDIR)==S_IFDIR)?1:0)
+#endif
+
+// Paths
+
+#define PATH_MAX 4096 // linux has it in linux/limits.h but this is non portable
 
 //
 // For resize of screen, at start of game.

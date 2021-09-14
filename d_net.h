@@ -117,7 +117,7 @@ typedef struct
 typedef struct
 {
     // Supposed to be DOOMCOM_ID?
-    long                id;
+    long long           id;
     
     // DOOM executes an int to execute commands.
     short               intnum;         

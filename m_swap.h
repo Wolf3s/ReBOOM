@@ -53,7 +53,7 @@ static short SHORT(short x)
 #ifdef __GNUC__
 __inline__
 #endif
-static long LONG(long x)
+static long long LONG(long long x)
 {
   return (((unsigned char *) &x)[3]<<24) +
          (((unsigned char *) &x)[2]<<16) +

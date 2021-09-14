@@ -96,8 +96,8 @@ byte    *dc_source;      // first pixel in a column (possibly virtual)
 void R_DrawColumn (void) 
 { 
   int              count; 
-  register byte    *dest;            // killough
-  register fixed_t frac;            // killough
+  byte    *dest;            // killough
+  fixed_t frac;            // killough
   fixed_t          fracstep;     
 
   count = dc_yh - dc_yl + 1; 
@@ -130,9 +130,9 @@ void R_DrawColumn (void)
   // killough 2/1/98: more performance tuning
 
   {
-    register const byte *source = dc_source;            
-    register const lighttable_t *colormap = dc_colormap; 
-    register heightmask = dc_texheight-1;
+    const byte *source = dc_source;            
+    const lighttable_t *colormap = dc_colormap; 
+    int heightmask = dc_texheight-1;
     if (dc_texheight & heightmask)   // not a power of 2 -- killough
       {
         heightmask++;
@@ -192,8 +192,8 @@ void R_DrawColumn (void)
 void R_DrawTLColumn (void)
 { 
   int              count; 
-  register byte    *dest;           // killough
-  register fixed_t frac;            // killough
+  byte    *dest;           // killough
+  fixed_t frac;            // killough
   fixed_t          fracstep;
 
   count = dc_yh - dc_yl + 1; 
@@ -228,9 +228,9 @@ void R_DrawTLColumn (void)
   // killough 2/1/98, 2/21/98: more performance tuning
   
   {
-    register const byte *source = dc_source;            
-    register const lighttable_t *colormap = dc_colormap; 
-    register heightmask = dc_texheight-1;
+    const byte *source = dc_source;            
+    const lighttable_t *colormap = dc_colormap; 
+    int heightmask = dc_texheight-1;
     if (dc_texheight & heightmask)   // not a power of 2 -- killough
       {
         heightmask++;
@@ -487,7 +487,7 @@ byte *ds_source;
 
 void R_DrawSpan (void) 
 { 
-  register unsigned position;
+  unsigned position;
   unsigned step;
 
   byte *source;

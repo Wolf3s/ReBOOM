@@ -28,7 +28,6 @@
 
 #include <stdio.h>
 #include <string.h>
-#include "d_io.h"
 #include "m_argv.h"
 
 int  myargc;
@@ -51,7 +50,7 @@ int M_CheckParm(const char* check)
 #ifdef WINDOWS
 		if (NULL == _stricmp(check, myargv[i]))
 #else
-		if (NULL == stricmp(check, myargv[i]))
+		if (NULL == strcasecmp(check, myargv[i]))
 #endif
 		{
 			return i;

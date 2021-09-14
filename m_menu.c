@@ -38,7 +38,6 @@
 #else
 #include <unistd.h>
 #endif
-#include "d_io.h" // haleyjd
 #include "doomdef.h"
 #include "doomstat.h"
 #include "dstrings.h"
@@ -4022,7 +4021,7 @@ boolean M_Responder(event_t* ev)
 							int value;
 
 							gather_buffer[gather_count] = 0;
-							value = atoi(gather_buffer);  // Integer value
+							value = atoll(gather_buffer);  // Integer value
 
 							if ((ptr1->var.def->limit.min != UL &&
 								value < ptr1->var.def->limit.min) ||

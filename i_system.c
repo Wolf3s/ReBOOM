@@ -218,7 +218,7 @@ void I_Init(void)
    int clock_rate = realtic_clock_rate, p;
    
    if((p = M_CheckParm("-speed")) && p < myargc-1 &&
-      (p = atoi(myargv[p+1])) >= 10 && p <= 1000)
+      (p = atoll(myargv[p+1])) >= 10 && p <= 1000)
       clock_rate = p;
    
    // init timer

@@ -72,7 +72,7 @@ void P_InitThinkers(void)
 //
 void P_UpdateThinker(thinker_t *thinker)
 {
-   register thinker_t *th;
+   thinker_t *th;
 
    // find the class the thinker belongs to
   

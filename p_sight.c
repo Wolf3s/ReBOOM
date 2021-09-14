@@ -85,7 +85,7 @@ static fixed_t P_InterceptVector2(const divline_t *v2, const divline_t *v1)
 //
 // killough 4/19/98: made static and cleaned up
 
-static boolean P_CrossSubsector(int num, register los_t *los)
+static boolean P_CrossSubsector(int num, los_t *los)
 {
   seg_t *seg = segs + subsectors[num].firstline;
   int count;
@@ -188,11 +188,11 @@ static boolean P_CrossSubsector(int num, register los_t *los)
 //
 // killough 4/20/98: rewritten to remove tail recursion, clean up, and optimize
 
-static boolean P_CrossBSPNode(int bspnum, register los_t *los)
+static boolean P_CrossBSPNode(int bspnum, los_t *los)
 {
   while (!(bspnum & NF_SUBSECTOR))
     {
-      register const node_t *bsp = nodes + bspnum;
+      const node_t *bsp = nodes + bspnum;
       int side = P_DivlineSide(los->strace.x,los->strace.y,(divline_t *)bsp)&1;
       if (side == P_DivlineSide(los->t2x, los->t2y, (divline_t *) bsp))
          bspnum = bsp->children[side]; // doesn't touch the other side
@@ -217,7 +217,7 @@ boolean P_CheckSight(mobj_t *t1, mobj_t *t2)
 {
   const sector_t *s1 = t1->subsector->sector;
   const sector_t *s2 = t2->subsector->sector;
-  int pnum = (s1-sectors)*numsectors + (s2-sectors);
+  long long pnum = (s1-sectors)*numsectors + (s2-sectors);
   los_t los;
 
   // First check for trivial rejection.

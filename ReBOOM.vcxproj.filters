@@ -80,7 +80,6 @@
     <ClInclude Include="d_englsh.h" />
     <ClInclude Include="d_event.h" />
     <ClInclude Include="d_french.h" />
-    <ClInclude Include="d_io.h" />
     <ClInclude Include="d_items.h" />
     <ClInclude Include="d_main.h" />
     <ClInclude Include="d_net.h" />
@@ -145,6 +144,8 @@
     <ClInclude Include="win32\resource.h">
       <Filter>Win32 Files</Filter>
     </ClInclude>
+    <ClInclude Include="win32\afxres.h" />
+    <ClInclude Include="win32\winres.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Win32 Files">
@@ -158,5 +159,8 @@
     <Image Include="win32\icon1.ico">
       <Filter>Win32 Files</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="win32\reboom.rc" />
   </ItemGroup>
 </Project>

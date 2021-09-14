@@ -31,8 +31,6 @@
 //
 //-----------------------------------------------------------------------------
 
-#include "d_io.h" // haleyjd
-
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -702,7 +700,11 @@ boolean WadFileStatus(char* filename, boolean* isdir)
 
     i = strlen(filename);           //get length of path
     if (i >= 4)
-        if (!strnicmp(filename + i - 4, ".wad", 4))
+#ifdef WINDOWS
+        if (!_strnicmp(filename + i - 4, ".wad", 4))
+#else
+        if (!strncasecmp(filename + i - 4, ".wad", 4))
+#endif
             return false;               //if already ends in .wad, not found
 
     strcat(filename, ".wad");        //try it with .wad added
@@ -938,7 +940,11 @@ void IdentifyVersion(void)
             default:
 
                 i = strlen(iwad);
-                if (i >= 10 && !strnicmp(iwad + i - 10, "doom2f.wad", 10))
+#ifdef WINDOWS
+                if (i >= 10 && !_strnicmp(iwad + i - 10, "doom2f.wad", 10))
+#else
+                if (i >= 10 && !strncasecmp(iwad + i - 10, "doom2f.wad", 10))
+#endif
                 {
                     language = french;
                     puts("DOOM II version, French language");  // killough 8/8/98
@@ -1074,10 +1080,10 @@ static void D_ProcessDehCommandLine(void)
                 {
                     char file[PATH_MAX + 1];      // killough
                     AddDefaultExtension(strcpy(file, myargv[p]), ".bex");
-                    if (access(file, F_OK))  // nope
+                    if (access(file, 0))  // nope
                     {
                         AddDefaultExtension(strcpy(file, myargv[p]), ".deh");
-                        if (access(file, F_OK))  // still nope
+                        if (access(file, 0))  // still nope
                             I_Error("Cannot find .deh or .bex file named %s",
                                 myargv[p]);
                     }
@@ -1113,12 +1119,12 @@ static void D_ProcessDehPreincludes(void)
                 {
                     char file[PATH_MAX + 1];
                     AddDefaultExtension(strcpy(file, s), ".bex");
-                    if (!access(file, R_OK))
+                    if (!access(file, 4))
                         ProcessDehFile(file, D_dehout(), 0);
                     else
                     {
                         AddDefaultExtension(strcpy(file, s), ".deh");
-                        if (!access(file, R_OK))
+                        if (!access(file, 4))
                             ProcessDehFile(file, D_dehout(), 0);
                         else
                             printf("\nWarning: could not open %s .deh or .bex\n", s);
@@ -1303,7 +1309,7 @@ void D_DoomMain(void)
         extern int sidemove[2];
 
         if (p < myargc - 1)
-            scale = atoi(myargv[p + 1]);
+            scale = atoll(myargv[p + 1]);
         if (scale < 10)
             scale = 10;
         if (scale > 400)
@@ -1365,7 +1371,7 @@ void D_DoomMain(void)
 
     if ((p = M_CheckParm("-timer")) && p < myargc - 1 && deathmatch)
     {
-        int time = atoi(myargv[p + 1]);
+        int time = atoll(myargv[p + 1]);
         printf("Levels will end after %d minute%s.\n", time, time > 1 ? "s" : "");
     }
 
@@ -1377,14 +1383,14 @@ void D_DoomMain(void)
         (p = M_CheckParm("-wart"))) && p < myargc - 1)
         if (gamemode == commercial)
         {
-            startmap = atoi(myargv[p + 1]);
+            startmap = atoll(myargv[p + 1]);
             autostart = true;
         }
         else    // 1/25/98 killough: fix -warp xxx from crashing Doom 1 / UD
             if (p < myargc - 2)
             {
-                startepisode = atoi(myargv[++p]);
-                startmap = atoi(myargv[p + 1]);
+                startepisode = atoll(myargv[++p]);
+                startmap = atoll(myargv[p + 1]);
                 autostart = true;
             }
 
@@ -1500,7 +1506,7 @@ void D_DoomMain(void)
         // killough 5/2/98: this takes a memory
         // address as an integer on the command line!
 
-        statcopy = (void*)(intptr_t)atoi(myargv[p + 1]);
+        statcopy = (void*)(intptr_t)atoll(myargv[p + 1]);
         puts("External statistics registered.");
     }
 
@@ -1545,7 +1551,7 @@ void D_DoomMain(void)
 
     if (slot && ++slot < myargc)
     {
-        slot = atoi(myargv[slot]);        // killough 3/16/98: add slot info
+        slot = atoll(myargv[slot]);        // killough 3/16/98: add slot info
         G_SaveGameName(file, slot);       // killough 3/22/98
         G_LoadGame(file, slot, true);     // killough 5/15/98: add command flag
     }

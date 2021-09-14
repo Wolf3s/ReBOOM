@@ -312,7 +312,7 @@ static void R_MakeSpans(int x, int t1, int b1, int t2, int b2)
 
 static void do_draw_plane(visplane_t *pl)
 {
-  register int x;
+  int x;
   if (pl->minx <= pl->maxx)
     if (pl->picnum == skyflatnum)            // sky flat
       {
