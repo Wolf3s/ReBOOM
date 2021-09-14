@@ -45,7 +45,6 @@
 #include "g_game.h"
 #include "d_think.h"
 #include "w_wad.h"
-#include "d_io.h"
 
 
 // killough 10/98: new functions, to allow processing DEH files in-memory
@@ -92,7 +91,7 @@ int dehfgetc(DEHFILE* fp)
 
 
 // variables used in other routines
-boolean deh_pars = FALSE; // in wi_stuff to allow pars in modified games
+boolean deh_pars = false; // in wi_stuff to allow pars in modified games
 
 // #include "d_deh.h" -- we don't do that here but we declare the
 // variables.  This externalizes everything that there is a string
@@ -1569,7 +1568,7 @@ void deh_procBexCodePointers(DEHFILE* fpin, FILE* fpout, char* line)
         strcpy(key, "A_");  // reusing the key area to prefix the mnemonic
         strcat(key, ptr_lstrip(mnemonic));
 
-        found = FALSE;
+        found = false;
         i = -1; // incremented to start at zero at the top of the loop
         do  // Ty 05/16/98 - fix loop logic to look for null ending entry
         {
@@ -1585,7 +1584,7 @@ void deh_procBexCodePointers(DEHFILE* fpin, FILE* fpout, char* line)
                 if (fpout) fprintf(fpout,
                     " - applied %p from codeptr[%d] to states[%d]\n",
                     deh_bexptrs[i].cptr, i, indexnum);
-                found = TRUE;
+                found = true;
             }
         } while (!found && (deh_bexptrs[i].lookup != NULL));
 
@@ -2214,7 +2213,7 @@ void deh_procPars(DEHFILE* fpin, FILE* fpout, char* line) // extension
                     oldpar = cpars[level - 1];
                     if (fpout) fprintf(fpout, "Changed par time for MAP%02d from %d to %d\n", level, oldpar, partime);
                     cpars[level - 1] = partime;
-                    deh_pars = TRUE;
+                    deh_pars = true;
                 }
             }
         }
@@ -2237,7 +2236,7 @@ void deh_procPars(DEHFILE* fpin, FILE* fpout, char* line) // extension
                 if (fpout) fprintf(fpout,
                     "Changed par time for E%dM%d from %d to %d\n",
                     episode, level, oldpar, partime);
-                deh_pars = TRUE;
+                deh_pars = true;
             }
         }
     }
@@ -2474,7 +2473,7 @@ void deh_procText(DEHFILE* fpin, FILE* fpout, char* line)
     int i; // loop variable
     int fromlen, tolen;  // as specified on the text block line
     int usedlen;  // shorter of fromlen and tolen if not matched
-    boolean found = FALSE;  // to allow early exit once found
+    boolean found = false;  // to allow early exit once found
     char* line2 = NULL;   // duplicate line for rerouting
 
     // Ty 04/11/98 - Included file may have NOTEXT skip flag set
@@ -2528,7 +2527,7 @@ void deh_procText(DEHFILE* fpin, FILE* fpout, char* line)
                 sprnames[i] = strdup(sprnames[i]);
 
                 strncpy(sprnames[i], &inbuffer[fromlen], tolen);
-                found = TRUE;
+                found = true;
                 break;  // only one will match--quit early
             }
             ++i;  // next array element
@@ -2558,7 +2557,7 @@ void deh_procText(DEHFILE* fpin, FILE* fpout, char* line)
                         S_sfx[i].name, usedlen, &inbuffer[fromlen]);
 
                     S_sfx[i].name = strdup(&inbuffer[fromlen]);
-                    found = TRUE;
+                    found = true;
                     break;  // only one matches, quit early
                 }
             }
@@ -2580,7 +2579,7 @@ void deh_procText(DEHFILE* fpin, FILE* fpout, char* line)
                             S_music[i].name, usedlen, &inbuffer[fromlen]);
 
                         S_music[i].name = strdup(&inbuffer[fromlen]);
-                        found = TRUE;
+                        found = true;
                         break;  // only one matches, quit early
                     }
                 }
@@ -2852,7 +2851,7 @@ boolean deh_GetData(char* s, char* k, long long* l, char** strval, FILE* fpout)
     char* t;  // current char
     long long val; // to hold value of pair
     char buffer[DEH_MAXKEYLEN];  // to hold key in progress
-    boolean okrc = TRUE;  // assume good unless we have problems
+    boolean okrc = true;  // assume good unless we have problems
     int i;  // iterator
 
     *buffer = '\0';
@@ -2865,14 +2864,14 @@ boolean deh_GetData(char* s, char* k, long long* l, char** strval, FILE* fpout)
     buffer[--i] = '\0';  // terminate the key before the '='
     if (!*t)  // end of string with no equal sign
     {
-        okrc = FALSE;
+        okrc = false;
     }
     else
     {
         if (!*++t)
         {
             val = 0;  // in case "thiskey =" with no value
-            okrc = FALSE;
+            okrc = false;
         }
         // we've incremented t
         val = strtoll(t, NULL, 0);  // killough 8/9/98: allow hex or octal input

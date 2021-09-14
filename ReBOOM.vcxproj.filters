@@ -80,7 +80,6 @@
     <ClInclude Include="d_englsh.h" />
     <ClInclude Include="d_event.h" />
     <ClInclude Include="d_french.h" />
-    <ClInclude Include="d_io.h" />
     <ClInclude Include="d_items.h" />
     <ClInclude Include="d_main.h" />
     <ClInclude Include="d_net.h" />

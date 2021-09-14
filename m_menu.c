@@ -38,7 +38,6 @@
 #else
 #include <unistd.h>
 #endif
-#include "d_io.h" // haleyjd
 #include "doomdef.h"
 #include "doomstat.h"
 #include "dstrings.h"

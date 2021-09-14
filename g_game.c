@@ -32,8 +32,6 @@
 #include <stdarg.h>
 #include <errno.h>
 
-#include "d_io.h" // haleyjd
-
 #include "doomstat.h"
 #include "f_finale.h"
 #include "m_argv.h"

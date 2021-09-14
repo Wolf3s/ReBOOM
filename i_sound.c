@@ -48,7 +48,6 @@
 #include "w_wad.h"
 #include "g_game.h"     //jff 1/21/98 added to use dprintf in I_RegisterSong
 #include "d_main.h"
-#include "d_io.h"
 
 // Needed for calling the actual sound output.
 int SAMPLECOUNT = 512;

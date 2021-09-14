@@ -33,7 +33,6 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include "doomstat.h"
-#include "d_io.h"
 #include "w_wad.h"
 #include "i_video.h"
 

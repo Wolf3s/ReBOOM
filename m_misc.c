@@ -47,7 +47,6 @@
 #include "s_sound.h"
 #include "sounds.h"
 #include "d_main.h"
-#include "d_io.h"
 
 //
 // DEFAULTS

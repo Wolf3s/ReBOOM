@@ -31,8 +31,6 @@
 //
 //-----------------------------------------------------------------------------
 
-#include "d_io.h" // haleyjd
-
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -1082,10 +1080,10 @@ static void D_ProcessDehCommandLine(void)
                 {
                     char file[PATH_MAX + 1];      // killough
                     AddDefaultExtension(strcpy(file, myargv[p]), ".bex");
-                    if (access(file, F_OK))  // nope
+                    if (access(file, 0))  // nope
                     {
                         AddDefaultExtension(strcpy(file, myargv[p]), ".deh");
-                        if (access(file, F_OK))  // still nope
+                        if (access(file, 0))  // still nope
                             I_Error("Cannot find .deh or .bex file named %s",
                                 myargv[p]);
                     }
@@ -1121,12 +1119,12 @@ static void D_ProcessDehPreincludes(void)
                 {
                     char file[PATH_MAX + 1];
                     AddDefaultExtension(strcpy(file, s), ".bex");
-                    if (!access(file, R_OK))
+                    if (!access(file, 4))
                         ProcessDehFile(file, D_dehout(), 0);
                     else
                     {
                         AddDefaultExtension(strcpy(file, s), ".deh");
-                        if (!access(file, R_OK))
+                        if (!access(file, 4))
                             ProcessDehFile(file, D_dehout(), 0);
                         else
                             printf("\nWarning: could not open %s .deh or .bex\n", s);
