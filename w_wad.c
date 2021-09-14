@@ -29,9 +29,11 @@
 
 #ifndef WINDOWS
 #include <strings.h>
+#include <unistd.h>
 #endif
-#include <fcntl.h>
+#include <sys/types.h>
 #include <sys/stat.h>
+#include <fcntl.h> 
 #include "doomstat.h"
 #include "w_wad.h"
 #include "i_video.h"
