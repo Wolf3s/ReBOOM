@@ -2153,6 +2153,21 @@ void deh_procSprite(DEHFILE* fpin, FILE* fpout, char* line) // Not supported
     return;
 }
 
+#ifndef WINDOWS
+// Adam - moved to the only place it is used
+
+char* strlwr(char* s)
+{
+    char* tmp = s;
+
+    for (;*tmp;++tmp) {
+        *tmp = tolower((unsigned char) *tmp);
+    }
+
+    return s;
+}
+#endif
+
 // ====================================================================
 // deh_procPars
 // Purpose: Handle BEX extension for PAR times

@@ -151,8 +151,11 @@ static void W_AddFile(const char *filename,int source) // killough 1/31/98: stat
   filelump_t  singleinfo;
 
   // open the file and add to directory
-
+#ifdef WINDOWS
   if ((handle = open(filename,O_RDONLY | O_BINARY)) == -1)
+#else
+  if ((handle = open(filename,O_RDONLY | 0)) == -1)
+#endif
     {
       if (strlen(filename)<=4 ||      // add error check -- killough
 #ifdef WINDOWS
@@ -537,7 +540,7 @@ void WritePredefinedLumpWad(const char *filename)
 #ifdef WINDOWS // proff: In Visual C open is defined a bit different
   if ( (handle = open (filenam, O_RDWR | O_CREAT | O_BINARY, _S_IWRITE|_S_IREAD)) != -1)
 #else
-  if ( (handle = open (filenam, O_RDWR | O_CREAT | O_BINARY, S_IWUSR|S_IRUSR)) != -1)
+  if ( (handle = open (filenam, O_RDWR | O_CREAT | 0, S_IWUSR|S_IRUSR)) != -1)
 #endif
   {
     wadinfo_t header = {"PWAD"};
