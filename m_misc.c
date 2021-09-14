@@ -1083,7 +1083,7 @@ default_t defaults[] = {
   { // show secret after gotten
     "map_secret_after",
     (config_t *) &map_secret_after, NULL,
-    {1}, {0,1}, number, ss_auto, wad_yes,
+    {0}, {0,1}, number, ss_auto, wad_yes,
     "1 to not show secret sectors till after entered"
   },
 
@@ -1228,7 +1228,7 @@ default_t defaults[] = {
     "boom_hud_stats_always_on",
     (config_t *) &boom_hud_stats_always_on, NULL,
     {1}, {0,1}, number, ss_stat, wad_yes,
-    "0 to disable permanent hud stats on screen"
+    "0 to disable permanent hud stats on screen - cannot be enabled with hide secrets"
   },
 
   {  // killough 2/8/98: weapon preferences set by user:
