@@ -1,3 +1,5 @@
+NOTICE: ReBOOM has changed its main repository to - repo.or.cz/reboom.git
+
 # ReBOOM
 [![ReBOOM Icon](https://github.com/atsb/ReBOOM/blob/main/Reboom.png)](https://github.com/atsb/ReBOOM)
 
