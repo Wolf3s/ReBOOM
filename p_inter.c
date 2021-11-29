@@ -644,13 +644,21 @@ static void P_KillMobj(mobj_t *source, mobj_t *target)
       if (target->player == &players[consoleplayer] && automapactive)
 	    AM_Stop();    // don't die in auto map; switch view prior to dying
     }
+    // More Gibs
+    if((more_gibs && source && source->player && target->info->xdeathstate && !(demoplayback || demorecording)))
+        {
+            P_SetMobjState(target, target->info->xdeathstate);
+        }
+        else if (target->health < -target->info->spawnhealth && target->info->xdeathstate)
+        {
+            P_SetMobjState(target, target->info->xdeathstate);
+        }
+        else
+        {
+            P_SetMobjState(target, target->info->deathstate);
+        }
 
-  if (target->health < -target->info->spawnhealth && target->info->xdeathstate)
-    P_SetMobjState (target, target->info->xdeathstate);
-  else
-    P_SetMobjState (target, target->info->deathstate);
-
-  target->tics -= P_Random(pr_killtics)&3;
+  target->tics -= P_Random(pr_killtics) & 3;
 
   if (target->tics < 1)
     target->tics = 1;
