@@ -1,0 +1,150 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+#include "../version.h"
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "#include ""version.h""\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "/////////////////////////////////////////////////////////////////////////////\r\n"
+    "//\r\n"
+    "// Version\r\n"
+    "//\r\n"
+    "\r\n"
+    "VS_VERSION_INFO VERSIONINFO\r\n"
+    " FILEVERSION RC_FILEVERSION\r\n"
+    " PRODUCTVERSION RC_PRODUCTVERSION\r\n"
+    " FILEFLAGSMASK 0x3fL\r\n"
+    "#ifdef _DEBUG\r\n"
+    " FILEFLAGS 0x3L\r\n"
+    "#else\r\n"
+    " FILEFLAGS 0x2L\r\n"
+    "#endif\r\n"
+    " FILEOS 0x40004L\r\n"
+    " FILETYPE 0x1L\r\n"
+    " FILESUBTYPE 0x0L\r\n"
+    "BEGIN\r\n"
+    "    BLOCK ""StringFileInfo""\r\n"
+    "    BEGIN\r\n"
+    "        BLOCK ""040904b0""\r\n"
+    "        BEGIN\r\n"
+    "            VALUE ""Comments"", ""ReBOOM is a Doom source port based on Boom 2.02""\r\n"
+    "            VALUE ""CompanyName"", "" ""\r\n"
+    "            VALUE ""FileDescription"", ""ReBOOM""\r\n"
+    "            VALUE ""FileVersion"", RC_FILEVERSION2\r\n"
+    "            VALUE ""InternalName"", ""Pooch""\r\n"
+    "            VALUE ""LegalCopyright"", ""Copyright © 1993-1996, id Software & 2018-2021, Gibbon""\r\n"
+    "            VALUE ""LegalTrademarks"", ""Doom® is a Registered Trademark of id Software, Inc.""\r\n"
+    "            VALUE ""OriginalFilename"", ""reboom.exe""\r\n"
+    "            VALUE ""ProductName"", ""ReBOOM""\r\n"
+    "            VALUE ""ProductVersion"", RC_PRODUCTVERSION2\r\n"
+    "        END\r\n"
+    "    END\r\n"
+    "    BLOCK ""VarFileInfo""\r\n"
+    "    BEGIN\r\n"
+    "        VALUE ""Translation"", 0x409, 1200\r\n"
+    "    END\r\n"
+    "END\r\n"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+IDI_ICON1               ICON                    "icon1.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_DEADGUY             BITMAP                  "deadguy.bmp"
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION RC_FILEVERSION
+ PRODUCTVERSION RC_PRODUCTVERSION
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x3L
+#else
+ FILEFLAGS 0x2L
+#endif
+ FILEOS 0x40004L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "Comments", "ReBOOM is a Doom source port based on Boom 2.02"
+            VALUE "CompanyName", " "
+            VALUE "FileDescription", "ReBOOM"
+            VALUE "FileVersion", RC_FILEVERSION2
+            VALUE "InternalName", "ReBOOM"
+            VALUE "LegalCopyright", "Copyright © 1993-1996, id Software & 2018-2021, Gibbon"
+            VALUE "LegalTrademarks", "Doom® is a Registered Trademark of id Software, Inc."
+            VALUE "OriginalFilename", "reboom.exe"
+            VALUE "ProductName", "ReBOOM"
+            VALUE "ProductVersion", RC_PRODUCTVERSION2
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
