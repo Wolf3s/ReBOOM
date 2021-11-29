@@ -19,7 +19,7 @@
 //
 //  You should have received a copy of the GNU General Public License
 //  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
+//  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 //  02111-1307, USA.
 //
 // DESCRIPTION:
@@ -434,7 +434,7 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher)
         return;
       player->message = s_GOTBERSERK; // Ty 03/22/98 - externalized
       if (player->readyweapon != wp_fist)
-	player->pendingweapon = wp_fist;
+    player->pendingweapon = wp_fist;
       sound = sfx_getpow;
       break;
 
@@ -597,24 +597,6 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher)
   S_StartSound (player->mo, sound);   // killough 4/25/98
 }
 
-// [Nugget] Calculate distance between player and target,
-// used for Extra Gibbing and Chainsaw knockback fix
-boolean P_GoreCheckDist(mobj_t* source, mobj_t* target, fixed_t range, boolean addradius)
-{
-    fixed_t	dist;
-    fixed_t radius = 0;
-    fixed_t range2;
-
-    if (addradius) { radius = target->info->radius; }
-    range2 = range + radius;
-
-    dist = P_AproxDistance(target->x - source->x,
-        target->y - source->y);
-
-    if (dist > range2) { return false; }
-    else { return true; }
-}
-
 //
 // KillMobj
 //
@@ -646,7 +628,7 @@ static void P_KillMobj(mobj_t *source, mobj_t *target)
         {
           // count all monster deaths,
           // even those caused by other monsters
-	      players->killcount++;
+          players->killcount++;
         }
 
   if (target->player)
@@ -660,37 +642,21 @@ static void P_KillMobj(mobj_t *source, mobj_t *target)
       P_DropWeapon (target->player);
 
       if (target->player == &players[consoleplayer] && automapactive)
-	    AM_Stop();    // don't die in auto map; switch view prior to dying
+        AM_Stop();    // don't die in auto map; switch view prior to dying
     }
-  // More Gibs
-  if(source && source->player && target->info->xdeathstate && !(demorecording || demoplayback)
-      || (more_gibs && ((source->player->readyweapon == wp_chainsaw
-          && P_GoreCheckDist(source, target, 65 * FRACUNIT, false))
-          || (source->player->readyweapon == wp_supershotgun
-              && P_GoreCheckDist(source, target, 96 * FRACUNIT, true))
-          || (source->player->readyweapon == wp_fist
-              && source->player->powers[pw_strength]
-              && P_GoreCheckDist(source, target, 64 * FRACUNIT, false))
-          || (source->player->readyweapon == wp_plasma
-              && source->player->powers[pw_strength]
-              && P_GoreCheckDist(source, target, 128 * FRACUNIT, true))
-          || (source->player->readyweapon == wp_chaingun
-              && source->player->powers[pw_strength]
-              && P_GoreCheckDist(source, target, 96 * FRACUNIT, true))
-          )
-        )
-      )
-  {
-      P_SetMobjState(target, target->info->xdeathstate);
-  }
-  else if (target->health < -target->info->spawnhealth && target->info->xdeathstate)
-  {
-      P_SetMobjState(target, target->info->xdeathstate);
-  }
-  else
-  {
-      P_SetMobjState(target, target->info->deathstate);
-  }
+    // More Gibs
+    if((more_gibs && source && source->player && target->info->xdeathstate && !(demoplayback || demorecording)))
+        {
+            P_SetMobjState(target, target->info->xdeathstate);
+        }
+        else if (target->health < -target->info->spawnhealth && target->info->xdeathstate)
+        {
+            P_SetMobjState(target, target->info->xdeathstate);
+        }
+        else
+        {
+            P_SetMobjState(target, target->info->deathstate);
+        }
 
   target->tics -= P_Random(pr_killtics) & 3;
 
