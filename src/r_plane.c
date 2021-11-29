@@ -49,7 +49,11 @@
 #include "r_sky.h"
 #include "r_plane.h"
 
+#if defined REMOVE_LIMITS
+#define MAXVISPLANES 4096    /* must be a power of 2 */
+#else
 #define MAXVISPLANES 128    /* must be a power of 2 */
+#endif
 
 static visplane_t *visplanes[MAXVISPLANES];   // killough
 static visplane_t *freetail;                  // killough
@@ -64,7 +68,13 @@ visplane_t *floorplane, *ceilingplane;
 
 // killough 8/1/98: set static number of openings to be large enough
 // (a static limit is okay in this case and avoids difficulties in r_segs.c)
+
+#if defined REMOVE_LIMITS
+#define MAXOPENINGS 900000
+#else
 #define MAXOPENINGS (MAX_SCREENWIDTH*MAX_SCREENHEIGHT)
+#endif
+
 short openings[MAXOPENINGS],*lastopening;
 
 // Clip values are the solid pixel bounding the range.

@@ -32,7 +32,12 @@
 
 #include "d_event.h"
 
+#if defined REMOVE_LIMITS
+#define MAXWADFILES 2048        /* not large enough Lee :P */
+#else
 #define MAXWADFILES 256        /* make it ridiculously large -- killough */
+#endif
+
 extern char *wad_files[MAXWADFILES];
 extern int wad_file_source[MAXWADFILES];  // Ty 08/29/98 - added source of lumps info
 
