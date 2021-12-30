@@ -312,6 +312,7 @@ char *s_STSTR_NCON         = STSTR_NCON;
 char *s_STSTR_NCOFF        = STSTR_NCOFF;
 char *s_STSTR_BEHOLD       = STSTR_BEHOLD;
 char* s_STSTR_LEGEND       = STSTR_LEGEND;
+char* s_STSTR_PHARES       = STSTR_PHARES;
 char *s_STSTR_BEHOLDX      = STSTR_BEHOLDX;
 char *s_STSTR_CHOPPERS     = STSTR_CHOPPERS;
 char *s_STSTR_CLEV         = STSTR_CLEV;

@@ -114,20 +114,20 @@ OBJS=   $(O)/doomdef.o      \
 	$(O)/keyboard.o     \
 	$(O)/emu8kmid.o
 
-boom doom release all: $(O)/boom.exe
-	$(CP) $(O)\boom.exe .
+boom doom release all: $(O)/reboom.exe
+	$(CP) $(O)\reboom.exe .
 
 debug:
 	$(MAKE) mode=debug
 
 clean:
-	$(RM) boom.exe
+	$(RM) reboom.exe
 	$(RM) $(O_release)\*.exe
 	$(RM) $(O_debug)\*.exe
 	$(RM) $(O_release)\*.o
 	$(RM) $(O_debug)\*.o
 
-$(O)/boom.exe: $(OBJS) $(O)/version.o
+$(O)/reboom.exe: $(OBJS) $(O)/version.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJS) $(O)/version.o -o $@ $(LIBS)
 	$(RM) $(O)\version.o
 

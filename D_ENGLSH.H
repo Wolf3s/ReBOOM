@@ -368,6 +368,7 @@
 
 #define STSTR_BEHOLD    "inVuln, Str, Inviso, Rad, Allmap, or Lite-amp"
 #define STSTR_LEGEND	"ReBOOM is dedicated to Ty Halderman"
+#define STSTR_PHARES	"BOOM will never die and neither will your memory (RIP)"
 #define STSTR_BEHOLDX   "Power-up Toggled"
 
 #define STSTR_CHOPPERS  "... doesn't suck - GM"

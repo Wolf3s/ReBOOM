@@ -64,6 +64,7 @@ static void cheat_comp();
 static void cheat_friction();
 static void cheat_pushers();
 static void cheat_legend();
+static void cheat_phares();
 static void cheat_tnttran();
 static void cheat_massacre();
 static void cheat_ddt();
@@ -241,6 +242,9 @@ struct cheat_s cheat[] = {
    
   { "legend",    NULL,                always,
    cheat_legend },
+   
+  { "phares",    NULL,                always,
+   cheat_phares },
 
   {NULL}                 // end-of-list marker
 };
@@ -389,6 +393,12 @@ static void cheat_behold()
 static void cheat_legend(void)
 {
     plyr->message = s_STSTR_LEGEND;
+}
+
+// 'phares' text
+static void cheat_phares(void)
+{
+    plyr->message = s_STSTR_PHARES;
 }
 
 // 'clev' change-level cheat
