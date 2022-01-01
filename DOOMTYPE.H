@@ -48,6 +48,10 @@ typedef unsigned char byte;
 #define MINCHAR         ((char)0x80)
 #endif
 
+#define DIR_SEPARATOR '\\'
+#define DIR_SEPARATOR_S "\\"
+#define PATH_SEPARATOR ';'
+
 //----------------------------------------------------------------------------
 //
 // $Log: doomtype.h,v $

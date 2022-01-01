@@ -80,6 +80,8 @@ void G_DoVictory(void);
 // killough 1/18/98: Doom-style printf;   killough 4/25/98: add gcc attributes
 void dprintf(const char *, ...) __attribute__((format(printf,1,2)));
 
+int G_ValidateMapName(const char* mapname, int* pEpi, int* pMap);
+
 // killough 5/2/98: moved from m_misc.c:
 
 extern int  key_right;

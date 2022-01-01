@@ -64,6 +64,8 @@ void M_StartControlPanel (void);
 
 void M_ForcedLoadGame(const char *msg); // killough 5/15/98: forced loadgames
 
+void M_AddEpisode(const char* map, char* def);
+
 extern int traditional_menu;  // display the menu traditional way
 
 #endif    

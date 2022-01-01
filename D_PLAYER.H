@@ -47,6 +47,7 @@
 // is buffered within the player data struct,
 // as commands per game tick.
 #include "d_ticcmd.h"
+#include "umapinfo.h"
 
 #ifdef __GNUG__
 #pragma interface
@@ -199,7 +200,12 @@ typedef struct
     
   // previous and next levels, origin 0
   int         last;
-  int         next;   
+  int         next;
+    
+  //UMAPINFO
+  int         nextep;    // for when MAPINFO progression crosses into another episode.
+  mapentry_t* lastmapinfo;
+  mapentry_t* nextmapinfo;
     
   int         maxkills;
   int         maxitems;

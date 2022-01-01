@@ -32,6 +32,10 @@
 static const char
 rcsid[] = "$Id: m_misc.c,v 1.62 1998/09/07 20:19:07 jim Exp $";
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdarg.h>
 #include "doomstat.h"
 #include "m_argv.h"
 #include "g_game.h"
@@ -572,16 +576,22 @@ default_t defaults[] =
      0,200,0,ss_stat,   "[0-200(50)] amount of health for yellow to green transition"},
     {"health_green",  &health_green , 100,// below is green, above blue
      0,200,0,ss_stat,   "[0-200(100)] amount of health for green to blue transition"},
+    {"health_gray",  &health_gray , 0,
+     0,0,0,ss_stat,   "[0-200(0)] amount of health for gray transition"},
     {"armor_red",     &armor_red    , 25, // below is red
      0,200,0,ss_stat,   "[0-200(25)] amount of armor for red to yellow transition"},
     {"armor_yellow",  &armor_yellow , 50, // below is yellow
      0,200,0,ss_stat,   "[0-200(50)] amount of armor for yellow to green transition"},
     {"armor_green",   &armor_green  , 100,// below is green, above blue
      0,200,0,ss_stat,   "[0-200(100)] amount of armor for green to blue transition"},
+    {"armor_gray",   &armor_gray  , 0,
+     0,0,0,ss_stat,   "[0-200(0)] amount of armor for gray transition"},
     {"ammo_red",      &ammo_red     , 25, // below 25% is red
      0,100,0,ss_stat,   "[0-100(25)] percent of ammo for red to yellow transition"},
     {"ammo_yellow",   &ammo_yellow  , 50, // below 50% is yellow, above green
      0,100,0,ss_stat,   "[0-100(50)] percent of ammo for yellow to green transition"},
+    {"ammo_gray",   &ammo_yellow  , 0,
+     0,0,0,ss_stat,   "[0-100(0)] percent of ammo for gray transition"},
 
     //jff 2/16/98 HUD and status feature controls
     {"hud_active",    &hud_active, 2, // 0=off, 1=small, 2=full
@@ -1054,6 +1064,43 @@ void M_ScreenShot (void)
 
   S_StartSound(NULL,gamemode==commercial ? sfx_radio : sfx_tink); 
   }
+
+// Safe, portable vsnprintf().
+int M_vsnprintf(char *buf, size_t buf_len, const char *s, va_list args)
+{
+    int result;
+
+    if (buf_len < 1)
+    {
+        return 0;
+    }
+
+    // Windows (and other OSes?) has a vsnprintf() that doesn't always
+    // append a trailing \0. So we must do it, and write into a buffer
+    // that is one byte shorter; otherwise this function is unsafe.
+    result = M_vsnprintf(buf, buf_len, s, args);
+
+    // If truncated, change the final char in the buffer to a \0.
+    // A negative result indicates a truncated buffer on Windows.
+    if (result < 0 || result >= buf_len)
+    {
+        buf[buf_len - 1] = '\0';
+        result = buf_len - 1;
+    }
+
+    return result;
+}
+
+// Safe, portable snprintf().
+int M_snprintf(char* buf, size_t buf_len, const char* s, ...)
+{
+    va_list args;
+    int result;
+    va_start(args, s);
+    result = M_vsnprintf(buf, buf_len, s, args);
+    va_end(args);
+    return result;
+}
 
 //----------------------------------------------------------------------------
 //

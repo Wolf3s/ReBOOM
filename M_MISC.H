@@ -71,6 +71,9 @@ typedef struct
 
 #endif
 
+int M_vsnprintf(char *buf, size_t buf_len, const char *s, va_list args);
+int M_snprintf(char* buf, size_t buf_len, const char* s, ...);
+
 //----------------------------------------------------------------------------
 //
 // $Log: m_misc.h,v $
