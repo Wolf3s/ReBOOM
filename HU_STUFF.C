@@ -48,6 +48,7 @@ int hud_displayed;    //jff 2/23/98 turns heads-up display on/off
 int hud_nosecrets;    //jff 2/18/98 allows secrets line to be disabled in HUD
 int hud_distributed;  //jff 3/4/98 display HUD in different places on screen
 int hud_graph_keys=1; //jff 3/7/98 display HUD keys as graphics
+int boom_hud_stats_always_on;    //Adam - always show hud stats
 
 //
 // Locally used constants, shortcuts.
@@ -222,6 +223,10 @@ extern int health_green;
 extern int armor_red;
 extern int armor_yellow;
 extern int armor_green;
+
+extern int ammo_gray;
+extern int health_gray;
+extern int armor_gray;
 
 //
 // Builtin map names.
@@ -743,6 +748,47 @@ void HU_Drawer(void)
   int i,doit;
 
   plr = &players[displayplayer];         // killough 3/7/98
+
+    if (!hud_nosecrets && boom_hud_stats_always_on && viewheight != SCREENHEIGHT)
+    {
+        // map title
+        HUlib_drawTextLine(&w_title, false);
+
+        // clear the internal widget text buffer
+        HUlib_clearTextLine(&w_monsec);
+        //jff 3/26/98 use ESC not '\' for paths
+        // build the init string with fixed colors
+        if (!accessibility_colours)
+        {
+        	sprintf
+        	(
+            		hud_monsecstr,
+            		"STS \x1b\x36K \x1b\x35%d/%d \x1b\x36I \x1b\x35%d/%d \x1b\x36S \x1b\x35%d/%d",
+            		plr->killcount, totalkills,
+            		plr->itemcount, totalitems,
+            		plr->secretcount, totalsecret
+        	);
+        } else {
+                sprintf
+        	(
+            		hud_monsecstr,
+            		"STS K %d/%d I %d/%d S %d/%d",
+            		plr->killcount, totalkills,
+            		plr->itemcount, totalitems,
+            		plr->secretcount, totalsecret
+        	);
+        }
+        
+        // transfer the init string to the widget
+        s = hud_monsecstr;
+        while (*s)
+            HUlib_addCharToTextLine(&w_monsec, *(s++));
+
+        // display the kills/items/secrets each frame
+        if (hud_active > 1)
+            HUlib_drawTextLine(&w_monsec, false);
+    }
+	
   // draw the automap widgets if automap is displayed
   if (automapactive)
   {
@@ -787,6 +833,7 @@ void HU_Drawer(void)
     hud_displayed &&                 // hud on from fullscreen key
     viewheight==SCREENHEIGHT &&      // fullscreen mode is active
     !automapactive                   // automap is not active
+    && !boom_hud_stats_always_on     // Adam - new Boom hud stats are not always visible
   )
   {
     doit = !(gametic&1); //jff 3/4/98 speed update up for slow systems
@@ -888,7 +935,8 @@ void HU_Drawer(void)
         hud_healthstr[i++] = 127;
       hud_healthstr[i] = '\0';
       strcat(hud_healthstr,healthstr);
-
+if (!sts_always_gray)
+{
       // set the display color from the amount of health posessed
       if (health<health_red)
         w_health.cr = colrngs[CR_RED];
@@ -898,6 +946,16 @@ void HU_Drawer(void)
         w_health.cr = colrngs[CR_GREEN];
       else
         w_health.cr = colrngs[CR_BLUE];
+} else {
+      if (health < health_gray)
+        w_health.cr = colrngs[CR_GRAY];
+      else if (health < health_gray)
+        w_health.cr = colrngs[CR_GRAY];
+      else if (health <= health_gray)
+        w_health.cr = colrngs[CR_GRAY];
+      else
+        w_health.cr = colrngs[CR_GRAY];
+}
 
       // transfer the init string to the widget
       s = hud_healthstr;
@@ -943,6 +1001,8 @@ void HU_Drawer(void)
       strcat(hud_armorstr,armorstr);
 
       // set the display color from the amount of armor posessed
+if (!sts_always_gray)
+{
       if (armor<armor_red)
         w_armor.cr = colrngs[CR_RED];
       else if (armor<armor_yellow)
@@ -951,6 +1011,16 @@ void HU_Drawer(void)
         w_armor.cr = colrngs[CR_GREEN];
       else
         w_armor.cr = colrngs[CR_BLUE];
+} else {
+      if (armor<armor_red)
+        w_armor.cr = colrngs[CR_GRAY];
+      else if (armor<armor_yellow)
+        w_armor.cr = colrngs[CR_GRAY];
+      else if (armor<=armor_green)
+        w_armor.cr = colrngs[CR_GRAY];
+      else
+        w_armor.cr = colrngs[CR_GRAY];
+}
 
       // transfer the init string to the widget
       s = hud_armorstr;
@@ -1225,7 +1295,7 @@ void HU_Drawer(void)
     }
 
     // display the hud kills/items/secret display if optioned
-    if (!hud_nosecrets)
+    if (!hud_nosecrets && !boom_hud_stats_always_on)
     {
       if (hud_active>1 && doit)
       {

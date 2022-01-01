@@ -681,6 +681,8 @@ void A_FireShotgun2(player_t *player, pspdef_t *psp)
       int t = P_Random(pr_shotgun);
       angle += (t - P_Random(pr_shotgun))<<19;
       t = P_Random(pr_shotgun);
+	  if (player->powers[pw_strength] && hyper_berserk_shotgun)
+		  damage *= 5;
       P_LineAttack(player->mo, angle, MISSILERANGE, bulletslope +
                    ((t - P_Random(pr_shotgun))<<5), damage);
     }

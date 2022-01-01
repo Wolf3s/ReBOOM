@@ -270,6 +270,10 @@ int armor_red;     // armor amount less than which status is red
 int armor_yellow;  // armor amount less than which status is yellow
 int armor_green;   // armor amount above is blue, below is green
 
+int ammo_gray;
+int health_gray;
+int armor_gray;
+
  // in deathmatch only, summary of frags stats
 static st_number_t w_frags;
 
@@ -679,6 +683,66 @@ void ST_doPaletteStuff(void)
     }
 }
 
+void ST_drawWidgetsGray(boolean refresh)
+{
+  int i;
+
+  // used by w_arms[] widgets
+  st_armson = st_statusbaron && !deathmatch;
+
+  // used by w_frags widget
+  st_fragson = deathmatch && st_statusbaron;
+
+  //jff 2/16/98 make color of ammo depend on amount
+  if (*w_ready.num*100 < ammo_red*plyr->maxammo[weaponinfo[w_ready.data].ammo])
+    STlib_updateNum(&w_ready, cr_gray, refresh);
+  else
+    if (*w_ready.num*100 <
+        ammo_yellow*plyr->maxammo[weaponinfo[w_ready.data].ammo])
+      STlib_updateNum(&w_ready, cr_gray, refresh);
+    else
+      STlib_updateNum(&w_ready, cr_gray, refresh);
+
+  for (i=0;i<4;i++)
+    {
+      STlib_updateNum(&w_ammo[i], NULL, refresh);   //jff 2/16/98 no xlation
+      STlib_updateNum(&w_maxammo[i], NULL, refresh);
+    }
+
+  //jff 2/16/98 make color of health depend on amount
+  if (*w_health.n.num<health_red)
+    STlib_updatePercent(&w_health, cr_gray, refresh);
+  else if (*w_health.n.num<health_yellow)
+    STlib_updatePercent(&w_health, cr_gray, refresh);
+  else if (*w_health.n.num<=health_green)
+    STlib_updatePercent(&w_health, cr_gray, refresh);
+  else
+    STlib_updatePercent(&w_health, cr_gray, refresh); //killough 2/28/98
+
+  //jff 2/16/98 make color of armor depend on amount
+  if (*w_armor.n.num<armor_red)
+    STlib_updatePercent(&w_armor, cr_gray, refresh);
+  else if (*w_armor.n.num<armor_yellow)
+    STlib_updatePercent(&w_armor, cr_gray, refresh);
+  else if (*w_armor.n.num<=armor_green)
+    STlib_updatePercent(&w_armor, cr_gray, refresh);
+  else
+    STlib_updatePercent(&w_armor, cr_gray, refresh); //killough 2/28/98
+
+  STlib_updateBinIcon(&w_armsbg, refresh);
+
+  for (i=0;i<6;i++)
+    STlib_updateMultIcon(&w_arms[i], refresh);
+
+  STlib_updateMultIcon(&w_faces, refresh);
+
+  for (i=0;i<3;i++)
+    STlib_updateMultIcon(&w_keyboxes[i], refresh);
+
+  STlib_updateNum(&w_frags, NULL, refresh);
+
+}
+
 void ST_drawWidgets(boolean refresh)
 {
   int i;
@@ -748,6 +812,9 @@ void ST_doRefresh(void)
   ST_refreshBackground();
 
   // and refresh all widgets
+if (sts_always_gray)
+  ST_drawWidgetsGray(true);
+else
   ST_drawWidgets(true);
 
 }
@@ -755,6 +822,9 @@ void ST_doRefresh(void)
 void ST_diffDraw(void)
 {
   // update all widgets
+if (sts_always_gray)
+  ST_drawWidgetsGray(false);
+else
   ST_drawWidgets(false);
 }
 

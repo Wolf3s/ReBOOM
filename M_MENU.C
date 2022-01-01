@@ -268,9 +268,16 @@ extern int armor_yellow;  // armor amount less than which status is yellow
 extern int armor_green;   // armor amount above is blue, below is green
 extern int ammo_red;      // ammo percent less than which status is red
 extern int ammo_yellow;   // ammo percent less is yellow more green
+extern int health_gray;
+extern int armor_gray;
+extern int ammo_gray;
+
 extern int sts_always_red;// status numbers do not change colors
+extern int sts_always_gray;// status numbers do not change colors
 extern int sts_pct_always_gray;// status percents do not change colors
+extern int sts_pct_always_yellow;// status percents do not change colors
 extern int hud_nosecrets; // status does not list secrets/items/kills
+extern int boom_hud_stats_always_on; // Boom stats are always visible
 extern int sts_traditional_keys;  // display keys the traditional way
 extern int hud_list_bgon; // solid window background for list of messages
 extern int hud_msg_lines; // number of message lines in window up to 16
@@ -2636,6 +2643,8 @@ void M_DrawWeapons(void)
 
 #define ST_X 203
 #define ST_Y  31
+#define ST_PREV  57
+#define ST_NEXT 310
 
 // If a number item is being changed, allow up to 3 keystrokes to 'gather'
 // the value. Gather_count tells you how many you have so far. The legality
@@ -2647,34 +2656,61 @@ int  gather_count;
 // Screen table definitions
 
 setup_menu_t stat_settings1[];
+setup_menu_t stat_settings2[];
 
 setup_menu_t* stat_settings[] =
   {
   stat_settings1,
+  stat_settings2,
   NULL
   };
 
 setup_menu_t stat_settings1[] =  // Status Bar and HUD Settings screen       
 {
-  {"STATUS BAR"        ,(S_SKIP|S_TITLE),m_null,ST_X,ST_Y+ 1*8,0,0,0,0                ,0,0,0  },
-  {"USE RED NUMBERS"   ,S_YESNO     ,m_null,ST_X,ST_Y+ 2*8,0,0,0,&sts_always_red      ,0,0,0  },
-  {"GRAY %"            ,S_YESNO     ,m_null,ST_X,ST_Y+ 3*8,0,0,0,&sts_pct_always_gray ,0,0,0  },
-  {"SINGLE KEY DISPLAY",S_YESNO     ,m_null,ST_X,ST_Y+ 4*8,0,0,0,&sts_traditional_keys,0,0,0  },
+  {"STATUS BAR"        ,(S_SKIP|S_TITLE),m_null,ST_X,ST_Y+ 1*8,0,0,0,0                  ,0,0,0  },
+  {"USE RED NUMBERS"   ,S_YESNO     ,m_null,ST_X,ST_Y+ 2*8,0,0,0,&sts_always_red        ,0,0,0  },
+  {"YELLOW %"          ,S_YESNO     ,m_null,ST_X,ST_Y+ 3*8,0,0,0,&sts_pct_always_yellow ,0,0,0  },
+  {"SINGLE KEY DISPLAY",S_YESNO     ,m_null,ST_X,ST_Y+ 4*8,0,0,0,&sts_traditional_keys  ,0,0,0  },
 
-  {"HEADS-UP DISPLAY"  ,(S_SKIP|S_TITLE),m_null,ST_X,ST_Y+ 6*8,0,0,0,0                ,0,0,0  },
-  {"HIDE SECRETS"      ,S_YESNO     ,m_null,ST_X,ST_Y+ 7*8,0,0,0,&hud_nosecrets       ,0,0,0  },
-  {"HEALTH LOW/OK"     ,S_NUM       ,m_null,ST_X,ST_Y+ 8*8,0,0,0,&health_red          ,0,0,200},
-  {"HEALTH OK/GOOD"    ,S_NUM       ,m_null,ST_X,ST_Y+ 9*8,0,0,0,&health_yellow       ,0,0,200},
-  {"HEALTH GOOD/EXTRA" ,S_NUM       ,m_null,ST_X,ST_Y+10*8,0,0,0,&health_green        ,0,0,200},
-  {"ARMOR LOW/OK"      ,S_NUM       ,m_null,ST_X,ST_Y+11*8,0,0,0,&armor_red           ,0,0,200},
-  {"ARMOR OK/GOOD"     ,S_NUM       ,m_null,ST_X,ST_Y+12*8,0,0,0,&armor_yellow        ,0,0,200},
-  {"ARMOR GOOD/EXTRA"  ,S_NUM       ,m_null,ST_X,ST_Y+13*8,0,0,0,&armor_green         ,0,0,200},
-  {"AMMO LOW/OK"       ,S_NUM       ,m_null,ST_X,ST_Y+14*8,0,0,0,&ammo_red            ,0,0,100},
-  {"AMMO OK/GOOD"      ,S_NUM       ,m_null,ST_X,ST_Y+15*8,0,0,0,&ammo_yellow         ,0,0,100},
+  {"HEADS-UP DISPLAY"  ,(S_SKIP|S_TITLE),m_null,ST_X,ST_Y+ 6*8,0,0,0,0                  ,0,0,0  },
+  {"HIDE SECRETS"      ,S_YESNO     ,m_null,ST_X,ST_Y+ 7*8,0,0,0,&hud_nosecrets         ,0,0,0  },
+  {"HEALTH LOW/OK"     ,S_NUM       ,m_null,ST_X,ST_Y+ 8*8,0,0,0,&health_red            ,0,0,200},
+  {"HEALTH OK/GOOD"    ,S_NUM       ,m_null,ST_X,ST_Y+ 9*8,0,0,0,&health_yellow         ,0,0,200},
+  {"HEALTH GOOD/EXTRA" ,S_NUM       ,m_null,ST_X,ST_Y+10*8,0,0,0,&health_green          ,0,0,200},
+  {"ARMOR LOW/OK"      ,S_NUM       ,m_null,ST_X,ST_Y+11*8,0,0,0,&armor_red             ,0,0,200},
+  {"ARMOR OK/GOOD"     ,S_NUM       ,m_null,ST_X,ST_Y+12*8,0,0,0,&armor_yellow          ,0,0,200},
+  {"ARMOR GOOD/EXTRA"  ,S_NUM       ,m_null,ST_X,ST_Y+13*8,0,0,0,&armor_green           ,0,0,200},
+  {"AMMO LOW/OK"       ,S_NUM       ,m_null,ST_X,ST_Y+14*8,0,0,0,&ammo_red              ,0,0,100},
+  {"AMMO OK/GOOD"      ,S_NUM       ,m_null,ST_X,ST_Y+15*8,0,0,0,&ammo_yellow           ,0,0,100},
 
   // Button for resetting to defaults
 
   {0,S_RESET,m_null,X_BUTTON,Y_BUTTON,0,0,0,0,0,0,0},
+  
+  {"NEXT ->",(S_SKIP|S_NEXT),m_null,ST_NEXT,ST_Y+20*8,0,0,0,(int *)stat_settings2,0,0,0},
+
+  // Final entry
+
+  {0,(S_SKIP|S_END),m_null,0,0,0,0,0,0,0,0,0}
+
+};
+
+// Adam (GIBBON) - ReBOOM
+setup_menu_t stat_settings2[] =  // Status Bar and HUD Settings screen 2
+{
+  {"GAME SETTINGS"        				,(S_SKIP|S_TITLE),m_null,ST_X,ST_Y+ 1*8,0,0,0,0          		 	,0,0,0  },
+  {"DISABLE HORIZONTAL AUTOAIM" 		,S_YESNO  ,m_null,ST_X,ST_Y+ 4*8,0,0,0,&disable_horizontal_autoaim  ,0,0,0  },
+  {"DISABLE STATS COLORS"  				,S_YESNO  ,m_null,ST_X,ST_Y+ 5*8,0,0,0,&accessibility_colours  		,0,0,0  },
+  {"ALWAYS SHOW STATS"  				,S_YESNO  ,m_null,ST_X,ST_Y+ 7*8,0,0,0,&boom_hud_stats_always_on    ,0,0,0  },
+  {"USE GRAY NUMBERS"  					,S_YESNO  ,m_null,ST_X,ST_Y+ 8*8,0,0,0,&sts_always_gray  			,0,0,0  },
+  {"USE HYPER BERSERK SHOTGUN"          ,S_YESNO  ,m_null,ST_X,ST_Y+ 9*8,0,0,0,&hyper_berserk_shotgun       ,0,0,0  },
+  {"ENABLE MORE GORE"            		,S_YESNO  ,m_null,ST_X,ST_Y+ 10*8,0,0,0,&more_gibs       		 	,0,0,0  },
+
+  // Button for resetting to defaults
+
+  {0,S_RESET,m_null,X_BUTTON,Y_BUTTON,0,0,0,0,0,0,0},
+  
+  {"<- PREV",(S_SKIP|S_PREV),m_null,ST_PREV,ST_Y+20*8,0,0,0,(int *)stat_settings1,0,0,0},
 
   // Final entry
 

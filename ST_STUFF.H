@@ -78,6 +78,8 @@ typedef enum
 
 boolean ST_Responder(event_t* ev);
 
+void ST_drawWidgetsGray(boolean refresh);
+
 // killough 5/2/98: moved from m_misc.c:
 
 extern int health_red;    // health amount less than which status is red
@@ -89,8 +91,13 @@ extern int armor_green;   // armor amount above is blue, below is green
 extern int ammo_red;      // ammo percent less than which status is red
 extern int ammo_yellow;   // ammo percent less is yellow more green
 extern int sts_always_red;// status numbers do not change colors
-extern int sts_pct_always_gray;// status percents do not change colors
+extern int sts_pct_always_yellow;  // status percents do not change colors
 extern int sts_traditional_keys;  // display keys the traditional way
+extern int sts_always_gray; // status numbers do not change colors
+
+extern int ammo_gray;
+extern int health_gray;
+extern int armor_gray;
 
 #endif
 

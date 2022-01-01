@@ -47,6 +47,21 @@ boolean modifiedgame;
 
 //-----------------------------------------------------------------------------
 
+// More Gibs - With or Without Hyper Shotgun
+int more_gibs;
+
+// Hyper Berserk Shotgun
+int hyper_berserk_shotgun;
+
+// Accessibility colours
+int accessibility_colours;
+
+// Accessibility effects
+int accessibility_effects;
+
+// No horizontal autoaim
+int disable_horizontal_autoaim;
+
 // compatibility with old engines (monster behavior, metrics, etc.)
 int compatibility, default_compatibility;          // killough 1/31/98
 

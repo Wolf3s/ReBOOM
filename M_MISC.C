@@ -246,9 +246,6 @@ default_t defaults[] =
     {"sts_always_red",&sts_always_red, 0, // no color changes on status bar
      0,1,0,ss_stat,    "[0/1(0)] 1 to disable use of color on status bar"},
 
-    {"sts_pct_always_gray",&sts_pct_always_gray, 1, // 2/23/98 chg default
-     0,1,0,ss_stat,    "[0/1(1)] 1 to make percent signs on status bar always gray"},
-
     {"sts_traditional_keys", &sts_traditional_keys, 0,
      0,1,0,ss_stat,    "[0/1(0)] 1 to disable doubled card and skull key display on status bar"},    // killough 2/28/98
 
@@ -614,6 +611,22 @@ default_t defaults[] =
      1,9,0,ss_weap,     "[1-9(7)] eighth choice for weapon "},
     {"weapon_choice_9", &weapon_preferences[0][8], 1,
      1,9,0,ss_weap,     "[1-9(1)] ninth choice for weapon (worst)"},
+	 
+	// Adam (GIBBON) - ReBOOM
+ 	{"sts_pct_always_yellow", 		&sts_pct_always_yellow,  0,
+     0,1,0,ss_stat,    					"[0/1(0)] 1 to make percent signs on status bar always yellow"}, 
+	{"disable_horizontal_autoaim",  &disable_horizontal_autoaim,  0,
+     0,1,0,ss_stat,    					"[0/1(0)] 1 to disable horizontal autoaim"},
+	{"boom_hud_stats_always_on", 	&boom_hud_stats_always_on,  0,
+     1,1,0,ss_stat,    					"[0/1(0)] 0 to disable permanent hud stats on screen - cannot be enabled with hud_nosecrets set to 1"},
+	{"accessibility_colours", 		&accessibility_colours,  0,
+     0,1,0,ss_stat,    					"[0/1(0)] 1 to enable accessibility colours"},
+	{"sts_always_gray", 			&sts_always_gray,  0,
+     0,1,0,ss_stat,    					"[0/1(0)] 1 to enable use of gray on status bar"},
+	{"hyper_berserk_shotgun", 		&hyper_berserk_shotgun,  0,
+     0,1,0,ss_stat,    					"[0/1(0)] 1 to enable use of when having berserk super shotgun power is increased"},
+	{"more_gibs", 					&more_gibs,  0,
+     0,1,0,ss_stat,    					"[0/1(0)] 1 to enable more gore"},
 };
 
 int numdefaults;

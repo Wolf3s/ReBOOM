@@ -1072,12 +1072,18 @@ void P_SpawnPlayerMissile(mobj_t* source,mobjtype_t type)
   if (!linetarget)
     {
     an += 1<<26;
-    slope = P_AimLineAttack (source, an, 16*64*FRACUNIT);
+      if (!disable_horizontal_autoaim)
+      {
+          slope = P_AimLineAttack(source, an, 16 * 64 * FRACUNIT);
+      }
 
     if (!linetarget)
       {
       an -= 2<<26;
-      slope = P_AimLineAttack (source, an, 16*64*FRACUNIT);
+          if (!disable_horizontal_autoaim)
+          {
+              slope = P_AimLineAttack(source, an, 16 * 64 * FRACUNIT);
+          }
       }
 
     if (!linetarget)

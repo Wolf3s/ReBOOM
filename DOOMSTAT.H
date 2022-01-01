@@ -47,6 +47,21 @@
 #pragma interface
 #endif
 
+// More Gibs - With or Without Hyper Shotgun
+extern int more_gibs;
+
+// Hyper Berserk Shotgun
+extern int hyper_berserk_shotgun;
+
+// Accessibility colours
+extern int accessibility_colours;
+
+// Accessibility effects
+extern int accessibility_effects;
+
+// No horizontal autoaim
+extern int disable_horizontal_autoaim;
+
 // ------------------------
 // Command line parameters.
 //
