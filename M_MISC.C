@@ -631,6 +631,8 @@ default_t defaults[] =
      1,1,0,ss_stat,    					"[0/1(0)] 0 to disable permanent hud stats on screen - cannot be enabled with hud_nosecrets set to 1"},
 	{"accessibility_colours", 		&accessibility_colours,  0,
      0,1,0,ss_stat,    					"[0/1(0)] 1 to enable accessibility colours"},
+    {"accessibility_effects",       &accessibility_effects, 0,
+     0,1,0, ss_stat,                    "[0/1(0)] 1 to enable accessibility effects"},
 	{"sts_always_gray", 			&sts_always_gray,  0,
      0,1,0,ss_stat,    					"[0/1(0)] 1 to enable use of gray on status bar"},
 	{"hyper_berserk_shotgun", 		&hyper_berserk_shotgun,  0,

@@ -48,6 +48,9 @@
 #define FRACBITS 16
 #define FRACUNIT (1<<FRACBITS)
 
+// Adam - I have removed the DJGPP ifdef macros as BOOM really on DOS can only be compiled
+//        with DJGPP anyway.
+
 typedef int fixed_t;
 
 //
@@ -56,16 +59,11 @@ typedef int fixed_t;
 
 // killough 5/10/98: In djgpp, use inlined assembly for performance
 // Use x86 cdq instruction to generate fast abs(), avoiding branches.
-
-#ifdef DJGPP
 #define abs(x) ({int _s,_t=(x); asm(" cdq": "=d" (_s): "a" (_t)); (_t^_s)-_s;})
-#endif // DJGPP
 
 //
 // Fixed Point Multiplication
 //
-
-#ifdef DJGPP
 
 // killough 5/10/98: In djgpp, use inlined assembly for performance
 
@@ -84,20 +82,9 @@ __inline__ static fixed_t FixedMul(fixed_t a, fixed_t b)
   return result;
 }
 
-#else // DJGPP
-
-__inline__ static fixed_t FixedMul(fixed_t a, fixed_t b)
-{
-  return (fixed_t)((long long) a*b >> FRACBITS);
-}
-
-#endif // DJGPP
-
 //
 // Fixed Point Division
 //
-
-#ifdef DJGPP
 
 // killough 5/10/98: In djgpp, use inlined assembly for performance
 
@@ -120,16 +107,6 @@ __inline__ static fixed_t FixedDiv(fixed_t a, fixed_t b)
 
   return result;
 }
-
-#else // DJGPP
-
-__inline__ static fixed_t FixedDiv(fixed_t a, fixed_t b)
-{
-  return (abs(a)>>14) >= abs(b) ? (a^b)<0 ? MININT : MAXINT :
-    (fixed_t)(((long long) a << FRACBITS) / b);
-}
-
-#endif // DJGPP
 
 #endif
 

@@ -55,6 +55,8 @@ rcsid[] = "$Id: p_lights.c,v 1.11 1998/05/18 09:04:41 jim Exp $";
 //
 void T_FireFlicker (fireflicker_t* flick)
 {
+if (!accessibility_effects)
+{
   int amount;
   
   if (--flick->count)
@@ -68,6 +70,8 @@ void T_FireFlicker (fireflicker_t* flick)
     flick->sector->lightlevel = flick->maxlight - amount;
 
   flick->count = 4;
+} else {
+}
 }
 
 //
@@ -79,6 +83,8 @@ void T_FireFlicker (fireflicker_t* flick)
 // Returns nothing
 //
 void T_LightFlash (lightflash_t* flash)
+{
+if (!accessibility_effects)
 {
   if (--flash->count)
     return;
@@ -93,7 +99,8 @@ void T_LightFlash (lightflash_t* flash)
     flash-> sector->lightlevel = flash->maxlight;
     flash->count = (P_Random(pr_lights)&flash->maxtime)+1;
   }
-
+} else {
+}
 }
 
 //
@@ -105,6 +112,8 @@ void T_LightFlash (lightflash_t* flash)
 // Returns nothing
 //
 void T_StrobeFlash (strobe_t*   flash)
+{
+if (!accessibility_effects)
 {
   if (--flash->count)
     return;
@@ -119,6 +128,8 @@ void T_StrobeFlash (strobe_t*   flash)
     flash-> sector->lightlevel = flash->minlight;
     flash->count =flash->darktime;
   }
+} else {
+}
 }
 
 //
@@ -131,6 +142,8 @@ void T_StrobeFlash (strobe_t*   flash)
 //
 
 void T_Glow(glow_t* g)
+{
+if (!accessibility_effects)
 {
   switch(g->direction)
   {
@@ -154,6 +167,8 @@ void T_Glow(glow_t* g)
       }
       break;
   }
+} else {
+}
 }
 
 //////////////////////////////////////////////////////////
@@ -175,6 +190,8 @@ void T_Glow(glow_t* g)
 //
 void P_SpawnFireFlicker (sector_t*  sector)
 {
+if (!accessibility_effects)
+{
   fireflicker_t*  flick;
 
   // Note that we are resetting sector attributes.
@@ -190,6 +207,8 @@ void P_SpawnFireFlicker (sector_t*  sector)
   flick->maxlight = sector->lightlevel;
   flick->minlight = P_FindMinSurroundingLight(sector,sector->lightlevel)+16;
   flick->count = 4;
+} else {
+}
 }
 
 //
@@ -201,6 +220,8 @@ void P_SpawnFireFlicker (sector_t*  sector)
 // Returns nothing
 //
 void P_SpawnLightFlash (sector_t* sector)
+{
+if (!accessibility_effects)
 {
   lightflash_t* flash;
 
@@ -219,6 +240,8 @@ void P_SpawnLightFlash (sector_t* sector)
   flash->maxtime = 64;
   flash->mintime = 7;
   flash->count = (P_Random(pr_lights)&flash->maxtime)+1;
+} else {
+}
 }
 
 //
@@ -235,6 +258,8 @@ void P_SpawnStrobeFlash
 ( sector_t* sector,
   int   fastOrSlow,
   int   inSync )
+{
+if (!accessibility_effects)
 {
   strobe_t* flash;
 
@@ -259,6 +284,8 @@ void P_SpawnStrobeFlash
     flash->count = (P_Random(pr_lights)&7)+1;
   else
     flash->count = 1;
+} else {
+}
 }
 
 //
@@ -270,6 +297,8 @@ void P_SpawnStrobeFlash
 // Returns nothing
 //
 void P_SpawnGlowingLight(sector_t*  sector)
+{
+if (!accessibility_effects)
 {
   glow_t* g;
 
@@ -284,6 +313,8 @@ void P_SpawnGlowingLight(sector_t*  sector)
   g->direction = -1;
 
   sector->special &= ~31; //jff 3/14/98 clear non-generalized sector type
+} else {
+}
 }
 
 //////////////////////////////////////////////////////////
@@ -304,6 +335,8 @@ void P_SpawnGlowingLight(sector_t*  sector)
 //
 int EV_StartLightStrobing(line_t* line)
 {
+if (!accessibility_effects)
+{
   int   secnum;
   sector_t* sec;
 
@@ -319,6 +352,9 @@ int EV_StartLightStrobing(line_t* line)
     P_SpawnStrobeFlash (sec,SLOWDARK, 0);
   }
   return 1;
+} else {
+    return 1;
+}
 }
 
 //
@@ -332,6 +368,8 @@ int EV_StartLightStrobing(line_t* line)
 // jff 2/12/98 added int return value, fixed return
 //
 int EV_TurnTagLightsOff(line_t* line)
+{
+if (!accessibility_effects)
 {
   int     i;
   int     j;
@@ -362,6 +400,9 @@ int EV_TurnTagLightsOff(line_t* line)
     }
   }
   return 1;
+} else {
+  return 1;
+}
 }
 
 //
@@ -378,6 +419,8 @@ int EV_TurnTagLightsOff(line_t* line)
 int EV_LightTurnOn
 ( line_t* line,
   int   bright )
+{
+if (!accessibility_effects)
 {
   int   i;
   int   j;
@@ -418,6 +461,9 @@ int EV_LightTurnOn
     }
   }
   return 1;
+} else {
+  return 1;
+}
 }
 
 //----------------------------------------------------------------------------

@@ -657,6 +657,8 @@ int epiChoice;
 
 void M_AddEpisode(const char* map, char* def)
 {
+    const char* alpha;
+    
     if (!EpiCustom)
     {
         EpiCustom = true;
@@ -675,7 +677,7 @@ void M_AddEpisode(const char* map, char* def)
         int epi, mapnum;
         const char* gfx = strtok(def, "\n");
         strtok(NULL, "\n");
-        const char* alpha = strtok(NULL, "\n");
+        alpha = strtok(NULL, "\n");
         if (EpiDef.numitems >= 8)
             return;
         G_ValidateMapName(map, &epi, &mapnum);
@@ -2756,12 +2758,13 @@ setup_menu_t stat_settings1[] =  // Status Bar and HUD Settings screen
 setup_menu_t stat_settings2[] =  // Status Bar and HUD Settings screen 2
 {
   {"GAME SETTINGS"        				,(S_SKIP|S_TITLE),m_null,ST_X,ST_Y+ 1*8,0,0,0,0          		 	,0,0,0  },
-  {"DISABLE HORIZONTAL AUTOAIM" 		,S_YESNO  ,m_null,ST_X,ST_Y+ 4*8,0,0,0,&disable_horizontal_autoaim  ,0,0,0  },
-  {"DISABLE STATS COLORS"  				,S_YESNO  ,m_null,ST_X,ST_Y+ 5*8,0,0,0,&accessibility_colours  		,0,0,0  },
-  {"ALWAYS SHOW STATS"  				,S_YESNO  ,m_null,ST_X,ST_Y+ 7*8,0,0,0,&boom_hud_stats_always_on    ,0,0,0  },
-  {"USE GRAY NUMBERS"  					,S_YESNO  ,m_null,ST_X,ST_Y+ 8*8,0,0,0,&sts_always_gray  			,0,0,0  },
-  {"USE HYPER BERSERK SHOTGUN"          ,S_YESNO  ,m_null,ST_X,ST_Y+ 9*8,0,0,0,&hyper_berserk_shotgun       ,0,0,0  },
-  {"ENABLE MORE GORE"            		,S_YESNO  ,m_null,ST_X,ST_Y+ 10*8,0,0,0,&more_gibs       		 	,0,0,0  },
+  {"DISABLE HORIZONTAL AUTOAIM" 		,S_YESNO  ,m_null,ST_X,ST_Y+ 2*8,0,0,0,&disable_horizontal_autoaim  ,0,0,0  },
+  {"DISABLE STATS COLORS"  				,S_YESNO  ,m_null,ST_X,ST_Y+ 3*8,0,0,0,&accessibility_colours  		,0,0,0  },
+  {"ENABLE ACCESSIBILITY EFFECTS"       ,S_YESNO  ,m_null,ST_X,ST_Y+ 4*8,0,0,0,&accessibility_effects       ,0,0,0  },
+  {"ALWAYS SHOW STATS"  				,S_YESNO  ,m_null,ST_X,ST_Y+ 5*8,0,0,0,&boom_hud_stats_always_on    ,0,0,0  },
+  {"USE GRAY NUMBERS"  					,S_YESNO  ,m_null,ST_X,ST_Y+ 6*8,0,0,0,&sts_always_gray  			,0,0,0  },
+  {"USE HYPER BERSERK SHOTGUN"          ,S_YESNO  ,m_null,ST_X,ST_Y+ 7*8,0,0,0,&hyper_berserk_shotgun       ,0,0,0  },
+  {"ENABLE MORE GORE"            		,S_YESNO  ,m_null,ST_X,ST_Y+ 8*8,0,0,0,&more_gibs       		 	,0,0,0  },
 
   // Button for resetting to defaults
 

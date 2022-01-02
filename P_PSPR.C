@@ -445,16 +445,18 @@ void A_Raise(player_t *player, pspdef_t *psp)
 
 static void A_FireSomething(player_t* player,int adder)
 {
+if(!accessibility_effects)
+{
   P_SetPsprite(player, ps_flash,
                weaponinfo[player->readyweapon].flashstate+adder);
+}
 
   // killough 3/27/98: prevent recoil in no-clipping mode
   if (!(player->mo->flags & MF_NOCLIP))
     if (!compatibility && weapon_recoil)
-      P_Thrust(player,
-               ANG180+player->mo->angle,                          //   ^
-               2048*recoil_values[player->readyweapon]);          //   |
-}                                                                 // phares
+      P_Thrust(player, ANG180 + player->mo->angle,
+               2048*recoil_values[player->readyweapon]);
+}                                                                // phares
 
 //
 // A_GunFlash
@@ -799,9 +801,11 @@ void P_MovePsprites(player_t *player)
   for (i=0; i<NUMPSPRITES; i++, psp++)
     if (psp->state && psp->tics != -1 && !--psp->tics)
       P_SetPsprite(player, i, psp->state->nextstate);
-
+if (!accessibility_effects)
+{
   player->psprites[ps_flash].sx = player->psprites[ps_weapon].sx;
   player->psprites[ps_flash].sy = player->psprites[ps_weapon].sy;
+}
 }
 
 //----------------------------------------------------------------------------
