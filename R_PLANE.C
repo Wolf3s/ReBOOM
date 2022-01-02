@@ -51,6 +51,7 @@ rcsid[] = "$Id: r_plane.c,v 1.8 1998/05/03 23:09:53 killough Exp $";
 #include "r_draw.h"
 #include "r_things.h"
 #include "r_sky.h"
+#include "r_plane.h"
 
 #define MAXVISPLANES 128    /* must be a power of 2 */
 
@@ -224,8 +225,8 @@ visplane_t *R_FindPlane(fixed_t height, int picnum, int lightlevel,
   visplane_t *check;
   unsigned hash;                      // killough
 
-  if (picnum == skyflatnum)
-    height = lightlevel = 0;          // all skys map together
+    if (picnum == skyflatnum || picnum & PL_SKYFLAT)  // killough 10/98
+      lightlevel = height = 0;   // killough 7/19/98: most skies map together
 
   // New visplane algorithm uses hash table -- killough
   hash = visplane_hash(picnum,lightlevel,height);
@@ -314,55 +315,105 @@ static void R_MakeSpans(int x, int t1, int b1, int t2, int b2)
 
 static void do_draw_plane(visplane_t *pl)
 {
-  register int x;
-  if (pl->minx <= pl->maxx)
-    if (pl->picnum == skyflatnum)            // sky flat
-      {
-        // Sky is always drawn full bright, i.e. colormaps[0] is used.
-        // Because of this hack, sky is not affected by INVUL inverse mapping.
+    register int x;
+    if (pl->minx <= pl->maxx)
+      if (pl->picnum == skyflatnum || pl->picnum & PL_SKYFLAT)  // sky flat
+        {
+      int texture;
+      angle_t an, flip;
 
+      // killough 10/98: allow skies to come from sidedefs.
+      // Allows scrolling and/or animated skies, as well as
+      // arbitrary multiple skies per level without having
+      // to use info lumps.
+
+      an = viewangle;
+
+      if (pl->picnum & PL_SKYFLAT)
+        {
+          // Sky Linedef
+          const line_t *l = &lines[pl->picnum & ~PL_SKYFLAT];
+
+          // Sky transferred from first sidedef
+          const side_t *s = *l->sidenum + sides;
+
+          // Texture comes from upper texture of reference sidedef
+          texture = texturetranslation[s->toptexture];
+
+          // Horizontal offset is turned into an angle offset,
+          // to allow sky rotation as well as careful positioning.
+          // However, the offset is scaled very small, so that it
+          // allows a long-period of sky rotation.
+
+          an += s->textureoffset;
+
+          // Vertical offset allows careful sky positioning.
+
+          dc_texturemid = s->rowoffset - 28*FRACUNIT;
+
+          // We sometimes flip the picture horizontally.
+          //
+          // Doom always flipped the picture, so we make it optional,
+          // to make it easier to use the new feature, while to still
+          // allow old sky textures to be used.
+
+          flip = l->special==272 ? 0u : ~0u;
+        }
+      else      // Normal Doom sky, only one allowed per level
+        {
+          dc_texturemid = skytexturemid;    // Default y-offset
+          texture = skytexture;             // Default texture
+          flip = 0;                         // Doom flips it
+        }
+
+          // Sky is always drawn full bright, i.e. colormaps[0] is used.
+          // Because of this hack, sky is not affected by INVUL inverse mapping.
+      //
+      // killough 7/19/98: fix hack to be more realistic:
+
+      if (!(dc_colormap = fixedcolormap))    // Adam - Removed comp setting
         dc_colormap = fullcolormap;          // killough 3/20/98
-        dc_texturemid = skytexturemid;
-        dc_texheight = textureheight[skytexture]>>FRACBITS; // killough
-        dc_iscale = pspriteiscale;
 
-        for (x = pl->minx; x <= pl->maxx; x++)
-          if ((dc_yl = pl->top[x]) <= (dc_yh = pl->bottom[x]))
-            {
-              dc_x = x;
-              dc_source = R_GetColumn(skytexture,
-                          (viewangle + xtoviewangle[x]) >> ANGLETOSKYSHIFT);
-              colfunc();
-            }
-      }
-    else      // regular flat
-      {
-        int stop, light;
+          dc_texheight = textureheight[texture]>>FRACBITS; // killough
+          dc_iscale = pspriteiscale;
 
-        ds_source = W_CacheLumpNum(firstflat + flattranslation[pl->picnum],
-                                   PU_STATIC);
+      // killough 10/98: Use sky scrolling offset, and possibly flip picture
+          for (x = pl->minx; (dc_x = x) <= pl->maxx; x++)
+            if ((dc_yl = pl->top[x]) <= (dc_yh = pl->bottom[x]))
+              {
+                dc_source = R_GetColumn(texture, ((an + xtoviewangle[x])^flip) >>
+                        ANGLETOSKYSHIFT);
+                colfunc();
+              }
+        }
+      else      // regular flat
+        {
+          int stop, light;
 
-        xoffs = pl->xoffs;  // killough 2/28/98: Add offsets
-        yoffs = pl->yoffs;
-        planeheight = abs(pl->height-viewz);
-        light = (pl->lightlevel >> LIGHTSEGSHIFT) + extralight;
+          ds_source = W_CacheLumpNum(firstflat + flattranslation[pl->picnum],
+                                     PU_STATIC);
 
-        if (light >= LIGHTLEVELS)
-          light = LIGHTLEVELS-1;
+          xoffs = pl->xoffs;  // killough 2/28/98: Add offsets
+          yoffs = pl->yoffs;
+          planeheight = abs(pl->height-viewz);
+          light = (pl->lightlevel >> LIGHTSEGSHIFT) + extralight;
 
-        if (light < 0)
-          light = 0;
+          if (light >= LIGHTLEVELS)
+            light = LIGHTLEVELS-1;
 
-        stop = pl->maxx + 1;
-        planezlight = zlight[light];
-        pl->top[pl->minx-1] = pl->top[stop] = 0xffff;
+          if (light < 0)
+            light = 0;
 
-        for (x = pl->minx ; x <= stop ; x++)
-          R_MakeSpans(x,pl->top[x-1],pl->bottom[x-1],pl->top[x],pl->bottom[x]);
+          stop = pl->maxx + 1;
+          planezlight = zlight[light];
+          pl->top[pl->minx-1] = pl->top[stop] = 0xffff;
 
-        Z_ChangeTag (ds_source, PU_CACHE);
-      }
-}
+          for (x = pl->minx ; x <= stop ; x++)
+            R_MakeSpans(x,pl->top[x-1],pl->bottom[x-1],pl->top[x],pl->bottom[x]);
+
+          Z_ChangeTag (ds_source, PU_CACHE);
+        }
+  }
 
 //
 // RDrawPlanes
