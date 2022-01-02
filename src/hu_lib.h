@@ -43,11 +43,11 @@
 // #define HU_CHARERASE    KEYD_BACKSPACE // not used               // phares
 
 #if defined REMOVE_LIMITS
-#define HU_MAXLINES       4
-#define HU_MAXLINELENGTH  80
-#else
 #define HU_MAXLINES       1024
 #define HU_MAXLINELENGTH  1024
+#else
+#define HU_MAXLINES       4
+#define HU_MAXLINELENGTH  80
 #endif
 
 #define HU_REFRESHSPACING 8 /*jff 2/26/98 space lines in text refresh widget*/
