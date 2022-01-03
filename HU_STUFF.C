@@ -56,6 +56,7 @@ int boom_hud_stats_always_on;    //Adam - always show hud stats
 // Ty 03/28/98 -
 // These four shortcuts modifed to reflect char ** of mapnamesx[]
 #define HU_TITLE  (*mapnames[(gameepisode-1)*9+gamemap-1])
+#define HU_TITLE_SIGIL   (*mapnames_sigil[(gameepisode-3)*9+gamemap-1])
 #define HU_TITLE2 (*mapnames2[gamemap-1])
 #define HU_TITLEP (*mapnamesp[gamemap-1])
 #define HU_TITLET (*mapnamest[gamemap-1])
@@ -239,6 +240,7 @@ extern char **mapnames[];
 extern char **mapnames2[];
 extern char **mapnamesp[];
 extern char **mapnamest[];
+extern char **mapnames_sigil[];
 
 // key tables
 // jff 5/10/98 french support removed, 
@@ -564,9 +566,12 @@ void HU_Start(void)
     case shareware:
     case registered:
     case retail:
-      s = HU_TITLE;
+		s = HU_TITLE;
+	if (is_sigil)
+    {
+		s = HU_TITLE_SIGIL;
+    }
       break;
-
     case commercial:
     default:  // Ty 08/27/98 - modified to check mission for TNT/Plutonia
       s = (gamemission==pack_tnt)  ? HU_TITLET : 

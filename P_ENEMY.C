@@ -1480,16 +1480,24 @@ void A_BossDeath(mobj_t *mo)
           if (mo->type != MT_CYBORG)
             return;
           break;
+		case 3:
+		if (is_sigil)
+		{
+          if (gamemap != 8)
+            return;
 
-        case 3:
+          if (mo->type != MT_FATSO)
+            return;
+
+		} else {
           if (gamemap != 8)
             return;
 
           if (mo->type != MT_SPIDER)
             return;
 
-          break;
-
+		}
+		break;
         case 4:
           switch(gamemap)
             {

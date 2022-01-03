@@ -329,6 +329,17 @@ extern char *s_HUSTR_E4M8; // = HUSTR_E4M8;
 //#define HUSTR_E4M9    "E4M9: Fear"
 extern char *s_HUSTR_E4M9; // = HUSTR_E4M9;
 
+// SIGIL
+extern char *s_HUSTR_E5M1;
+extern char *s_HUSTR_E5M2;
+extern char *s_HUSTR_E5M3;
+extern char *s_HUSTR_E5M4;
+extern char *s_HUSTR_E5M5;
+extern char *s_HUSTR_E5M6;
+extern char *s_HUSTR_E5M7;
+extern char *s_HUSTR_E5M8;
+extern char *s_HUSTR_E5M9;
+
 //#define HUSTR_1       "level 1: entryway"
 extern char *s_HUSTR_1; // = HUSTR_1;
 //#define HUSTR_2       "level 2: underhalls"
@@ -738,6 +749,18 @@ extern char *s_E3TEXT; // = E3TEXT;
 */
 extern char *s_E4TEXT; // = E4TEXT;
 
+//#define E5TEXT 
+//"Baphomet was only doing Satan's bidding\n"
+//"by bringing you back to Hell. Somehow they\n"
+//"didn't understand that you're the reason\n"
+//"they failed in the first place.\n"
+//"\n"
+//"After mopping up the place with your\n"
+//"arsenal, you're ready to face the more\n"
+//"advanced demons that were sent to Earth.\n"
+//"\n"
+//"Lock and load. Rip and tear."
+extern char *s_E5TEXT; // = E5TEXT;
 
 // after level 6, put this:
 
@@ -1059,6 +1082,8 @@ extern char *bgflatE2;
 extern char *bgflatE3;
 // char*        bgflatE4 = "MFLR8_3";
 extern char *bgflatE4;
+// char*        bgflatE5 = "FLOOR7_2";
+extern char *bgflatE5;
 
 // char*        bgflat06 = "SLIME16";
 extern char *bgflat06;

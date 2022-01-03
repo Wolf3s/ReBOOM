@@ -71,6 +71,9 @@ void D_AdvanceDemo(void);
 void D_StartTitle(void);
 void D_DoomMain(void);
 
+extern int is_nrftl;
+extern int is_sigil;
+
 #endif
 
 //----------------------------------------------------------------------------

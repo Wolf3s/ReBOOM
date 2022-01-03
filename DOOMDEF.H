@@ -277,6 +277,9 @@ typedef enum {
 #define ORIG_FRICTION          0xE800      // original value
 #define ORIG_FRICTION_FACTOR   2048        // original value
 
+extern int is_nrftl;
+extern int is_sigil;
+
 #endif          // __DOOMDEF__
 
 //----------------------------------------------------------------------------

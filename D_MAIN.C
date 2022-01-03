@@ -19,7 +19,7 @@
 //
 //  You should have received a copy of the GNU General Public License
 //  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
+//  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 //  02111-1307, USA.
 //
 // DESCRIPTION:
@@ -85,6 +85,12 @@ boolean clfastparm;     // checkparm of -fast
 boolean nomonsters;     // working -nomonsters
 boolean respawnparm;    // working -respawn
 boolean fastparm;       // working -fast
+
+// Adam - NRFTL
+int is_nrftl;
+
+// Adam - Sigil
+int is_sigil;
 
 boolean singletics = false; // debug flag to cancel adaptiveness
 
@@ -942,7 +948,7 @@ char *FindIWADFile()
 // Set the location of the defaults file and the savegame root
 // Locate and validate an IWAD file
 // Determine gamemode from the IWAD
-// 
+//
 // supports IWADs with custom names. Also allows the -iwad parameter to
 // specify which iwad is being searched for if several exist in one dir.
 // The -iwad parm may specify:
@@ -1017,7 +1023,7 @@ void IdentifyVersion (void)
           language=french;
           //jff 9/3/98 use logical output routine
           lprintf(LO_CONFIRM,"DOOM II version, french language\n");
-        } 
+        }
         else if (i>=7 && !strnicmp(iwad+i-7,"tnt.wad",7))
         {
           gamemission = pack_tnt;
@@ -1138,11 +1144,11 @@ void FindResponseFile (void)
 // work, so we have to go get all the valid ones if any that show up
 // after the loose ones.  This means that boom fred.wad -file wilma
 // will still load fred.wad and wilma.wad, in that order.
-// The response file code kludges up its own version of myargv[] and 
+// The response file code kludges up its own version of myargv[] and
 // unfortunately we have to do the same here because that kludge only
 // happens if there _is_ a response file.  Truth is, it's more likely
-// that there will be a need to do one or the other so it probably 
-// isn't important.  We'll point off to the original argv[], or the 
+// that there will be a need to do one or the other so it probably
+// isn't important.  We'll point off to the original argv[], or the
 // area allocated in FindResponseFile, or our own areas from strdups.
 //
 
@@ -1160,17 +1166,17 @@ void DoLooseFiles(void)
 
   for (i=1;i<myargc;i++)
   {
-    if (*myargv[i] == '-') break;  // quit at first switch 
+    if (*myargv[i] == '-') break;  // quit at first switch
 
     // so now we must have a loose file.  Find out what kind and store it.
     j = strlen(myargv[i]);
-    if (!stricmp(&myargv[i][j-4],".wad")) 
+    if (!stricmp(&myargv[i][j-4],".wad"))
       wads[wadcount++] = strdup(myargv[i]);
-    if (!stricmp(&myargv[i][j-4],".lmp")) 
+    if (!stricmp(&myargv[i][j-4],".lmp"))
       lmps[lmpcount++] = strdup(myargv[i]);
-    if (!stricmp(&myargv[i][j-4],".deh")) 
+    if (!stricmp(&myargv[i][j-4],".deh"))
       dehs[dehcount++] = strdup(myargv[i]);
-    if (!stricmp(&myargv[i][j-4],".bex")) 
+    if (!stricmp(&myargv[i][j-4],".bex"))
       dehs[dehcount++] = strdup(myargv[i]);
     if (myargv[i][j-4] != '.')  // assume wad if no extension
       wads[wadcount++] = strdup(myargv[i]);
@@ -1213,7 +1219,7 @@ void DoLooseFiles(void)
   // Now go back and redo the whole myargv array with our stuff in it.
   // First, create a new myargv array to copy into
   tmyargv = calloc(sizeof(char *),MAXARGVS);
-  tmyargv[0] = myargv[0]; // invocation 
+  tmyargv[0] = myargv[0]; // invocation
   tmyargc = 1;
 
   // put our stuff into it
@@ -1227,17 +1233,17 @@ void DoLooseFiles(void)
   // for -deh
   if (dehcount > 0)
   {
-    tmyargv[tmyargc++] = strdup("-deh"); 
+    tmyargv[tmyargc++] = strdup("-deh");
     for (i=0;i<dehcount;)
-      tmyargv[tmyargc++] = dehs[i++]; 
+      tmyargv[tmyargc++] = dehs[i++];
   }
 
   // for -playdemo
   if (lmpcount > 0)
   {
-    tmyargv[tmyargc++] = strdup("-playdemo"); 
+    tmyargv[tmyargc++] = strdup("-playdemo");
     for (i=0;i<lmpcount;)
-      tmyargv[tmyargc++] = lmps[i++]; 
+      tmyargv[tmyargc++] = lmps[i++];
   }
 
   // then copy everything that's there now
@@ -1460,6 +1466,22 @@ void D_DoomMain(void)
       startskill = myargv[p+1][0]-'1';
       autostart = true;
     }
+	
+    // NRFTL
+
+    p = M_CheckParm("-nrftl");
+    if (p)
+    {
+        is_nrftl = 1;
+    }
+
+    // Sigil
+
+    p = M_CheckParm("-sigil");
+    if (p)
+    {
+        is_sigil = 1;
+    }
 
   if ((p = M_CheckParm ("-episode")) && p < myargc-1)
     {
@@ -1480,14 +1502,14 @@ void D_DoomMain(void)
     lprintf(LO_CONFIRM,"Austin Virtual Gaming: Levels will end after 20 minutes\n");
 
   if ((p = M_CheckParm ("-warp")) ||      // killough 5/2/98
-       (p = M_CheckParm ("-wart"))) 
+       (p = M_CheckParm ("-wart")))
        // Ty 08/29/98 - moved this check later so we can have -warp alone: && p < myargc-1)
   {
     startmap = 0; // Ty 08/29/98 - allow "-warp x" to go to first map in wad(s)
     autostart = true; // Ty 08/29/98 - move outside the decision tree
     if (gamemode == commercial)
     {
-      if (p < myargc-1) 
+      if (p < myargc-1)
         startmap = atoi(myargv[p+1]);   // Ty 08/29/98 - add test if last parm
     }
     else    // 1/25/98 killough: fix -warp xxx from crashing Doom 1 / UD
@@ -1566,7 +1588,7 @@ void D_DoomMain(void)
               (W_CheckNumForName)(name[i],ns_sprites)<0) // killough 4/18/98
             I_Error("\nThis is not the registered version.");
     }
-    
+
 
     if (M_CheckParm("-umapinfo"))
     {
@@ -1697,7 +1719,7 @@ void D_DoomMain(void)
 // GetFirstMap
 //
 // Ty 08/29/98 - determine first available map from the loaded wads and run it
-// 
+//
 
 void GetFirstMap(int *ep, int *map)
 {
@@ -1763,7 +1785,7 @@ void GetFirstMap(int *ep, int *map)
           }
         }
       }
-    }   
+    }
     //jff 9/3/98 use logical output routine
     lprintf(LO_CONFIRM,"Auto-warping to first %slevel: %s\n",
       newlevel ? "new " : "", name);  // Ty 10/04/98 - new level test
@@ -1909,4 +1931,3 @@ void GetFirstMap(int *ep, int *map)
 // Lee's Jan 19 sources
 //
 //----------------------------------------------------------------------------
-

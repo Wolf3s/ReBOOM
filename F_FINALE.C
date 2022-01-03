@@ -129,7 +129,21 @@ void F_StartFinale (void)
     case retail:
     {
       S_ChangeMusic(mus_victor, true);
-      
+	  
+	  if (is_sigil)
+	  {
+		switch (gameepisode)
+		{
+        case 3:
+             finaleflat = bgflatE5;
+             finaletext = s_E5TEXT;
+             break;
+        default:
+             // Ouch.
+             break;
+      }
+      break;
+	  } else {
       switch (gameepisode)
       {
         case 1:
@@ -207,13 +221,11 @@ void F_StartFinale (void)
          finaleflat = "F_SKY1"; // Not used anywhere else.
          finaletext = s_C1TEXT;  // FIXME - other text, music?
          break;
+	}
   }
-  
   finalestage = 0;
   finalecount = 0;
 }
-
-
 
 boolean F_Responder (event_t *event)
 {

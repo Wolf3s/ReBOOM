@@ -42,6 +42,7 @@ rcsid[] = "$Id: d_deh.c,v 1.23 1998/09/07 20:06:01 jim Exp $";
 #include "g_game.h"
 #include "d_think.h"
 #include "lprintf.h"  // jff 08/03/98 - declaration of lprintf
+#include "d_deh.h"
 
 #define TRUE 1
 #define FALSE 0
@@ -176,6 +177,15 @@ char *s_HUSTR_E4M6  = HUSTR_E4M6;
 char *s_HUSTR_E4M7  = HUSTR_E4M7;
 char *s_HUSTR_E4M8  = HUSTR_E4M8;
 char *s_HUSTR_E4M9  = HUSTR_E4M9;
+char *s_HUSTR_E5M1  = HUSTR_E5M1;
+char *s_HUSTR_E5M2  = HUSTR_E5M2;
+char *s_HUSTR_E5M3  = HUSTR_E5M3;
+char *s_HUSTR_E5M4  = HUSTR_E5M4;
+char *s_HUSTR_E5M5  = HUSTR_E5M5;
+char *s_HUSTR_E5M6  = HUSTR_E5M6;
+char *s_HUSTR_E5M7  = HUSTR_E5M7;
+char *s_HUSTR_E5M8  = HUSTR_E5M8;
+char *s_HUSTR_E5M9  = HUSTR_E5M9;
 char *s_HUSTR_1     = HUSTR_1;
 char *s_HUSTR_2     = HUSTR_2;
 char *s_HUSTR_3     = HUSTR_3;
@@ -322,6 +332,7 @@ char *s_E1TEXT     = E1TEXT;
 char *s_E2TEXT     = E2TEXT;
 char *s_E3TEXT     = E3TEXT;
 char *s_E4TEXT     = E4TEXT;
+char *s_E5TEXT     = E5TEXT;
 char *s_C1TEXT     = C1TEXT;
 char *s_C2TEXT     = C2TEXT;
 char *s_C3TEXT     = C3TEXT;
@@ -363,6 +374,7 @@ char* bgflatE1     = "FLOOR4_8"; // end of DOOM Episode 1
 char* bgflatE2     = "SFLR6_1";  // end of DOOM Episode 2
 char* bgflatE3     = "MFLR8_4";  // end of DOOM Episode 3
 char* bgflatE4     = "MFLR8_3";  // end of DOOM Episode 4
+char* bgflatE5     = "FLOOR7_2"; // end of DOOM Episode 5 (Sigil)
 char* bgflat06     = "SLIME16";  // DOOM2 after MAP06
 char* bgflat11     = "RROCK14";  // DOOM2 after MAP11
 char* bgflat20     = "RROCK07";  // DOOM2 after MAP20
@@ -655,6 +667,7 @@ deh_strs deh_strlookup[] = {
   {&s_E2TEXT,"E2TEXT"},
   {&s_E3TEXT,"E3TEXT"},
   {&s_E4TEXT,"E4TEXT"},
+  {&s_E5TEXT,"E5TEXT"}, 
   {&s_C1TEXT,"C1TEXT"},
   {&s_C2TEXT,"C2TEXT"},
   {&s_C3TEXT,"C3TEXT"},
@@ -883,6 +896,29 @@ char **mapnamest[] = // TNT WAD map names.
   &s_THUSTR_30,
   &s_THUSTR_31,
   &s_THUSTR_32
+};
+
+char **mapnames_sigil[] =  // SIGIL
+{
+  &s_HUSTR_E5M1,
+  &s_HUSTR_E5M2,
+  &s_HUSTR_E5M3,
+  &s_HUSTR_E5M4,
+  &s_HUSTR_E5M5,
+  &s_HUSTR_E5M6,
+  &s_HUSTR_E5M7,
+  &s_HUSTR_E5M8,
+  &s_HUSTR_E5M9,
+
+  &deh_newlevel,  // spares?  Unused.
+  &deh_newlevel,
+  &deh_newlevel,
+  &deh_newlevel,
+  &deh_newlevel,
+  &deh_newlevel,
+  &deh_newlevel,
+  &deh_newlevel,
+  &deh_newlevel
 };
 
 // Function prototypes
