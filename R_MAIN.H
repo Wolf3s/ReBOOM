@@ -65,9 +65,11 @@ extern int      loopcount;
 // Lighting constants.
 
 #if defined REMOVE_LIMITS
-#define MAXDRAWSEGS   8192
+#define MAXLIGHTSCALE     96
+#define MAXLIGHTZ        256
 #else
-#define MAXDRAWSEGS   256
+#define MAXLIGHTSCALE     48
+#define MAXLIGHTZ        128
 #endif
 
 #define LIGHTLEVELS       16
