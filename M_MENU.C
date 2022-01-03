@@ -646,82 +646,37 @@ menu_t EpiDef =
   ep1            // lastOn
 };
 
-// This is for customized episode menus
-boolean EpiCustom;
-short EpiMenuMap[8] = { 1, 1, 1, 1, -1, -1, -1, -1 }, EpiMenuEpi[8] = { 1, 2, 3, 4, -1, -1, -1, -1 };
-
 //
 //    M_Episode
 //
-int epiChoice;
-
-void M_AddEpisode(const char* map, char* def)
-{
-    const char* alpha;
-    
-    if (!EpiCustom)
-    {
-        EpiCustom = true;
-        NewDef.prevMenu = &EpiDef;
-
-        if (gamemode == commercial)
-            EpiDef.numitems = 0;
-    }
-
-    if (*def == '-')    // means 'clear'
-    {
-        EpiDef.numitems = 0;
-    }
-    else
-    {
-        int epi, mapnum;
-        const char* gfx = strtok(def, "\n");
-        strtok(NULL, "\n");
-        alpha = strtok(NULL, "\n");
-        if (EpiDef.numitems >= 8)
-            return;
-        G_ValidateMapName(map, &epi, &mapnum);
-        EpiMenuEpi[EpiDef.numitems] = epi;
-        EpiMenuMap[EpiDef.numitems] = mapnum;
-        strncpy(EpisodeMenu[EpiDef.numitems].name, gfx, 8);
-        EpisodeMenu[EpiDef.numitems].name[9] = 0;
-        EpisodeMenu[EpiDef.numitems].alphaKey = alpha ? *alpha : 0;
-        EpiDef.numitems++;
-    }
-    if (EpiDef.numitems <= 4)
-    {
-        EpiDef.y = 63;
-    }
-    else
-    {
-        EpiDef.y = 63 - (EpiDef.numitems - 4) * (LINEHEIGHT / 2);
-    }
-}
+int epi;
 
 void M_DrawEpisode(void)
-{
-    V_DrawPatchDirect(54, EpiDef.y - 25, 0, W_CacheLumpName("M_EPISOD", PU_CACHE));
-}
+  {
+  V_DrawPatchDirect (54,38,0,W_CacheLumpName("M_EPISOD",PU_CACHE));
+  }
 
 void M_Episode(int choice)
-{
-    if (!EpiCustom)
+  {
+  if ( (gamemode == shareware) && choice)
     {
-        if ((gamemode == shareware) && choice)
-        {
-            M_StartMessage(s_SWSTRING, NULL, false); // Ty 03/27/98 - externalized
-            M_SetupNextMenu(&ReadDef1);
-            return;
-        }
-
-    // Yet another hack...
-    if (gamemode == registered && choice > 2)
-        choice = 0;         // killough 8/8/98
-
+    M_StartMessage(s_SWSTRING,NULL,false); // Ty 03/27/98 - externalized
+    M_SetupNextMenu(&ReadDef1);
+    return;
     }
-    epiChoice = choice;
-    M_SetupNextMenu(&NewDef);
-}
+
+  // Yet another hack...
+  if ( (gamemode == registered) && (choice > 2))
+    {
+    //jff 8/3/98 use logical output routine
+    lprintf( LO_WARN,
+     "M_Episode: 4th episode requires UltimateDOOM\n");
+    choice = 0;
+    }
+   
+  epi = choice;
+  M_SetupNextMenu(&NewDef);
+  }
 
 /////////////////////////////
 //
@@ -794,38 +749,25 @@ void M_NewGame(int choice)
   }
 
 void M_VerifyNightmare(int ch)
-{
-    if (ch != 'y')
-        return;
-
-    //jff 3/24/98 remember last skill selected
-    // killough 10/98 moved to here
-    defaultskill = nightmare + 1;
-
-    G_DeferedInitNew(nightmare, epiChoice + 1, 1);
-    M_ClearMenus();
-}
+  {
+  if (ch != 'y')
+  return;
+  
+  G_DeferedInitNew(nightmare,epi+1,1);
+  M_ClearMenus ();
+  }
 
 void M_ChooseSkill(int choice)
-{
-    if (choice == nightmare)
-    {   // Ty 03/27/98 - externalized
-        M_StartMessage(s_NIGHTMARE, M_VerifyNightmare, true);
-        return;
-    }
-
-    //jff 3/24/98 remember last skill selected
-    // killough 10/98 moved to here
-    defaultskill = choice + 1;
-
-    if (!EpiCustom)
+  {
+  if (choice == nightmare)
     {
-        G_DeferedInitNew(choice, epiChoice + 1, 1);
-    } else {
-        G_DeferedInitNew(choice, EpiMenuEpi[epiChoice], EpiMenuMap[epiChoice]);
+    M_StartMessage(s_NIGHTMARE,M_VerifyNightmare,true); // Ty 03/27/98 - externalized
+    return;
     }
-    M_ClearMenus();
-}
+  
+  G_DeferedInitNew(choice,epi+1,1);
+  M_ClearMenus ();
+  }
 
 /////////////////////////////
 //

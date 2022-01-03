@@ -1,4 +1,4 @@
-// Emacs style mode select   -*- C++ -*- 
+// Emacs style mode select   -*- C++ -*-
 //-----------------------------------------------------------------------------
 //
 // $Id: dstrings.h,v 1.5 1998/05/04 22:00:43 thldrmn Exp $
@@ -19,13 +19,13 @@
 //
 //  You should have received a copy of the GNU General Public License
 //  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
+//  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 //  02111-1307, USA.
 //
 // DESCRIPTION:
 //   DOOM strings, by language.
 //   Note:  In BOOM, some new strings hav ebeen defined that are
-//          not found in the French version.  A better approach is 
+//          not found in the French version.  A better approach is
 //          to create a BEX text-replacement file for other
 //          languages since any language can be supported that way
 //          without recompiling the program.
@@ -50,7 +50,7 @@
 // Misc. other strings.
 // #define SAVEGAMENAME  "boomsav"      /* killough 3/22/98 */
 // Ty 05/04/98 - replaced with a modifiable string, see d_deh.c
-                                                               
+
 
 //
 // File locations,
@@ -65,7 +65,7 @@
 
 // QuitDOOM messages
 
-// killough 1/18/98: 
+// killough 1/18/98:
 // replace hardcoded limit with extern var (silly hack, I know)
 
 #include <stddef.h>
@@ -73,17 +73,6 @@
 extern const size_t NUM_QUITMESSAGES;  // Calculated in dstrings.c
 
 extern const char* const endmsg[];   // killough 1/18/98 const added
-
-char* M_StringDuplicate(const char* orig);
-void M_ForceUppercase(char* text);
-boolean M_FileExists(const char *filename);
-char *M_FileCaseExists(const char *path);
-char *M_StringJoin(const char *s, ...);
-char *M_DirName(const char *path);
-const char* M_BaseName(const char* path);
-boolean M_StringConcat(char *dest, const char *src, size_t dest_size);
-void M_ForceLowercase(char *text);
-boolean M_StringCopy(char *dest, const char *src, size_t dest_size);
 
 
 #endif
@@ -105,4 +94,3 @@ boolean M_StringCopy(char *dest, const char *src, size_t dest_size);
 //
 //
 //----------------------------------------------------------------------------
-

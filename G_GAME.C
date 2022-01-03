@@ -59,7 +59,6 @@ rcsid[] = "$Id: g_game.c,v 1.63 1998/09/16 06:59:50 phares Exp $";
 #include "p_inter.h"
 #include "g_game.h"
 #include "m_misc.h"
-#include "umapinfo.h"
 
 #define SAVEGAMESIZE  0x20000
 #define SAVESTRINGSIZE  24
@@ -71,7 +70,6 @@ static byte     *demobuffer;   // made some static -- killough
 static size_t   maxdemosize;
 static byte     *demo_p;
 static short    consistancy[MAXPLAYERS][BACKUPTICS];
-mapentry_t* G_LookupMapinfo(int episode, int map);
 
 gameaction_t    gameaction;
 gamestate_t     gamestate;
@@ -79,7 +77,6 @@ skill_t         gameskill;
 boolean         respawnmonsters;
 int             gameepisode;
 int             gamemap;
-mapentry_t*     gamemapinfo;
 boolean         paused;
 boolean         sendpause;     // send a pause event next tic
 boolean         sendsave;      // send a save event next tic
@@ -1055,11 +1052,12 @@ void G_ScreenShot (void)
 }
 
 // DOOM Par Times
-int pars[4][10] = {
+int pars[5][10] = {
   {0},
   {0,30,75,120,90,165,180,180,30,165},
   {0,90,90,90,120,90,360,240,30,170},
-  {0,90,45,90,150,90,90,165,30,135}
+  {0,90,45,90,150,90,90,165,30,135},
+  {0,165,255,135,150,180,390,135,360,180}
 };
 
 // DOOM II Par Times
@@ -1068,6 +1066,12 @@ int cpars[32] = {
   210,150,150,150,210,150,420,150,210,150,  // 11-20
   240,150,180,150,150,300,330,420,300,180,  // 21-30
   120,30          // 31-32
+};
+
+// [crispy] No Rest For The Living par times from the BFG Edition
+static const int npars[9] =
+{
+    75,105,120,105,210,105,165,105,135
 };
 
 static boolean secretexit;
@@ -1090,34 +1094,6 @@ void G_SecretExitLevel (void)
   gameaction = ga_completed;
 }
 
-int G_ValidateMapName(const char* mapname, int* pEpi, int* pMap)
-{
-    // Check if the given map name can be expressed as a gameepisode/gamemap pair and be reconstructed from it.
-    char lumpname[9], mapuname[9];
-    int epi = -1, map = -1;
-
-    if (strlen(mapname) > 8) return 0;
-    strncpy(mapuname, mapname, 8);
-    mapuname[8] = 0;
-    M_ForceUppercase(mapuname);
-
-    if (gamemode != commercial)
-    {
-        if (sscanf(mapuname, "E%dM%d", &epi, &map) != 2) return 0;
-        M_snprintf(lumpname, 9, "E%dM%d", epi, map);
-    }
-    else
-    {
-        if (sscanf(mapuname, "MAP%d", &map) != 1) return 0;
-        M_snprintf(lumpname, 9, "MAP%02d", map);
-        epi = 1;
-    }
-
-    if (pEpi) *pEpi = epi;
-    if (pMap) *pMap = map;
-    return !strcmp(mapuname, lumpname);
-}
-
 //
 // G_DoCompleted
 //
@@ -1135,50 +1111,21 @@ void G_DoCompleted(void)
   if (automapactive)
     AM_Stop();
 
-  wminfo.nextep = wminfo.epsd = gameepisode - 1;
-  wminfo.last = gamemap -1;
-  wminfo.lastmapinfo = gamemapinfo;
-  wminfo.nextmapinfo = NULL;
-  if (gamemapinfo)
-  {
-      const char* next = "";
-      if (gamemapinfo->endpic[0] && (strcmp(gamemapinfo->endpic, "-") != 0) && gamemapinfo->nointermission)
-      {
-          gameaction = ga_victory;
-          return;
-      }
-      if (secretexit) next = gamemapinfo->nextsecret;
-      if (next[0] == 0) next = gamemapinfo->nextmap;
-      if (next[0])
-      {
-          G_ValidateMapName(next, &wminfo.nextep, &wminfo.next);
-          wminfo.nextep--;
-          wminfo.next--;
-          // episode change
-          if (wminfo.nextep != wminfo.epsd)
-          {
-              for (i = 0; i < MAXPLAYERS; i++)
-                  players[i].didsecret = false;
-          }
-          wminfo.didsecret = players[consoleplayer].didsecret;
-          wminfo.partime = gamemapinfo->partime;
-          goto frommapinfo;    // skip past the default setup.
-      }
-  }
-
   if (gamemode != commercial) // kilough 2/7/98
-      switch (gamemap)
+    switch(gamemap)
       {
       case 8:
-          gameaction = ga_victory;
-          return;
+        gameaction = ga_victory;
+        return;
       case 9:
-          for (i = 0; i < MAXPLAYERS; i++)
-              players[i].didsecret = true;
-          break;
+        for (i=0 ; i<MAXPLAYERS ; i++)
+          players[i].didsecret = true;
+        break;
       }
 
   wminfo.didsecret = players[consoleplayer].didsecret;
+  wminfo.epsd = gameepisode -1;
+  wminfo.last = gamemap -1;
 
   // wminfo.next is 0 biased, unlike gamemap
   if (gamemode == commercial)
@@ -1190,6 +1137,9 @@ void G_DoCompleted(void)
             wminfo.next = 30; break;
           case 31:
             wminfo.next = 31; break;
+          case 4:
+            if (is_nrftl)
+              wminfo.next = 8;
           }
       else
         switch(gamemap)
@@ -1200,6 +1150,8 @@ void G_DoCompleted(void)
           default:
             wminfo.next = gamemap;
           }
+        if (is_nrftl && gamemap == 9)
+          wminfo.next = 4;
     }
   else
     {
@@ -1223,36 +1175,30 @@ void G_DoCompleted(void)
               case 4:
                 wminfo.next = 2;
                 break;
+              case 5:
+                wminfo.next = 6;
+                break;
               }
           }
         else
           wminfo.next = gamemap;          // go to next level
     }
 
-  if (gamemode == commercial)
-  {
-      if (gamemap >= 1 && gamemap <= 34)
-          wminfo.partime = TICRATE * cpars[gamemap - 1];
-  }
-  else
-  {
-      if (gameepisode >= 1 && gameepisode <= 4 && gamemap >= 1 && gamemap <= 9)
-          wminfo.partime = TICRATE * pars[gameepisode][gamemap];
-  }
-
-frommapinfo:
-  wminfo.nextmapinfo = G_LookupMapinfo(wminfo.nextep + 1, wminfo.next + 1);
   wminfo.maxkills = totalkills;
   wminfo.maxitems = totalitems;
   wminfo.maxsecret = totalsecret;
   wminfo.maxfrags = 0;
 
   if ( gamemode == commercial )
-    wminfo.partime = TICRATE*cpars[gamemap-1];
+    if (is_nrftl)
+      wminfo.partime = TICRATE*npars[gamemap-1];
+    else
+      wminfo.partime = TICRATE*cpars[gamemap-1];
   else
     wminfo.partime = TICRATE*pars[gameepisode][gamemap];
 
   wminfo.pnum = consoleplayer;
+
   for (i=0 ; i<MAXPLAYERS ; i++)
     {
       wminfo.plyr[i].in = playeringame[i];
@@ -1278,7 +1224,7 @@ frommapinfo:
 // G_WorldDone
 //
 
-void G_WorldDone (void)
+void G_WorldDone(void)
 {
   gameaction = ga_worlddone;
 
@@ -1289,15 +1235,21 @@ void G_WorldDone (void)
     {
       switch (gamemap)
         {
+        case 8:
+          if (is_nrftl)
+            F_StartFinale();
+			break;
         case 15:
         case 31:
           if (!secretexit)
             break;
         case 6:
+          if (is_nrftl)
+            break;
         case 11:
         case 20:
         case 30:
-          F_StartFinale ();
+          F_StartFinale();
           break;
         }
     }
@@ -1308,7 +1260,6 @@ void G_DoWorldDone(void)
   idmusnum = -1;             //jff 3/17/98 allow new level's music to be loaded
   gamestate = GS_LEVEL;
   gamemap = wminfo.next+1;
-  gamemapinfo = G_LookupMapinfo(gameepisode, gamemap);
   G_DoLoadLevel();
   gameaction = ga_nothing;
   viewactive = true;
@@ -1425,7 +1376,6 @@ void G_DoLoadGame(void)
   gameskill = *save_p++;
   gameepisode = *save_p++;
   gamemap = *save_p++;
-  gamemapinfo = G_LookupMapinfo(gameepisode, gamemap);
     
   save_p = G_ReadOptions(save_p);   // killough 3/1/98: Read game options
     
@@ -1730,22 +1680,6 @@ void G_SetFastParms(int fast_pending)
         mobjinfo[MT_HEADSHOT].speed = 10*FRACUNIT;
         mobjinfo[MT_TROOPSHOT].speed = 10*FRACUNIT;
       }
-}
-
-mapentry_t* G_LookupMapinfo(int episode, int map)
-{
-    char lumpname[9];
-    unsigned i;
-    if (gamemode == commercial) M_snprintf(lumpname, 9, "MAP%02d", map);
-    else M_snprintf(lumpname, 9, "E%dM%d", episode, map);
-    for (i = 0; i < U_mapinfo.mapcount; i++)
-    {
-        if (!strcasecmp(lumpname, U_mapinfo.maps[i].mapname))
-        {
-            return &U_mapinfo.maps[i];
-        }
-    }
-    return NULL;
 }
 
 // The sky texture to be used instead of the F_SKY1 dummy.

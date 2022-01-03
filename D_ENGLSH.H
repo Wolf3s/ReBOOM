@@ -243,6 +243,16 @@
   
 #define HUSTR_31    "level 31: wolfenstein"
 #define HUSTR_32    "level 32: grosse"
+
+#define NHUSTR_1    "level 1: the earth base"
+#define NHUSTR_2    "level 2: the pain labs"
+#define NHUSTR_3    "level 3: canyon of the dead"
+#define NHUSTR_4    "level 4: hell mountain"
+#define NHUSTR_5    "level 5: vivisection"
+#define NHUSTR_6    "level 6: inferno of blood"
+#define NHUSTR_7    "level 7: baron's banquet"
+#define NHUSTR_8    "level 8: tomb of malevolence"
+#define NHUSTR_9    "level 9: march of the demons"
   
 #define PHUSTR_1    "level 1: congo"
 #define PHUSTR_2    "level 2: well of souls"
@@ -478,6 +488,21 @@
   "\n"\
   "\n"\
   "Lock and load. Rip and tear."
+  
+#define N1TEXT \
+  "TROUBLE WAS BREWING AGAIN IN YOUR FAVORITE\n"\
+  "VACATION SPOT... HELL. SOME CYBERDEMON\n"\
+  "PUNK THOUGHT HE COULD TURN HELL INTO A\n"\
+  "PERSONAL AMUSEMENT PARK, AND MAKE EARTH\nTHE TICKET BOOTH.\n\n"\
+  "WELL THAT HALF-ROBOT FREAK SHOW DIDN'T\n"\
+  "KNOW WHO WAS COMING TO THE FAIR. THERE'S\n"\
+  "NOTHING LIKE A SHOOTING GALLERY FULL OF\n"\
+  "HELLSPAWN TO GET THE BLOOD PUMPING...\n\n"\
+  "NOW THE WALLS OF THE DEMON'S LABYRINTH\n"\
+  "ECHO WITH THE SOUND OF HIS METALLIC LIMBS\n"\
+  "HITTING THE FLOOR. HIS DEATH MOAN GURGLES\n" \
+  "OUT THROUGH THE MESS YOU LEFT OF HIS FACE.\n\n" \
+  "THIS RIDE IS CLOSED."
   
 // after level 6, put this:
   

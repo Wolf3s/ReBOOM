@@ -195,6 +195,15 @@ char *s_HUSTR_6     = HUSTR_6;
 char *s_HUSTR_7     = HUSTR_7;
 char *s_HUSTR_8     = HUSTR_8;
 char *s_HUSTR_9     = HUSTR_9;
+char *s_NHUSTR_1    = NHUSTR_1;
+char *s_NHUSTR_2    = NHUSTR_2;
+char *s_NHUSTR_3    = NHUSTR_3;
+char *s_NHUSTR_4    = NHUSTR_4;
+char *s_NHUSTR_5    = NHUSTR_5;
+char *s_NHUSTR_6    = NHUSTR_6;
+char *s_NHUSTR_7    = NHUSTR_7;
+char *s_NHUSTR_8    = NHUSTR_8;
+char *s_NHUSTR_9    = NHUSTR_9;
 char *s_HUSTR_10    = HUSTR_10;
 char *s_HUSTR_11    = HUSTR_11;
 char *s_HUSTR_12    = HUSTR_12;
@@ -351,6 +360,7 @@ char *s_T3TEXT     = T3TEXT;
 char *s_T4TEXT     = T4TEXT;
 char *s_T5TEXT     = T5TEXT;
 char *s_T6TEXT     = T6TEXT;
+char *s_N1TEXT     = N1TEXT;
 char *s_CC_ZOMBIE  = CC_ZOMBIE;
 char *s_CC_SHOTGUN = CC_SHOTGUN;
 char *s_CC_HEAVY   = CC_HEAVY;
@@ -382,6 +392,8 @@ char* bgflat30     = "RROCK17";  // DOOM2 after MAP30
 char* bgflat15     = "RROCK13";  // DOOM2 going MAP15 to MAP31
 char* bgflat31     = "RROCK19";  // DOOM2 going MAP31 to MAP32
 char* bgcastcall   = "BOSSBACK"; // Panel behind cast call
+
+char* nrbgflat08     = "SLIME16";  // NRFTL
 
 char* startup1     = "";  // blank lines are default and are not printed
 char* startup2     = "";
@@ -532,6 +544,15 @@ deh_strs deh_strlookup[] = {
   {&s_HUSTR_7,"HUSTR_7"},
   {&s_HUSTR_8,"HUSTR_8"},
   {&s_HUSTR_9,"HUSTR_9"},
+  {&s_NHUSTR_1,"NHUSTR_1"},
+  {&s_NHUSTR_2,"NHUSTR_2"},
+  {&s_NHUSTR_3,"NHUSTR_3"},
+  {&s_NHUSTR_4,"NHUSTR_4"},
+  {&s_NHUSTR_5,"NHUSTR_5"},
+  {&s_NHUSTR_6,"NHUSTR_6"},
+  {&s_NHUSTR_7,"NHUSTR_7"},
+  {&s_NHUSTR_8,"NHUSTR_8"},
+  {&s_NHUSTR_9,"NHUSTR_9"},  
   {&s_HUSTR_10,"HUSTR_10"},
   {&s_HUSTR_11,"HUSTR_11"},
   {&s_HUSTR_12,"HUSTR_12"},
@@ -686,6 +707,7 @@ deh_strs deh_strlookup[] = {
   {&s_T4TEXT,"T4TEXT"},
   {&s_T5TEXT,"T5TEXT"},
   {&s_T6TEXT,"T6TEXT"},
+  {&s_N1TEXT,"N1TEXT"},
   {&s_CC_ZOMBIE,"CC_ZOMBIE"},
   {&s_CC_SHOTGUN,"CC_SHOTGUN"},
   {&s_CC_HEAVY,"CC_HEAVY"},
@@ -714,6 +736,7 @@ deh_strs deh_strlookup[] = {
   {&bgflat15,"BGFLAT15"},
   {&bgflat31,"BGFLAT31"},
   {&bgcastcall,"BGCASTCALL"},
+  {&nrbgflat08,"BGFLAT06"}, // NRFTL
   // Ty 04/08/98 - added 5 general purpose startup announcement 
   // strings for hacker use.  See m_menu.c
   {&startup1,"STARTUP1"},  
@@ -919,6 +942,19 @@ char **mapnames_sigil[] =  // SIGIL
   &deh_newlevel,
   &deh_newlevel,
   &deh_newlevel
+};
+
+char **mapnames_nrftl[] = // NRFTL
+{
+  &s_NHUSTR_1,
+  &s_NHUSTR_2,
+  &s_NHUSTR_3,
+  &s_NHUSTR_4,
+  &s_NHUSTR_5,
+  &s_NHUSTR_6,
+  &s_NHUSTR_7,
+  &s_NHUSTR_8,
+  &s_NHUSTR_9,
 };
 
 // Function prototypes

@@ -57,6 +57,7 @@ int boom_hud_stats_always_on;    //Adam - always show hud stats
 // These four shortcuts modifed to reflect char ** of mapnamesx[]
 #define HU_TITLE  (*mapnames[(gameepisode-1)*9+gamemap-1])
 #define HU_TITLE_SIGIL   (*mapnames_sigil[(gameepisode-3)*9+gamemap-1])
+#define HU_TITLEN (*mapnames_nrftl[gamemap-1])
 #define HU_TITLE2 (*mapnames2[gamemap-1])
 #define HU_TITLEP (*mapnamesp[gamemap-1])
 #define HU_TITLET (*mapnamest[gamemap-1])
@@ -241,6 +242,7 @@ extern char **mapnames2[];
 extern char **mapnamesp[];
 extern char **mapnamest[];
 extern char **mapnames_sigil[];
+extern char **mapnames_nrftl[];
 
 // key tables
 // jff 5/10/98 french support removed, 
@@ -573,9 +575,10 @@ void HU_Start(void)
     }
       break;
     case commercial:
-    default:  // Ty 08/27/98 - modified to check mission for TNT/Plutonia
+    default:  // Ty 08/27/98 - modified to check mission for TNT/Plutonia // Adam January 3rd 2022 - added a check also for NRFTL
       s = (gamemission==pack_tnt)  ? HU_TITLET : 
-          (gamemission==pack_plut) ? HU_TITLEP : HU_TITLE2;
+          (gamemission==pack_plut) ? HU_TITLEP :
+		  (is_nrftl) 			   ? HU_TITLEN : HU_TITLE2;
       break;
   }
   while (*s)

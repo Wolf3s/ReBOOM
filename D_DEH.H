@@ -363,6 +363,26 @@ extern char *s_HUSTR_10; // = HUSTR_10;
 //#define HUSTR_11      "level 11: 'o' of destruction!"
 extern char *s_HUSTR_11; // = HUSTR_11;
 
+
+//#define NHUSTR_1      "level 1: the earth base"
+extern char *s_NHUSTR_1; // = NHUSTR_1;
+//#define NHUSTR_2      "level 2: the pain labs"
+extern char *s_NHUSTR_2; // = NHUSTR_2;
+//#define NHUSTR_3      "level 3: canyon of the dead"
+extern char *s_NHUSTR_3; // = NHUSTR_3;
+//#define NHUSTR_4      "level 4: hell mountain"
+extern char *s_NHUSTR_4; // = NHUSTR_4;
+//#define NHUSTR_5      "level 5: vivisection"
+extern char *s_NHUSTR_5; // = NHUSTR_5;
+//#define NHUSTR_6      "level 6: inferno of blood"
+extern char *s_NHUSTR_6; // = NHUSTR_6;
+//#define NHUSTR_7      "level 7: baron's banquet"
+extern char *s_NHUSTR_7; // = NHUSTR_7;
+//#define NHUSTR_8      "level 8: tomb of malevolence"
+extern char *s_NHUSTR_8; // = NHUSTR_8;
+//#define NHUSTR_9      "level 9: march of the demons"
+extern char *s_NHUSTR_9; // = NHUSTR_9;
+
 //#define HUSTR_12      "level 12: the factory"
 extern char *s_HUSTR_12; // = HUSTR_12;
 //#define HUSTR_13      "level 13: downtown"
@@ -1034,6 +1054,21 @@ extern char *s_T5TEXT; // = T5TEXT;
 */
 extern char *s_T6TEXT; // = T6TEXT;
 
+/*#define N1TEXT \
+  "TROUBLE WAS BREWING AGAIN IN YOUR FAVORITE\n"\
+  "VACATION SPOT... HELL. SOME CYBERDEMON\n"\
+  "PUNK THOUGHT HE COULD TURN HELL INTO A\n"\
+  "PERSONAL AMUSEMENT PARK, AND MAKE EARTH\nTHE TICKET BOOTH.\n\n"\
+  "WELL THAT HALF-ROBOT FREAK SHOW DIDN'T\n"\
+  "KNOW WHO WAS COMING TO THE FAIR. THERE'S\n"\
+  "NOTHING LIKE A SHOOTING GALLERY FULL OF\n"\
+  "HELLSPAWN TO GET THE BLOOD PUMPING...\n\n"\
+  "NOW THE WALLS OF THE DEMON'S LABYRINTH\n"\
+  "ECHO WITH THE SOUND OF HIS METALLIC LIMBS\n"\
+  "HITTING THE FLOOR. HIS DEATH MOAN GURGLES\n" \
+  "OUT THROUGH THE MESS YOU LEFT OF HIS FACE.\n\n" \
+  "THIS RIDE IS CLOSED."*/
+extern char *s_N1TEXT; // = N!TEXT;
 
 //
 // Character cast strings F_FINALE.C
@@ -1097,6 +1132,10 @@ extern char *bgflat30;
 extern char *bgflat15;
 // char*        bgflat31 = "RROCK19";
 extern char *bgflat31;
+
+// NRFTL
+// char*        nrbgflat08 = "SLIME16";
+extern char *nrbgflat08;
 
 // char*        bgcastcall = "BOSSBACK"; // panel behind cast call
 extern char *bgcastcall;

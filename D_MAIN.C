@@ -63,7 +63,6 @@ static const char rcsid[] = "$Id: d_main.c,v 1.54 1998/10/04 13:20:32 thldrmn Ex
 #include "r_main.h"
 #include "d_main.h"
 #include "d_deh.h"  // Ty 04/08/98 - Externalizations
-#include "umapinfo.h" // U_ParseMapInfo()
 #include "lprintf.h"
 
 // DEHacked support - Ty 03/09/97
@@ -97,7 +96,6 @@ boolean singletics = false; // debug flag to cancel adaptiveness
 //jff 1/22/98 parms for disabling music and sound
 boolean nosfxparm;
 boolean nomusicparm;
-boolean umapinfo_loaded;
 
 //jff 4/18/98
 extern boolean inhelpscreens;
@@ -1587,22 +1585,6 @@ void D_DoomMain(void)
           if (W_CheckNumForName(name[i])<0 &&
               (W_CheckNumForName)(name[i],ns_sprites)<0) // killough 4/18/98
             I_Error("\nThis is not the registered version.");
-    }
-
-
-    if (M_CheckParm("-umapinfo"))
-    {
-        int lumpnum;
-        if ((lumpnum = W_CheckNumForName("UMAPINFO")) != -1)
-        {
-            const char* lump = (const char*)W_CacheLumpNum(lumpnum, PU_STATIC);
-            U_ParseMapInfo(lump, W_LumpLength(lumpnum));
-        }
-        lprintf(LO_INFO, "\nUMAPINFO: ENABLED.\n");
-        umapinfo_loaded = true;
-    } else {
-        lprintf(LO_INFO, "\nUMAPINFO: DISABLED.\n");
-        umapinfo_loaded = false;
     }
 
   V_InitColorTranslation(); //jff 4/24/98 load color translation lumps

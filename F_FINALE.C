@@ -91,6 +91,9 @@ int finalecount;
 // char*  bgflat15 = "RROCK13";
 // char*  bgflat31 = "RROCK19";
 
+// char*  nrp8text = s_N1TEXT;  // NRFTL
+// char*  nrbgflat08 = "SLIME16"; // NRFTL
+
 // char*  bgcastcall = "BOSSBACK"; // panel behind cast call
 
 char*   finaletext;
@@ -211,6 +214,12 @@ void F_StartFinale (void)
              // Ouch.
              break;
       }
+		case 8:
+		if (is_nrftl)
+		{
+			  finaleflat = bgflat06;
+			  finaletext = s_N1TEXT;
+		}
       break;
       // Ty 08/27/98 - end gamemission logic
     } 
@@ -293,7 +302,7 @@ void F_Ticker(void)
           if (!demo_compatibility && midstage)
             {
             next_level:
-              if (gamemap == 30)
+              if (gamemap == 30 || (is_nrftl && gamemap == 8))
                 F_StartCast();              // cast of Doom 2 characters
               else
                 gameaction = ga_worlddone;  // next level, e.g. MAP07

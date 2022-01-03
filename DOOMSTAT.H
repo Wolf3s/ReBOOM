@@ -42,7 +42,6 @@
 
 // We need the playr data structure as well.
 #include "d_player.h"
-#include "umapinfo.h"
 
 #ifdef __GNUG__
 #pragma interface
@@ -117,9 +116,6 @@ extern  boolean   autostart;
 extern  skill_t         gameskill;
 extern  int   gameepisode;
 extern  int   gamemap;
-
-//UMAPINFO
-extern  mapentry_t* gamemapinfo;
 
 // Nightmare mode flag, single player.
 extern  boolean         respawnmonsters;

@@ -19,7 +19,7 @@
 //
 //  You should have received a copy of the GNU General Public License
 //  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
+//  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 //  02111-1307, USA.
 //
 //-----------------------------------------------------------------------------
@@ -136,7 +136,7 @@ extern int  key_weapon5;
 extern int  key_weapon6;
 extern int  key_weapon7;
 extern int  key_weapon8;
-extern int  key_weapon9;                                            
+extern int  key_weapon9;
 extern int  destination_keys[MAXPLAYERS];
 extern int  key_map_right;
 extern int  key_map_left;
@@ -160,7 +160,7 @@ extern int  bodyquesize;       // killough 2/8/98: adustable corpse limit
 
 // killough 5/2/98: moved from d_deh.c:
 // Par times (new item with BOOM) - from g_game.c
-extern int pars[4][10];  // hardcoded array size
+extern int pars[5][10];  // hardcoded array size
 extern int cpars[32];    // hardcoded array size
 
 #endif
@@ -199,4 +199,3 @@ extern int cpars[32];    // hardcoded array size
 // Lee's Jan 19 sources
 //
 //----------------------------------------------------------------------------
-

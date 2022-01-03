@@ -890,6 +890,9 @@ void WI_drawShowNextLoc(void)
     if (snl_pointeron)
       WI_drawOnLnode(wbs->next, yah); 
   }
+  
+    if (is_nrftl && wbs->last == 7)
+       return;
 
   // draws which level you are entering..
   if ( (gamemode != commercial)
@@ -1626,7 +1629,7 @@ void WI_drawStats(void)
 
   if (!(modifiedgame && !deh_pars))   
   {
-    if (wbs->epsd < 3)
+    if (wbs->epsd < 4)
     {
       V_DrawPatch(SCREENWIDTH/2 + SP_TIMEX, SP_TIMEY, FB, par);
       WI_drawTime(SCREENWIDTH - SP_TIMEX, SP_TIMEY, cnt_par);

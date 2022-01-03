@@ -46,8 +46,6 @@ O_debug=objdebug
 # object files
 OBJS=   $(O)/doomdef.o      \
         $(O)/doomstat.o     \
-        $(O)/umapinfo.o      \
-        $(O)/uscanner.o      \
         $(O)/dstrings.o     \
         $(O)/i_system.o     \
         $(O)/i_sound.o      \
@@ -154,10 +152,6 @@ $(O)/doomstat.o: doomstat.c doomstat.h doomdata.h doomtype.h d_net.h \
  m_fixed.h i_system.h d_ticcmd.h tables.h info.h d_think.h p_mobj.h
 
 $(O)/dstrings.o: dstrings.c dstrings.h d_englsh.h
-
-$(O)/umapinfo: umapinfo.c umapinfo.h
-
-$(O)/uscanner: uscanner.c uscanner.h
 
 $(O)/i_system.o: i_system.c i_system.h d_ticcmd.h doomtype.h i_sound.h \
  sounds.h doomstat.h doomdata.h d_net.h d_player.h d_items.h doomdef.h \

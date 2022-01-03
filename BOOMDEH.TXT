@@ -940,6 +940,9 @@ BGFLAT31           DOOM2 going MAP31 to MAP32
                      "RROCK19"
 BGCASTCALL         Panel behind cast call    
                      "BOSSBACK"
+					 
+NRBGFLAT08           No Rest For The Living after MAP08
+                     "SLIME16"
 
 ==============================
 Part 10 - NEW: STARTUP BANNERS
