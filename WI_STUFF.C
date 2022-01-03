@@ -1629,7 +1629,7 @@ void WI_drawStats(void)
 
   if (!(modifiedgame && !deh_pars))   
   {
-    if (wbs->epsd < 4)
+    if (wbs->epsd < 3)
     {
       V_DrawPatch(SCREENWIDTH/2 + SP_TIMEX, SP_TIMEY, FB, par);
       WI_drawTime(SCREENWIDTH - SP_TIMEX, SP_TIMEY, cnt_par);
