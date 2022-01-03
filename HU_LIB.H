@@ -42,8 +42,14 @@
 // font stuff
 // #define HU_CHARERASE    KEYD_BACKSPACE // not used               // phares
 
-#define HU_MAXLINES   4
+#if defined REMOVE_LIMITS
+#define HU_MAXLINES       1024
+#define HU_MAXLINELENGTH  1024
+#else
+#define HU_MAXLINES       4
 #define HU_MAXLINELENGTH  80
+#endif
+
 #define HU_REFRESHSPACING 8 /*jff 2/26/98 space lines in text refresh widget*/
 //jff 2/26/98 maximum number of messages allowed in refresh list
 #define HU_MAXMESSAGES 16

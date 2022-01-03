@@ -1057,7 +1057,11 @@ void IdentifyVersion (void)
 // Find a Response File
 //
 
+#if defined REMOVE_LIMITS
+#define MAXARGVS 1000
+#else
 #define MAXARGVS 100
+#endif
 
 void FindResponseFile (void)
 {

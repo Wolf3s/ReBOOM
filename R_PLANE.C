@@ -53,7 +53,11 @@ rcsid[] = "$Id: r_plane.c,v 1.8 1998/05/03 23:09:53 killough Exp $";
 #include "r_sky.h"
 #include "r_plane.h"
 
+#if defined REMOVE_LIMITS
+#define MAXVISPLANES 4096    /* must be a power of 2 */
+#else
 #define MAXVISPLANES 128    /* must be a power of 2 */
+#endif
 
 static visplane_t *visplanes[MAXVISPLANES];   // killough
 static visplane_t *freetail;                  // killough

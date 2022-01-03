@@ -36,7 +36,12 @@
 #pragma interface
 #endif
 
+#if defined REMOVE_LIMITS
+#define MAXWADFILES 2048        /* not large enough Lee :P */
+#else
 #define MAXWADFILES 256        /* make it ridiculously large -- killough */
+#endif
+
 extern char *wadfiles[MAXWADFILES];
 extern int wadfilesource[MAXWADFILES];  // Ty 08/29/98 - added source of lumps info
 
@@ -101,4 +106,3 @@ extern int is_sigil;
 // Lee's Jan 19 sources
 //
 //----------------------------------------------------------------------------
-

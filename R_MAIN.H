@@ -64,11 +64,15 @@ extern int      loopcount;
 
 // Lighting constants.
 
+#if defined REMOVE_LIMITS
+#define MAXDRAWSEGS   8192
+#else
+#define MAXDRAWSEGS   256
+#endif
+
 #define LIGHTLEVELS       16
 #define LIGHTSEGSHIFT      4
-#define MAXLIGHTSCALE     48
 #define LIGHTSCALESHIFT   12
-#define MAXLIGHTZ        128
 #define LIGHTZSHIFT       20
 
 // killough 3/20/98: Allow colormaps to be dynamic (e.g. underwater)
