@@ -94,7 +94,9 @@ int boom_hud_stats_always_on;    //Adam - always show hud stats
 #define HU_ARMORY  (HU_HUDY+5*HU_GAPY)
 
 //jff 3/4/98 distributed HUD positions
+#define HU_HUDX_ML 1
 #define HU_HUDX_LL 2
+#define HU_HUDY_ML (SCREENHEIGHT-2*HU_GAPY+7)
 #define HU_HUDY_LL (SCREENHEIGHT-2*HU_GAPY-1)
 #define HU_HUDX_LR 200
 #define HU_HUDY_LR (SCREENHEIGHT-2*HU_GAPY-1)
@@ -113,6 +115,9 @@ int boom_hud_stats_always_on;    //Adam - always show hud stats
 #define HU_HEALTHY_D (HU_HUDY_UR+0*HU_GAPY)
 #define HU_ARMORX_D  (HU_HUDX_UR)
 #define HU_ARMORY_D  (HU_HUDY_UR+1*HU_GAPY)
+
+#define HU_MONSECX_N (HU_HUDX_ML)
+#define HU_MONSECY_N (HU_HUDY_ML-5*HU_GAPY)
 
 //#define HU_INPUTTOGGLE  't' // not used                           // phares
 #define HU_INPUTX HU_MSGX
@@ -739,6 +744,12 @@ void HU_MoveHud(void)
   ohud_distributed = hud_distributed;
 }
 
+static void HU_ResetHud(void)
+{
+    w_monsec.x =  hud_distributed? HU_MONSECX_N : HU_MONSECX; 
+    w_monsec.y =  hud_distributed? HU_MONSECY_N : HU_MONSECY;
+}
+
 //
 // HU_Drawer()
 //
@@ -757,8 +768,10 @@ void HU_Drawer(void)
 
   plr = &players[displayplayer];         // killough 3/7/98
 
-    if (!hud_nosecrets && boom_hud_stats_always_on && viewheight != SCREENHEIGHT)
+    if (boom_hud_stats_always_on && viewheight != SCREENHEIGHT)
     {
+		HU_ResetHud();
+		hud_nosecrets = 0;
         // map title
         HUlib_drawTextLine(&w_title, false);
 
@@ -841,9 +854,9 @@ void HU_Drawer(void)
     hud_displayed &&                 // hud on from fullscreen key
     viewheight==SCREENHEIGHT &&      // fullscreen mode is active
     !automapactive                   // automap is not active
-    && !boom_hud_stats_always_on     // Adam - new Boom hud stats are not always visible
   )
   {
+	boom_hud_stats_always_on = 0;
     doit = !(gametic&1); //jff 3/4/98 speed update up for slow systems
     if (doit)            //jff 8/7/98 update every time, avoid lag in update
     {
@@ -1305,6 +1318,8 @@ if (!sts_always_gray)
     // display the hud kills/items/secret display if optioned
     if (!hud_nosecrets && !boom_hud_stats_always_on)
     {
+		hud_nosecrets = 0;
+		boom_hud_stats_always_on = 0;
       if (hud_active>1 && doit)
       {
         // clear the internal widget text buffer
