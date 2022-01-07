@@ -1,5 +1,5 @@
-CFLAGS= -std=c2x -pedantic -Wall -DUNIX -g 
-LDFLAGS= -lSDL2 -lSDL2_mixer -lSDL2_net -lSDL2_image -lm
+CFLAGS= -I/Users/ats/Development/Includes -std=c2x -pedantic -Wall -DUNIX -g 
+LDFLAGS= -L/Users/ats/Docs/ -lSDL2-2.0.0 -lSDL2_mixer-2.0.0 -lSDL2_net-2.0.0 -lSDL2_image-2.0.0 -lm
 OUTPUT= build
 OBJS=				\
 		$(OUTPUT)/am_map.o \
