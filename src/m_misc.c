@@ -1270,6 +1270,13 @@ default_t defaults[] = {
     {1}, {0,1}, number, ss_stat, wad_yes,
     "0 to disable permanent hud stats on screen - cannot be enabled with hud_nosecrets set to 1"
   },
+    
+  { // always show hud stats
+    "boom_show_level_name",
+    (config_t *) &boom_show_level_name, NULL,
+    {1}, {0,1}, number, ss_stat, wad_yes,
+    "0 to disable permanent level name hud stats on screen - cannot be enabled with hud_nosecrets set to 1"
+  },
 
   {  // killough 2/8/98: weapon preferences set by user:
     "weapon_choice_1",

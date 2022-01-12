@@ -49,6 +49,7 @@ int hud_nosecrets;    //jff 2/18/98 allows secrets line to be disabled in HUD
 int hud_distributed;  //jff 3/4/98 display HUD in different places on screen
 int hud_graph_keys = 1; //jff 3/7/98 display HUD keys as graphics
 int boom_hud_stats_always_on;    //Adam - always show hud stats
+int boom_show_level_name;
 
 //
 // Locally used constants, shortcuts.
@@ -62,7 +63,7 @@ int boom_hud_stats_always_on;    //Adam - always show hud stats
 #define HU_TITLEHEIGHT  1
 #define HU_TITLEX 0
 //jff 2/16/98 change 167 to ST_Y-1
-#define HU_TITLEY (ST_Y - 1 - SHORT(hu_font[0]->height)) 
+#define HU_TITLEY (ST_Y - 18 - SHORT(hu_font[0]->height))
 
 //jff 2/16/98 add coord text widget coordinates
 #define HU_COORDX (SCREENWIDTH - 13*SHORT(hu_font2['A'-HU_FONTSTART]->width))
@@ -92,7 +93,7 @@ int boom_hud_stats_always_on;    //Adam - always show hud stats
 #define HU_ARMORY  (HU_HUDY+5*HU_GAPY)
 
 //jff 3/4/98 distributed HUD positions
-#define HU_HUDX_ML 1
+#define HU_HUDX_ML 0
 #define HU_HUDY_ML (SCREENHEIGHT-2*HU_GAPY+7)
 #define HU_HUDX_LL 2
 #define HU_HUDY_LL (SCREENHEIGHT-2*HU_GAPY-1)
@@ -685,9 +686,12 @@ void HU_Drawer(void)
         HU_ResetHud();
         hud_nosecrets = 0;
         
-        // map title
-        HUlib_drawTextLine(&w_title, false);
-
+        if (boom_show_level_name)
+        {
+            // map title
+            HUlib_drawTextLine(&w_title, false);
+        }
+        
         // clear the internal widget text buffer
         HUlib_clearTextLine(&w_monsec);
         //jff 3/26/98 use ESC not '\' for paths
