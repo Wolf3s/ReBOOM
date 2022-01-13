@@ -32,6 +32,10 @@
 #ifndef __D_ENGLSH__
 #define __D_ENGLSH__
 
+// Custom
+
+#define FOUNDASECRET "you have found a secret!"
+
 //
 //  Printed strings for translation
 //

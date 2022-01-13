@@ -2190,6 +2190,8 @@ void P_PlayerInSpecialSector (player_t* player)
 
       case 9:
         // Tally player in secret sector, clear secret special
+        player->message = FOUNDASECRET;
+        S_StartSound(player->mo,sfx_radio);
         player->secretcount++;
         sector->special = 0;
         break;
