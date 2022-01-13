@@ -49,6 +49,7 @@ int hud_nosecrets;    //jff 2/18/98 allows secrets line to be disabled in HUD
 int hud_distributed;  //jff 3/4/98 display HUD in different places on screen
 int hud_graph_keys=1; //jff 3/7/98 display HUD keys as graphics
 int boom_hud_stats_always_on;    //Adam - always show hud stats
+int boom_show_level_name;
 
 //
 // Locally used constants, shortcuts.
@@ -64,7 +65,7 @@ int boom_hud_stats_always_on;    //Adam - always show hud stats
 #define HU_TITLEHEIGHT  1
 #define HU_TITLEX 0
 //jff 2/16/98 change 167 to ST_Y-1
-#define HU_TITLEY (ST_Y - 1 - SHORT(hu_font[0]->height)) 
+#define HU_TITLEY (ST_Y - 9 - SHORT(hu_font[0]->height))
 
 //jff 2/16/98 add coord text widget coordinates
 #define HU_COORDX (SCREENWIDTH - 13*SHORT(hu_font2['A'-HU_FONTSTART]->width))
@@ -72,6 +73,10 @@ int boom_hud_stats_always_on;    //Adam - always show hud stats
 #define HU_COORDX_Y (1 + 0*SHORT(hu_font['A'-HU_FONTSTART]->height))
 #define HU_COORDY_Y (2 + 1*SHORT(hu_font['A'-HU_FONTSTART]->height))
 #define HU_COORDZ_Y (3 + 2*SHORT(hu_font['A'-HU_FONTSTART]->height))
+// [FG] level stats and level time widgets
+#define HU_LSTATK_Y (2 + 1*SHORT(hu_font['A'-HU_FONTSTART]->height))
+#define HU_LSTATI_Y (3 + 2*SHORT(hu_font['A'-HU_FONTSTART]->height))
+#define HU_LSTATS_Y (4 + 3*SHORT(hu_font['A'-HU_FONTSTART]->height))
 
 //jff 2/16/98 add ammo, health, armor widgets, 2/22/98 less gap
 #define HU_GAPY 8
@@ -185,6 +190,10 @@ static hu_textline_t  w_keys;   //jff 2/16/98 new keys widget for hud
 static hu_textline_t  w_gkeys;  //jff 3/7/98 graphic keys widget for hud
 static hu_textline_t  w_monsec; //jff 2/16/98 new kill/secret widget for hud
 static hu_mtext_t     w_rtext;  //jff 2/26/98 text message refresh widget
+static hu_textline_t  w_lstatk; // [FG] level stats (kills) widget
+static hu_textline_t  w_lstati; // [FG] level stats (items) widget
+static hu_textline_t  w_lstats; // [FG] level stats (secrets) widget
+static hu_stext_t     w_secret; // [crispy] secret message widget
 
 static boolean    always_off = false;
 static char       chat_dest[MAXPLAYERS];
@@ -220,6 +229,9 @@ static char hud_weapstr[80];
 static char hud_keysstr[80];
 static char hud_gkeysstr[80]; //jff 3/7/98 add support for graphic key display
 static char hud_monsecstr[80];
+static char hud_lstatk[32]; // [FG] level stats (kills) widget
+static char hud_lstati[32]; // [FG] level stats (items) widget
+static char hud_lstats[32]; // [FG] level stats (secrets) widget
 
 //jff 2/16/98 declaration of color switch points
 extern int ammo_red;
@@ -634,6 +646,20 @@ void HU_Start(void)
   s = hud_coordstrz;
   while (*s)
     HUlib_addCharToTextLine(&w_coordz, *(s++));
+    
+
+  sprintf(hud_lstatk, "K: %d/%d", 0, 0);
+    s = hud_lstatk;
+    while (*s)
+      HUlib_addCharToTextLine(&w_lstatk, *s++);
+  sprintf(hud_lstati, "I: %d/%d", 0, 0);
+    s = hud_lstati;
+    while (*s)
+      HUlib_addCharToTextLine(&w_lstati, *s++);
+  sprintf(hud_lstats, "S: %d/%d", 0, 0);
+    s = hud_lstats;
+    while (*s)
+      HUlib_addCharToTextLine(&w_lstats, *s++);
 
   //jff 2/16/98 initialize ammo widget
   sprintf(hud_ammostr,"AMM ");
@@ -746,8 +772,8 @@ void HU_MoveHud(void)
 
 static void HU_ResetHud(void)
 {
-    w_monsec.x =  hud_distributed? HU_MONSECX_N : HU_MONSECX; 
-    w_monsec.y =  hud_distributed? HU_MONSECY_N : HU_MONSECY;
+    w_monsec.x = HU_TITLEX;
+    w_monsec.y = ST_Y - HU_GAPY;
 }
 
 //
@@ -772,8 +798,12 @@ void HU_Drawer(void)
     {
 		HU_ResetHud();
 		hud_nosecrets = 0;
-        // map title
-        HUlib_drawTextLine(&w_title, false);
+        
+        if (boom_show_level_name)
+         {
+             // map title
+             HUlib_drawTextLine(&w_title, false);
+         }
 
         // clear the internal widget text buffer
         HUlib_clearTextLine(&w_monsec);
