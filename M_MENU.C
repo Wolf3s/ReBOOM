@@ -280,6 +280,7 @@ extern int sts_pct_always_yellow;// status percents do not change colors
 extern int hud_nosecrets; // status does not list secrets/items/kills
 extern int boom_hud_stats_always_on; // Boom stats are always visible
 extern int boom_show_level_name;    // Boom level name is disabled
+extern int secret_message_and_sound; //Adam - Show secret message and sound
 extern int sts_traditional_keys;  // display keys the traditional way
 extern int hud_list_bgon; // solid window background for list of messages
 extern int hud_msg_lines; // number of message lines in window up to 16
@@ -2709,7 +2710,7 @@ setup_menu_t stat_settings2[] =  // Status Bar and HUD Settings screen 2
   {"USE HYPER BERSERK SHOTGUN"          ,S_YESNO  ,m_null,ST_X,ST_Y+ 7*8,0,0,0,&hyper_berserk_shotgun       ,0,0,0  },
   {"ENABLE MORE GORE"            		,S_YESNO  ,m_null,ST_X,ST_Y+ 8*8,0,0,0,&more_gibs       		 	,0,0,0  },
   {"ENABLE LEVEL NAME STATS"            ,S_YESNO  ,m_null,ST_X,ST_Y+ 9*8,0,0,0,&boom_show_level_name        ,0,0,0  },
-    
+  {"ENABLE SECRET MESSAGE"              ,S_YESNO  ,m_null,ST_X,ST_Y+ 10*8,0,0,0,&secret_message_and_sound   ,0,0,0  },
   // Button for resetting to defaults
 
   {0,S_RESET,m_null,X_BUTTON,Y_BUTTON,0,0,0,0,0,0,0},

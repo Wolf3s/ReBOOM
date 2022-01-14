@@ -47,6 +47,9 @@ boolean modifiedgame;
 
 //-----------------------------------------------------------------------------
 
+// Secret message and sound
+int secret_message_and_sound;
+
 // More Gibs - With or Without Hyper Shotgun
 int more_gibs;
 

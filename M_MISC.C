@@ -621,6 +621,8 @@ default_t defaults[] =
      1,9,0,ss_weap,     "[1-9(7)] eighth choice for weapon "},
     {"weapon_choice_9", &weapon_preferences[0][8], 1,
      1,9,0,ss_weap,     "[1-9(1)] ninth choice for weapon (worst)"},
+    
+    
 	 
 	// Adam (GIBBON) - ReBOOM
  	{"sts_pct_always_yellow", 		&sts_pct_always_yellow,  0,
@@ -641,6 +643,8 @@ default_t defaults[] =
      0,1,0,ss_stat,    					"[0/1(0)] 1 to enable use of when having berserk super shotgun power is increased"},
 	{"more_gibs", 					&more_gibs,  0,
      0,1,0,ss_stat,    					"[0/1(0)] 1 to enable more gore"},
+    {"secret_message_and_sound",    &secret_message_and_sound,  0,
+     0,1,0,ss_stat,                     "[0/1(0)] 1 to enable secret message and sound (when entering a secret sector)"},
 };
 
 int numdefaults;

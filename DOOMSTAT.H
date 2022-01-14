@@ -47,6 +47,9 @@
 #pragma interface
 #endif
 
+// Secret message and sound
+extern int secret_message_and_sound;
+
 // More Gibs - With or Without Hyper Shotgun
 extern int more_gibs;
 
