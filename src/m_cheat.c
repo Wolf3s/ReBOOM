@@ -190,6 +190,18 @@ static void cheat_legend(void)
     plyr->message = s_STSTR_LEGEND;
 }
 
+// 'phares' text
+static void cheat_phares(void)
+{
+    plyr->message = s_STSTR_PHARES;
+}
+
+// 'flynn' text
+static void cheat_flynn(void)
+{
+    plyr->message = s_STSTR_FLYNN;
+}
+
 mapentry_t* G_LookupMapinfo(int episode, int map);
 
 // 'clev' change-level cheat
@@ -673,6 +685,12 @@ struct cheat_s cheat[] = {
 
   { "legend",    NULL,                always,
    cheat_legend },
+
+  { "phares",    NULL,                always,
+   cheat_phares },
+
+  { "flynn",    NULL,                 always,
+   cheat_flynn },
 
   {NULL}                 // end-of-list marker
 };

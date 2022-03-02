@@ -374,7 +374,9 @@
 #define STSTR_NCOFF     "No Clipping Mode OFF"
 
 #define STSTR_BEHOLD    "inVuln, Str, Inviso, Rad, Allmap, or Lite-amp"
-#define STSTR_LEGEND	"ReBOOM is dedicated to Ty Halderman"
+#define STSTR_LEGEND	"ReBOOM is dedicated to Ty Halderman (RIP)"
+#define STSTR_PHARES	"Your memory will never die (RIP)"
+#define STSTR_FLYNN	"BOOM would not be BOOM without you (RIP)"
 #define STSTR_BEHOLDX   "Power-up Toggled"
 
 #define STSTR_CHOPPERS  "... doesn't suck - GM"

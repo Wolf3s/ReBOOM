@@ -35,7 +35,7 @@
 #ifdef UNIX
 #include "SDL2/SDL.h"
 #else
-#include "SDL.h"
+#include <SDL.h>
 #endif
 
 #include "txt_main.h"

@@ -633,6 +633,10 @@ extern char* s_STSTR_BEHOLDX; // = STSTR_BEHOLDX;
 
 extern char* s_STSTR_LEGEND; // Adam - thanks Ty!;
 
+extern char* s_STSTR_PHARES; // Adam - I'll always love those comment blocks!
+
+extern char* s_STSTR_FLYNN; // Adam - Boom would not be Boom without you!
+
 //#define STSTR_CHOPPERS        "... doesn't suck - GM"
 extern char* s_STSTR_CHOPPERS; // = STSTR_CHOPPERS;
 //#define STSTR_CLEV            "Changing Level..."
