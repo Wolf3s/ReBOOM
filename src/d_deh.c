@@ -1339,24 +1339,24 @@ actionf_t deh_codeptr[NUMSTATES];
 
 void ProcessDehFile(char* filename, char* outfilename, int lumpnum)
 {
-    static FILE* fileout;       // In case -dehout was used
-    DEHFILE infile, * filein = &infile;    // killough 10/98
-    char inbuffer[DEH_BUFFERMAX];  // Place to put the primary infostring
+  static FILE *fileout;       // In case -dehout was used
+  DEHFILE infile, *filein = &infile;    // killough 10/98
+  char inbuffer[DEH_BUFFERMAX];  // Place to put the primary infostring
 
-    // Open output file if we're writing output
-    if (outfilename && *outfilename && !fileout)
+  // Open output file if we're writing output
+  if (outfilename && *outfilename && !fileout)
     {
-        static boolean firstfile = true; // to allow append to output log
-        if (!strcmp(outfilename, "-"))
+      static boolean firstfile = true; // to allow append to output log
+      if (!strcmp(outfilename, "-"))
+        fileout = stdout;
+      else
+        if (!(fileout=fopen(outfilename, firstfile ? "wt" : "at")))
+          {
+            printf("Could not open -dehout file %s\n... using stdout.\n",
+                   outfilename);
             fileout = stdout;
-        else
-            if (!(fileout = fopen(outfilename, firstfile ? "wt" : "at")))
-            {
-                printf("Could not open -dehout file %s\n... using stdout.\n",
-                    outfilename);
-                fileout = stdout;
-            }
-        firstfile = false;
+          }
+      firstfile = false;
     }
 
     // killough 10/98: allow DEH files to come from wad lumps

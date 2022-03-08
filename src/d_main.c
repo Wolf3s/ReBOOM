@@ -1218,44 +1218,36 @@ static void D_ProcessDehCommandLine(void)
     // Ty 03/18/98 also allow .bex extension.  .bex overrides if both exist.
     // killough 11/98: also allow -bex
 
-    int p = M_CheckParm("-deh");
-    if (p || (p = M_CheckParm("-bex")))
+  int p = M_CheckParm ("-deh");
+  if (p || (p = M_CheckParm("-bex")))
     {
-        // the parms after p are deh/bex file names,
-        // until end of parms or another - preceded parm
-        // Ty 04/11/98 - Allow multiple -deh files in a row
-        // killough 11/98: allow multiple -deh parameters
+      // the parms after p are deh/bex file names,
+      // until end of parms or another - preceded parm
+      // Ty 04/11/98 - Allow multiple -deh files in a row
+      // killough 11/98: allow multiple -deh parameters
 
-        boolean deh = true;
-        while (++p < myargc)
-            if (*myargv[p] == '-')
-				deh = !strcasecmp(myargv[p], "-deh") || !strcasecmp(myargv[p], "-bex");
-            else
-                if (deh)
+      boolean deh = true;
+      while (++p < myargc)
+        if (*myargv[p] == '-')
+          deh = !strcasecmp(myargv[p],"-deh") || !strcasecmp(myargv[p],"-bex");
+        else
+          if (deh)
+            {
+              char file[PATH_MAX+1];      // killough
+              AddDefaultExtension(strcpy(file, myargv[p]), ".bex");
+              if (access(file, F_OK))  // nope
                 {
-                    char file[REBOOM_PATH_MAX + 1];      // killough
-                    AddDefaultExtension(strcpy(file, myargv[p]), ".bex");
-#ifdef WINDOWS
-                    if (_access(file, 0))  // nope
-#else
-                    if (access(file, 0))  // nope
-#endif
-                    {
-                        AddDefaultExtension(strcpy(file, myargv[p]), ".deh");
-#ifdef WINDOWS
-                        if (_access(file, 0))  // still nope
-#else
-                        if (access(file, 0))  // still nope
-#endif
-                            I_Error("Cannot find .deh or .bex file named %s",
-                                myargv[p]);
-                    }
-                    // during the beta we have debug output to dehout.txt
-                    // (apparently, this was never removed after Boom beta-killough)
-                    ProcessDehFile(file, D_dehout(), 0);  // killough 10/98
+                  AddDefaultExtension(strcpy(file, myargv[p]), ".deh");
+                  if (access(file, F_OK))  // still nope
+                    I_Error("Cannot find .deh or .bex file named %s",
+                            myargv[p]);
                 }
+              // during the beta we have debug output to dehout.txt
+              // (apparently, this was never removed after Boom beta-killough)
+              ProcessDehFile(file, D_dehout(), 0);  // killough 10/98
+            }
     }
-    // ty 03/09/98 end of do dehacked stuff
+  // ty 03/09/98 end of do dehacked stuff
 }
 
 // killough 10/98: support preloaded deh/bex files
