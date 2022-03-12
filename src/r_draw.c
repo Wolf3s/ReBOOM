@@ -3,24 +3,16 @@
 //
 // $Id: r_draw.c,v 1.16 1998/05/03 22:41:46 killough Exp $
 //
-//  BOOM, a modified and improved DOOM engine
-//  Copyright (C) 1999 by
-//  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
+// Copyright (C) 1993-1996 by id Software, Inc.
 //
-//  This program is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU General Public License
-//  as published by the Free Software Foundation; either version 2
-//  of the License, or (at your option) any later version.
+// This source is available for distribution and/or modification
+// only under the terms of the DOOM Source Code License as
+// published by id Software. All rights reserved.
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
-//
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
-//  02111-1307, USA.
+// The source is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// FITNESS FOR A PARTICULAR PURPOSE. See the DOOM Source Code License
+// for more details.
 //
 //
 // DESCRIPTION:
@@ -29,6 +21,9 @@
 //       e.g. inline assembly, different algorithms.
 //
 //-----------------------------------------------------------------------------
+
+static const char
+rcsid[] = "$Id: r_draw.c,v 1.16 1998/05/03 22:41:46 killough Exp $";
 
 #include "doomstat.h"
 #include "w_wad.h"
@@ -91,13 +86,15 @@ byte    *dc_source;      // first pixel in a column (possibly virtual)
 // 
 
 // proff: This is in drawasm.nas
+// proff 06/30/98: I forgot NOASM
+#if !defined(DJGPP) && !defined(_WIN32) || defined(NOASM)
 //#ifndef DJGPP      // killough 2/15/98
 
 void R_DrawColumn (void) 
 { 
   int              count; 
-  byte    *dest;            // killough
-  fixed_t frac;            // killough
+  register byte    *dest;            // killough
+  register fixed_t frac;            // killough
   fixed_t          fracstep;     
 
   count = dc_yh - dc_yl + 1; 
@@ -130,9 +127,9 @@ void R_DrawColumn (void)
   // killough 2/1/98: more performance tuning
 
   {
-    const byte *source = dc_source;            
-    const lighttable_t *colormap = dc_colormap; 
-    int heightmask = dc_texheight-1;
+    register const byte *source = dc_source;            
+    register const lighttable_t *colormap = dc_colormap; 
+    register heightmask = dc_texheight-1;
     if (dc_texheight & heightmask)   // not a power of 2 -- killough
       {
         heightmask++;
@@ -175,6 +172,8 @@ void R_DrawColumn (void)
   }
 } 
 
+#endif
+
 // Here is the version of R_DrawColumn that deals with translucent  // phares
 // textures and sprites. It's identical to R_DrawColumn except      //    |
 // for the spot where the color index is stuffed into *dest. At     //    V
@@ -189,11 +188,13 @@ void R_DrawColumn (void)
 
 //#if !defined(DJGPP) && !defined(_WIN32) || defined(NOASM)
 // proff: In Win32 with VC50 it seems that R_DrawTLColumn is faster in C than in ASM
+#ifndef DJGPP      // killough 2/21/98: converted to x86 asm
+
 void R_DrawTLColumn (void)
 { 
   int              count; 
-  byte    *dest;           // killough
-  fixed_t frac;            // killough
+  register byte    *dest;           // killough
+  register fixed_t frac;            // killough
   fixed_t          fracstep;
 
   count = dc_yh - dc_yl + 1; 
@@ -228,9 +229,9 @@ void R_DrawTLColumn (void)
   // killough 2/1/98, 2/21/98: more performance tuning
   
   {
-    const byte *source = dc_source;            
-    const lighttable_t *colormap = dc_colormap; 
-    int heightmask = dc_texheight-1;
+    register const byte *source = dc_source;            
+    register const lighttable_t *colormap = dc_colormap; 
+    register heightmask = dc_texheight-1;
     if (dc_texheight & heightmask)   // not a power of 2 -- killough
       {
         heightmask++;
@@ -272,6 +273,8 @@ void R_DrawTLColumn (void)
       }
   }
 } 
+
+#endif  // killough 2/21/98: converted to x86 asm
 
 //
 // Spectre/Invisibility.
@@ -487,7 +490,7 @@ byte *ds_source;
 
 void R_DrawSpan (void) 
 { 
-  unsigned position;
+  register unsigned position;
   unsigned step;
 
   byte *source;
@@ -685,6 +688,8 @@ void R_VideoErase(unsigned ofs, int count)
 // Draws the border around the view
 //  for different size windows?
 //
+
+void V_MarkRect(int x, int y, int width, int height); 
  
 void R_DrawViewBorder(void) 
 { 
@@ -716,7 +721,7 @@ void R_DrawViewBorder(void)
   }
 
   if ( viewheight >= ( SCREENHEIGHT - SBARHEIGHT ))
-    return; // if high-res, don\B4t go any further!
+    return; // if high-res, don´t go any further!
 
 // proff/nicolas 09/20/98: End of addition
 
@@ -739,6 +744,8 @@ void R_DrawViewBorder(void)
       R_VideoErase (ofs, side); 
       ofs += SCREENWIDTH; 
     } 
+
+  V_MarkRect (0,0,SCREENWIDTH, SCREENHEIGHT-SBARHEIGHT); 
 } 
 
 //----------------------------------------------------------------------------

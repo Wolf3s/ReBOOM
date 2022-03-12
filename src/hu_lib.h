@@ -3,24 +3,16 @@
 //
 // $Id: hu_lib.h,v 1.9 1998/05/11 10:13:31 jim Exp $
 //
-//  BOOM, a modified and improved DOOM engine
-//  Copyright (C) 1999 by
-//  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
+// Copyright (C) 1993-1996 by id Software, Inc.
 //
-//  This program is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU General Public License
-//  as published by the Free Software Foundation; either version 2
-//  of the License, or (at your option) any later version.
+// This source is available for distribution and/or modification
+// only under the terms of the DOOM Source Code License as
+// published by id Software. All rights reserved.
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
-//
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
-//  02111-1307, USA.
+// The source is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// FITNESS FOR A PARTICULAR PURPOSE. See the DOOM Source Code License
+// for more details.
 //
 // DESCRIPTION:  none
 //
@@ -42,14 +34,8 @@
 // font stuff
 // #define HU_CHARERASE    KEYD_BACKSPACE // not used               // phares
 
-#if defined REMOVE_LIMITS
-#define HU_MAXLINES       1024
-#define HU_MAXLINELENGTH  1024
-#else
-#define HU_MAXLINES       4
+#define HU_MAXLINES   4
 #define HU_MAXLINELENGTH  80
-#endif
-
 #define HU_REFRESHSPACING 8 /*jff 2/26/98 space lines in text refresh widget*/
 //jff 2/26/98 maximum number of messages allowed in refresh list
 #define HU_MAXMESSAGES 16
@@ -280,3 +266,38 @@ void HUlib_drawIText(hu_itext_t* it);
 void HUlib_eraseIText(hu_itext_t* it); 
 
 #endif
+
+
+//----------------------------------------------------------------------------
+//
+// $Log: hu_lib.h,v $
+// Revision 1.9  1998/05/11  10:13:31  jim
+// formatted/documented hu_lib
+//
+// Revision 1.8  1998/04/28  15:53:53  jim
+// Fix message list bug in small screen mode
+//
+// Revision 1.7  1998/02/26  22:58:44  jim
+// Added message review display to HUD
+//
+// Revision 1.6  1998/02/19  16:55:19  jim
+// Optimized HUD and made more configurable
+//
+// Revision 1.5  1998/02/18  00:58:58  jim
+// Addition of HUD
+//
+// Revision 1.4  1998/02/15  02:48:09  phares
+// User-defined keys
+//
+// Revision 1.3  1998/01/26  19:26:52  phares
+// First rev with no ^Ms
+//
+// Revision 1.2  1998/01/26  05:50:24  killough
+// Support more lines, and tab stops, in messages
+//
+// Revision 1.1.1.1  1998/01/19  14:02:55  rand
+// Lee's Jan 19 sources
+//
+//
+//----------------------------------------------------------------------------
+

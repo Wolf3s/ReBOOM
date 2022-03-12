@@ -1,26 +1,18 @@
 // Emacs style mode select   -*- C++ -*-
 //-----------------------------------------------------------------------------
 //
-// $Id: doomstat.h,v 1.13 1998/05/12 12:47:28 phares Exp $
+// $Id: doomstat.h,v 1.14 1998/08/11 19:31:46 phares Exp $
 //
-//  BOOM, a modified and improved DOOM engine
-//  Copyright (C) 1999 by
-//  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
+// Copyright (C) 1993-1996 by id Software, Inc.
 //
-//  This program is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU General Public License
-//  as published by the Free Software Foundation; either version 2
-//  of the License, or (at your option) any later version.
+// This source is available for distribution and/or modification
+// only under the terms of the DOOM Source Code License as
+// published by id Software. All rights reserved.
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
-//
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
-//  02111-1307, USA.
+// The source is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// FITNESS FOR A PARTICULAR PURPOSE. See the DOOM Source Code License
+// for more details.
 //
 // DESCRIPTION:
 //   All the global variables that store the internal state.
@@ -42,24 +34,10 @@
 
 // We need the playr data structure as well.
 #include "d_player.h"
-#include "umapinfo.h"
 
-char *MAPNAME(int e, int m);
-
-// More Gibs - With or Without Hyper Shotgun
-extern int more_gibs;
-
-// Hyper Berserk Shotgun
-extern int hyper_berserk_shotgun;
-
-// Accessibility colours
-extern int accessibility_colours;
-
-// Accessibility effects
-extern int accessibility_effects;
-
-// No horizontal autoaim
-extern int disable_horizontal_autoaim;
+#ifdef __GNUG__
+#pragma interface
+#endif
 
 // ------------------------
 // Command line parameters.
@@ -69,8 +47,6 @@ extern  boolean nomonsters; // checkparm of -nomonsters
 extern  boolean respawnparm;  // checkparm of -respawn
 extern  boolean fastparm; // checkparm of -fast
 extern  boolean devparm;  // DEBUG: launched with -devparm
-
-extern  int screenblocks;     // killough 11/98
 
 // -----------------------------------------------------
 // Game Mode - identify IWAD as shareware, retail etc.
@@ -85,17 +61,16 @@ extern  boolean modifiedgame;
 // compatibility with old engines (monster behavior, metrics, etc.)
 extern int compatibility, default_compatibility;          // killough 1/31/98
 
-extern int demo_version;           // killough 7/19/98: Version of demo
-
 // Only true when playing back an old demo -- used only in "corner cases"
 // which break playback but are otherwise unnoticable or are just desirable:
 
-#define demo_compatibility (demo_version < 200) /* killough 11/98: macroized */
+extern int demo_compatibility;     // killough 1/16/98
 
 // v1.1-like pitched sounds
-extern int pitched_sounds;
+extern int pitched_sounds, default_pitched_sounds;        // killough
 
-extern int general_translucency;
+extern int     default_translucency; // config file says           // phares
+extern boolean general_translucency; // true if translucency is ok // phares
 
 extern int demo_insurance, default_demo_insurance;      // killough 4/5/98
 
@@ -118,9 +93,6 @@ extern  boolean   autostart;
 extern  skill_t         gameskill;
 extern  int   gameepisode;
 extern  int   gamemap;
-
-//UMAPINFO
-extern  mapentry_t* gamemapinfo;
 
 // Nightmare mode flag, single player.
 extern  boolean         respawnmonsters;
@@ -178,7 +150,6 @@ extern  int     viewwindowy;
 extern  int     viewheight;
 extern  int     viewwidth;
 extern  int     scaledviewwidth;
-extern  int     scaledviewheight;         // killough 11/98
 
 // This one is related to the 3-screen display mode.
 // ANG90 = left side, ANG270 = right
@@ -198,8 +169,8 @@ extern  int totalsecret;
 
 // Timer, for scores.
 extern  int levelstarttic;  // gametic at level start
-extern  int basetic;    // killough 9/29/98: levelstarttic, adjusted
 extern  int leveltime;  // tics in game play for par
+
 // --------------------------------------
 // DEMO playback/recording related stuff.
 
@@ -269,6 +240,8 @@ extern  int             mouseSensitivity_vert;
 extern  boolean         singletics;
 
 extern  int             bodyqueslot;
+extern  int             bodyquesize;                        // phares 8/10/98
+extern  mobj_t          **bodyque;                          // phares 8/10/98
 
 // Needed to store the number of the dummy sky flat.
 // Used for rendering, as well as tracking projectiles etc.
@@ -311,3 +284,47 @@ extern int player_bobbing;  // whether player bobs or not   // phares 2/25/98
 extern int default_player_bobbing;  // killough 3/1/98: make local to each game
 
 #endif
+
+//----------------------------------------------------------------------------
+//
+// $Log: doomstat.h,v $
+// Revision 1.14  1998/08/11  19:31:46  phares
+// DM Weapon bug fix
+//
+// Revision 1.13  1998/05/12  12:47:28  phares
+// Removed OVER_UNDER code
+//
+// Revision 1.12  1998/05/06  16:05:34  jim
+// formatting and documenting
+//
+// Revision 1.11  1998/05/05  16:28:51  phares
+// Removed RECOIL and OPT_BOBBING defines
+//
+// Revision 1.10  1998/05/03  23:12:52  killough
+// beautify, move most global switch variable decls here
+//
+// Revision 1.9  1998/04/06  04:54:55  killough
+// Add demo_insurance
+//
+// Revision 1.8  1998/03/02  11:26:25  killough
+// Remove now-dead monster_ai mask idea
+//
+// Revision 1.7  1998/02/23  04:17:38  killough
+// fix bad translucency flag
+//
+// Revision 1.5  1998/02/20  21:56:29  phares
+// Preliminarey sprite translucency
+//
+// Revision 1.4  1998/02/19  16:55:30  jim
+// Optimized HUD and made more configurable
+//
+// Revision 1.3  1998/02/18  00:58:54  jim
+// Addition of HUD
+//
+// Revision 1.2  1998/01/26  19:26:41  phares
+// First rev with no ^Ms
+//
+// Revision 1.1.1.1  1998/01/19  14:03:09  rand
+// Lee's Jan 19 sources
+//
+//----------------------------------------------------------------------------

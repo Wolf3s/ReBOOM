@@ -3,24 +3,16 @@
 //
 // $Id: p_maputl.h,v 1.1 1998/05/03 22:19:26 killough Exp $
 //
-//  BOOM, a modified and improved DOOM engine
-//  Copyright (C) 1999 by
-//  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
+// Copyright (C) 1993-1996 by id Software, Inc.
 //
-//  This program is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU General Public License
-//  as published by the Free Software Foundation; either version 2
-//  of the License, or (at your option) any later version.
+// This source is available for distribution and/or modification
+// only under the terms of the DOOM Source Code License as
+// published by id Software. All rights reserved.
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
-//
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
-//  02111-1307, USA.
+// The source is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// FITNESS FOR A PARTICULAR PURPOSE. See the DOOM Source Code License
+// for more details.
 //
 // DESCRIPTION:
 //      Map utility functions
@@ -83,3 +75,12 @@ extern fixed_t lowfloor;
 extern divline_t trace;
 
 #endif  // __P_MAPUTL__
+
+//----------------------------------------------------------------------------
+//
+// $Log: p_maputl.h,v $
+// Revision 1.1  1998/05/03  22:19:26  killough
+// External declarations formerly in p_local.h
+//
+//
+//----------------------------------------------------------------------------

@@ -3,24 +3,16 @@
 //
 // $Id: st_stuff.c,v 1.46 1998/05/06 16:05:40 jim Exp $
 //
-//  BOOM, a modified and improved DOOM engine
-//  Copyright (C) 1999 by
-//  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
+// Copyright (C) 1993-1996 by id Software, Inc.
 //
-//  This program is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU General Public License
-//  as published by the Free Software Foundation; either version 2
-//  of the License, or (at your option) any later version.
+// This source is available for distribution and/or modification
+// only under the terms of the DOOM Source Code License as
+// published by id Software. All rights reserved.
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
-//
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
-//  02111-1307, USA.
+// The source is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// FITNESS FOR A PARTICULAR PURPOSE. See the DOOM Source Code License
+// for more details.
 //
 //
 // DESCRIPTION:
@@ -29,6 +21,9 @@
 //      Does palette indicators as well (red pain/berserk, bright pickup)
 //
 //-----------------------------------------------------------------------------
+
+static const char
+rcsid[] = "$Id: st_stuff.c,v 1.46 1998/05/06 16:05:40 jim Exp $";
 
 #include "doomdef.h"
 #include "doomstat.h"
@@ -58,11 +53,16 @@
 #define RADIATIONPAL            13
 
 // Location of status bar
-#define ST_X                    0
+// proff 08/18/98: Changed for high-res
+#define ST_X                    (SCREENWIDTH/2-160)
+//#define ST_X                    0
 #define ST_X2                   104
 
-#define ST_FX                   143
-#define ST_FY                   169
+// proff 08/18/98: Changed for high-res
+#define ST_FX                   (ST_X+143)
+#define ST_FY                   (ST_Y+1)
+//#define ST_FX                   143
+//#define ST_FY                   169
 
 // Should be set to patch width
 //  for tall numbers later on
@@ -89,8 +89,11 @@
 #define ST_GODFACE              (ST_NUMPAINFACES*ST_FACESTRIDE)
 #define ST_DEADFACE             (ST_GODFACE+1)
 
-#define ST_FACESX               143
-#define ST_FACESY               168
+// proff 08/18/98: Changed for high-res
+#define ST_FACESX               (ST_X+143)
+#define ST_FACESY               (ST_Y)
+//#define ST_FACESX               143
+//#define ST_FACESY               168
 
 #define ST_EVILGRINCOUNT        (2*TICRATE)
 #define ST_STRAIGHTFACECOUNT    (TICRATE/2)
@@ -111,74 +114,124 @@
 
 // AMMO number pos.
 #define ST_AMMOWIDTH            3
-#define ST_AMMOX                44
-#define ST_AMMOY                171
+// proff 08/18/98: Changed for high-res
+#define ST_AMMOX                (ST_X+44)
+#define ST_AMMOY                (ST_Y+3)
+//#define ST_AMMOX                44
+//#define ST_AMMOY                171
 
 // HEALTH number pos.
 #define ST_HEALTHWIDTH          3
-#define ST_HEALTHX              90
-#define ST_HEALTHY              171
+// proff 08/18/98: Changed for high-res
+#define ST_HEALTHX              (ST_X+90)
+#define ST_HEALTHY              (ST_Y+3)
+//#define ST_HEALTHX              90
+//#define ST_HEALTHY              171
 
 // Weapon pos.
-#define ST_ARMSX                111
-#define ST_ARMSY                172
-#define ST_ARMSBGX              104
-#define ST_ARMSBGY              168
+// proff 08/18/98: Changed for high-res
+#define ST_ARMSX                (ST_X+111)
+#define ST_ARMSY                (ST_Y+4)
+#define ST_ARMSBGX              (ST_X+104)
+#define ST_ARMSBGY              (ST_Y)
+//#define ST_ARMSX                111
+//#define ST_ARMSY                172
+//#define ST_ARMSBGX              104
+//#define ST_ARMSBGY              168
 #define ST_ARMSXSPACE           12
 #define ST_ARMSYSPACE           10
 
 // Frags pos.
-#define ST_FRAGSX               138
-#define ST_FRAGSY               171
+// proff 08/18/98: Changed for high-res
+#define ST_FRAGSX               (ST_X+138)
+#define ST_FRAGSY               (ST_Y+3)
+//#define ST_FRAGSX               138
+//#define ST_FRAGSY               171
 #define ST_FRAGSWIDTH           2
 
 // ARMOR number pos.
 #define ST_ARMORWIDTH           3
-#define ST_ARMORX               221
-#define ST_ARMORY               171
+// proff 08/18/98: Changed for high-res
+#define ST_ARMORX               (ST_X+221)
+#define ST_ARMORY               (ST_Y+3)
+//#define ST_ARMORX               221
+//#define ST_ARMORY               171
 
 // Key icon positions.
 #define ST_KEY0WIDTH            8
 #define ST_KEY0HEIGHT           5
-#define ST_KEY0X                239
-#define ST_KEY0Y                171
+// proff 08/18/98: Changed for high-res
+#define ST_KEY0X                (ST_X+239)
+#define ST_KEY0Y                (ST_Y+3)
+//#define ST_KEY0X                239
+//#define ST_KEY0Y                171
 #define ST_KEY1WIDTH            ST_KEY0WIDTH
-#define ST_KEY1X                239
-#define ST_KEY1Y                181
+// proff 08/18/98: Changed for high-res
+#define ST_KEY1X                (ST_X+239)
+#define ST_KEY1Y                (ST_Y+13)
+//#define ST_KEY1X                239
+//#define ST_KEY1Y                181
 #define ST_KEY2WIDTH            ST_KEY0WIDTH
-#define ST_KEY2X                239
-#define ST_KEY2Y                191
+// proff 08/18/98: Changed for high-res
+#define ST_KEY2X                (ST_X+239)
+#define ST_KEY2Y                (ST_Y+23)
+//#define ST_KEY2X                239
+//#define ST_KEY2Y                191
 
 // Ammunition counter.
 #define ST_AMMO0WIDTH           3
 #define ST_AMMO0HEIGHT          6
-#define ST_AMMO0X               288
-#define ST_AMMO0Y               173
+// proff 08/18/98: Changed for high-res
+#define ST_AMMO0X               (ST_X+288)
+#define ST_AMMO0Y               (ST_Y+5)
+//#define ST_AMMO0X               288
+//#define ST_AMMO0Y               173
 #define ST_AMMO1WIDTH           ST_AMMO0WIDTH
-#define ST_AMMO1X               288
-#define ST_AMMO1Y               179
+// proff 08/18/98: Changed for high-res
+#define ST_AMMO1X               (ST_X+288)
+#define ST_AMMO1Y               (ST_Y+11)
+//#define ST_AMMO1X               288
+//#define ST_AMMO1Y               179
 #define ST_AMMO2WIDTH           ST_AMMO0WIDTH
-#define ST_AMMO2X               288
-#define ST_AMMO2Y               191
+// proff 08/18/98: Changed for high-res
+#define ST_AMMO2X               (ST_X+288)
+#define ST_AMMO2Y               (ST_Y+23)
+//#define ST_AMMO2X               288
+//#define ST_AMMO2Y               191
 #define ST_AMMO3WIDTH           ST_AMMO0WIDTH
-#define ST_AMMO3X               288
-#define ST_AMMO3Y               185
+// proff 08/18/98: Changed for high-res
+#define ST_AMMO3X               (ST_X+288)
+#define ST_AMMO3Y               (ST_Y+17)
+//#define ST_AMMO3X               288
+//#define ST_AMMO3Y               185
 
 // Indicate maximum ammunition.
 // Only needed because backpack exists.
 #define ST_MAXAMMO0WIDTH        3
 #define ST_MAXAMMO0HEIGHT       5
-#define ST_MAXAMMO0X            314
-#define ST_MAXAMMO0Y            173
+// proff 08/18/98: Changed for high-res
+#define ST_MAXAMMO0X            (ST_X+314)
+#define ST_MAXAMMO0Y            (ST_Y+5)
+//#define ST_MAXAMMO0X            314
+//#define ST_MAXAMMO0Y            173
 #define ST_MAXAMMO1WIDTH        ST_MAXAMMO0WIDTH
-#define ST_MAXAMMO1X            314
-#define ST_MAXAMMO1Y            179
+// proff 08/18/98: Changed for high-res
+#define ST_MAXAMMO1X            (ST_X+314)
+#define ST_MAXAMMO1Y            (ST_Y+11)
+//#define ST_MAXAMMO1X            314
+//#define ST_MAXAMMO1Y            179
 #define ST_MAXAMMO2WIDTH        ST_MAXAMMO0WIDTH
-#define ST_MAXAMMO2X            314
-#define ST_MAXAMMO2Y            191
+// proff 08/18/98: Changed for high-res
+#define ST_MAXAMMO2X            (ST_X+314)
+#define ST_MAXAMMO2Y            (ST_Y+23)
+//#define ST_MAXAMMO2X            314
+//#define ST_MAXAMMO2Y            191
 #define ST_MAXAMMO3WIDTH        ST_MAXAMMO0WIDTH
-#define ST_MAXAMMO3X            314
-#define ST_MAXAMMO3Y            185
+// proff 08/18/98: Changed for high-res
+#define ST_MAXAMMO3X            (ST_X+314)
+#define ST_MAXAMMO3Y            (ST_Y+17)
+//#define ST_MAXAMMO3X            314
+//#define ST_MAXAMMO3Y            185
 
 // killough 2/8/98: weapon info position macros UNUSED, removed here
 
@@ -261,15 +314,12 @@ static st_number_t w_ready;
 //jff 2/16/98 status color change levels
 int ammo_red;      // ammo percent less than which status is red
 int ammo_yellow;   // ammo percent less is yellow more green
-int ammo_gray;
 int health_red;    // health amount less than which status is red
 int health_yellow; // health amount less than which status is yellow
 int health_green;  // health amount above is blue, below is green
-int health_gray;
 int armor_red;     // armor amount less than which status is red
 int armor_yellow;  // armor amount less than which status is yellow
 int armor_green;   // armor amount above is blue, below is green
-int armor_gray;
 
  // in deathmatch only, summary of frags stats
 static st_number_t w_frags;
@@ -635,43 +685,50 @@ void ST_Ticker(void)
   st_oldhealth = plyr->health;
 }
 
-int_64_t st_palette = 0;
+static int st_palette = 0;
 
 void ST_doPaletteStuff(void)
 {
-    int         palette;
-    int         count = plyr->damagecount;
-    
-    if (plyr->powers[pw_strength])
+  int         palette;
+  byte*       pal;
+  int cnt = plyr->damagecount;
+
+  if (plyr->powers[pw_strength])
     {
-        count = ReBOOMMathMax(12, count);
+      // slowly fade the berzerk out
+      int bzc = 12 - (plyr->powers[pw_strength]>>6);
+      if (bzc > cnt)
+        cnt = bzc;
     }
-    if (count)
+
+  if (cnt)
     {
-        palette = ReBOOMMathMin((count + 7) >> 3, NUMREDPALS);
+      palette = (cnt+7)>>3;
+      if (palette >= NUMREDPALS)
+        palette = NUMREDPALS-1;
+      palette += STARTREDPALS;
     }
-    else if (plyr->bonuscount)
-    {
-        palette = (plyr->bonuscount + 7) >> 3;
+  else
+    if (plyr->bonuscount)
+      {
+        palette = (plyr->bonuscount+7)>>3;
         if (palette >= NUMBONUSPALS)
-        {
-            palette = NUMBONUSPALS - 1;
-        }
+          palette = NUMBONUSPALS-1;
         palette += STARTBONUSPALS;
-    }
-    else if (plyr->powers[pw_ironfeet] > 4 * 32 || plyr->powers[pw_ironfeet] & 8)
-    {
+      }
+    else
+      if (plyr->powers[pw_ironfeet] > 4*32 || plyr->powers[pw_ironfeet] & 8)
         palette = RADIATIONPAL;
-    }
-    else {
+      else
         palette = 0;
-    }
-    if (palette != st_palette)
+
+  if (palette != st_palette)
     {
-        // Adam - casting a 4 byte int (palette) to a long long to avoid an overflow
-        byte * lump = (byte*)W_CacheLumpNum(lu_palette, PU_CACHE) + (int_64_t)palette * 768;
-        I_SetPalette(lump);
-        st_palette = palette;
+      st_palette = palette;
+// proff 6/17/98: Added typecast to avoid error
+      pal = (char *) W_CacheLumpNum(lu_palette, PU_CACHE)+palette*768;
+//      pal = W_CacheLumpNum(lu_palette, PU_CACHE)+palette*768;
+      I_SetPalette (pal);
     }
 }
 
@@ -684,8 +741,7 @@ void ST_drawWidgets(boolean refresh)
 
   // used by w_frags widget
   st_fragson = deathmatch && st_statusbaron;
-if (!sts_always_gray)
-{
+
   //jff 2/16/98 make color of ammo depend on amount
   if (*w_ready.num*100 < ammo_red*plyr->maxammo[weaponinfo[w_ready.data].ammo])
     STlib_updateNum(&w_ready, cr_red, refresh);
@@ -721,44 +777,6 @@ if (!sts_always_gray)
     STlib_updatePercent(&w_armor, cr_green, refresh);
   else
     STlib_updatePercent(&w_armor, cr_blue_status, refresh); //killough 2/28/98
-
-} else { // gray below here
-
-  if (*w_ready.num*100 < ammo_gray*plyr->maxammo[weaponinfo[w_ready.data].ammo])
-    STlib_updateNum(&w_ready, cr_gray, refresh);
-  else
-    if (*w_ready.num*100 <
-        ammo_gray*plyr->maxammo[weaponinfo[w_ready.data].ammo])
-      STlib_updateNum(&w_ready, cr_gray, refresh);
-    else
-      STlib_updateNum(&w_ready, cr_gray, refresh);
-
-  for (i=0;i<4;i++)
-    {
-      STlib_updateNum(&w_ammo[i], NULL, refresh);   //jff 2/16/98 no xlation
-      STlib_updateNum(&w_maxammo[i], NULL, refresh);
-    }
-
-  //jff 2/16/98 make color of health depend on amount
-  if (*w_health.n.num<health_gray)
-    STlib_updatePercent(&w_health, cr_gray, refresh);
-  else if (*w_health.n.num<health_gray)
-    STlib_updatePercent(&w_health, cr_gray, refresh);
-  else if (*w_health.n.num<=health_gray)
-    STlib_updatePercent(&w_health, cr_gray, refresh);
-  else
-    STlib_updatePercent(&w_health, cr_gray, refresh); //killough 2/28/98
-
-  //jff 2/16/98 make color of armor depend on amount
-  if (*w_armor.n.num<armor_gray)
-    STlib_updatePercent(&w_armor, cr_gray, refresh);
-  else if (*w_armor.n.num<armor_gray)
-    STlib_updatePercent(&w_armor, cr_gray, refresh);
-  else if (*w_armor.n.num<=armor_gray)
-    STlib_updatePercent(&w_armor, cr_gray, refresh);
-  else
-    STlib_updatePercent(&w_armor, cr_gray, refresh); //killough 2/28/98
-}
 
   STlib_updateBinIcon(&w_armsbg, refresh);
 
@@ -814,10 +832,10 @@ void ST_loadGraphics(void)
   // Load the numbers, tall and short
   for (i=0;i<10;i++)
     {
-		sprintf(namebuf, "STTNUM%d", i);
-        tallnum[i] = (patch_t*)W_CacheLumpName(namebuf, PU_STATIC);
-        sprintf(namebuf, "STYSNUM%d", i);
-        shortnum[i] = (patch_t*)W_CacheLumpName(namebuf, PU_STATIC);
+      sprintf(namebuf, "STTNUM%d", i);
+      tallnum[i] = (patch_t *) W_CacheLumpName(namebuf, PU_STATIC);
+      sprintf(namebuf, "STYSNUM%d", i);
+      shortnum[i] = (patch_t *) W_CacheLumpName(namebuf, PU_STATIC);
     }
 
   // Load percent key.
@@ -1140,5 +1158,150 @@ void ST_Init(void)
 {
   veryfirsttime = 0;
   ST_loadData();
-  screens[4] = Z_Malloc(ST_WIDTH*ST_HEIGHT, PU_STATIC, 0);
+// proff 08/18/98: Changed for high-res
+  screens[4] = Z_Malloc(SCREENWIDTH*ST_HEIGHT, PU_STATIC, 0);
+//  screens[4] = Z_Malloc(ST_WIDTH*ST_HEIGHT, PU_STATIC, 0);
 }
+
+//----------------------------------------------------------------------------
+//
+// $Log: st_stuff.c,v $
+// Revision 1.46  1998/05/06  16:05:40  jim
+// formatting and documenting
+//
+// Revision 1.45  1998/05/03  22:50:58  killough
+// beautification, move external declarations, remove cheats
+//
+// Revision 1.44  1998/04/27  17:30:39  jim
+// Fix DM demo/newgame status, remove IDK (again)
+//
+// Revision 1.43  1998/04/27  02:30:12  killough
+// fuck you
+//
+// Revision 1.42  1998/04/24  23:52:31  thldrmn
+// Removed idk cheat
+//
+// Revision 1.41  1998/04/24  11:39:23  killough
+// Fix cheats while demo is played back
+//
+// Revision 1.40  1998/04/19  01:10:19  killough
+// Generalize cheat engine to add deh support
+//
+// Revision 1.39  1998/04/16  06:26:06  killough
+// Prevent cheats from working inside menu
+//
+// Revision 1.38  1998/04/12  10:58:24  jim
+// IDMUSxy for DOOM 1 fix
+//
+// Revision 1.37  1998/04/12  10:23:52  jim
+// IDMUS00 ok in DOOM 1
+//
+// Revision 1.36  1998/04/12  02:00:39  killough
+// Change tranmap to main_tranmap
+//
+// Revision 1.35  1998/04/12  01:08:51  jim
+// Fixed IDMUS00 crash
+//
+// Revision 1.34  1998/04/11  14:48:11  thldrmn
+// Replaced IDK with TNTKA cheat
+//
+// Revision 1.33  1998/04/10  06:36:45  killough
+// Fix -fast parameter bugs
+//
+// Revision 1.32  1998/03/31  10:37:17  killough
+// comment clarification
+//
+// Revision 1.31  1998/03/28  18:09:19  killough
+// Fix deh-cheat self-annihilation bug, make iddt closer to Doom
+//
+// Revision 1.30  1998/03/28  05:33:02  jim
+// Text enabling changes for DEH
+//
+// Revision 1.29  1998/03/23  15:24:54  phares
+// Changed pushers to linedef control
+//
+// Revision 1.28  1998/03/23  06:43:26  jim
+// linedefs reference initial version
+//
+// Revision 1.27  1998/03/23  03:40:46  killough
+// Fix idclip bug, make monster kills message smart
+//
+// Revision 1.26  1998/03/20  00:30:37  phares
+// Changed friction to linedef control
+//
+// Revision 1.25  1998/03/17  20:44:32  jim
+// fixed idmus non-restore, space bug
+//
+// Revision 1.24  1998/03/12  14:35:01  phares
+// New cheat codes
+//
+// Revision 1.23  1998/03/10  07:14:38  jim
+// Initial DEH support added, minus text
+//
+// Revision 1.22  1998/03/09  07:31:48  killough
+// Fix spy mode to display player correctly, add TNTFAST
+//
+// Revision 1.21  1998/03/06  05:31:02  killough
+// PEst control, from the TNT'EM man
+//
+// Revision 1.20  1998/03/02  15:35:03  jim
+// Enabled Lee's status changes, added new types to common.cfg
+//
+// Revision 1.19  1998/03/02  12:09:18  killough
+// blue status bar color, monsters_remember, traditional_keys
+//
+// Revision 1.18  1998/02/27  11:00:58  phares
+// Can't own weapons that don't exist
+//
+// Revision 1.17  1998/02/26  22:57:45  jim
+// Added message review display to HUD
+//
+// Revision 1.16  1998/02/24  08:46:45  phares
+// Pushers, recoil, new friction, and over/under work
+//
+// Revision 1.15  1998/02/24  04:14:19  jim
+// Added double keys to status
+//
+// Revision 1.14  1998/02/23  04:57:29  killough
+// Fix TNTEM cheat again, add new cheats
+//
+// Revision 1.13  1998/02/20  21:57:07  phares
+// Preliminarey sprite translucency
+//
+// Revision 1.12  1998/02/19  23:15:52  killough
+// Add TNTAMMO in addition to TNTAMO
+//
+// Revision 1.11  1998/02/19  16:55:22  jim
+// Optimized HUD and made more configurable
+//
+// Revision 1.10  1998/02/18  00:59:20  jim
+// Addition of HUD
+//
+// Revision 1.9  1998/02/17  06:15:48  killough
+// Add TNTKEYxx, TNTAMOx, TNTWEAPx cheats, and cheat engine support for them.
+//
+// Revision 1.8  1998/02/15  02:48:01  phares
+// User-defined keys
+//
+// Revision 1.7  1998/02/09  03:19:04  killough
+// Rewrite cheat code engine, add IDK and TNTHOM
+//
+// Revision 1.6  1998/02/02  22:19:01  jim
+// Added TNTEM cheat to kill every monster alive
+//
+// Revision 1.5  1998/01/30  18:48:10  phares
+// Changed textspeed and textwait to functions
+//
+// Revision 1.4  1998/01/30  16:09:03  phares
+// Faster end-mission text display
+//
+// Revision 1.3  1998/01/28  12:23:05  phares
+// TNTCOMP cheat code added
+//
+// Revision 1.2  1998/01/26  19:24:58  phares
+// First rev with no ^Ms
+//
+// Revision 1.1.1.1  1998/01/19  14:03:03  rand
+// Lee's Jan 19 sources
+//
+//----------------------------------------------------------------------------

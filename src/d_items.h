@@ -1,7 +1,7 @@
-// Emacs style mode select   -*- C++ -*-
+// Emacs style mode select   -*- C++ -*- 
 //-----------------------------------------------------------------------------
 //
-// $Id: f_wipe.h,v 1.3 1998/05/03 22:11:27 killough Exp $
+// $Id: d_items.h,v 1.3 1998/05/04 21:34:12 thldrmn Exp $
 //
 // Copyright (C) 1993-1996 by id Software, Inc.
 //
@@ -15,41 +15,48 @@
 // for more details.
 //
 // DESCRIPTION:
-//      Mission start screen wipe/melt, special effects.
+//  Items: key cards, artifacts, weapon, ammunition.
 //
 //-----------------------------------------------------------------------------
 
-#ifndef __F_WIPE_H__
-#define __F_WIPE_H__
 
-//
-// SCREEN WIPE PACKAGE
-//
+#ifndef __D_ITEMS__
+#define __D_ITEMS__
 
-enum {
-  // simple gradual pixel change for 8-bit only
-  wipe_ColorXForm,
-  wipe_Melt,        // weird screen melt
-  wipe_NUMWIPES
-};
+#include "doomdef.h"
 
-int wipe_ScreenWipe (int wipeno,
-                     int x, int y, int width, int height, int ticks);
-int wipe_StartScreen(int x, int y, int width, int height);
-int wipe_EndScreen  (int x, int y, int width, int height);
+#ifdef __GNUG__
+#pragma interface
+#endif
+
+
+// Weapon info: sprite frames, ammunition use.
+typedef struct
+{
+  ammotype_t  ammo;
+  int         upstate;
+  int         downstate;
+  int         readystate;
+  int         atkstate;
+  int         flashstate;
+
+} weaponinfo_t;
+
+extern  weaponinfo_t    weaponinfo[NUMWEAPONS];
 
 #endif
 
 //----------------------------------------------------------------------------
 //
-// $Log: f_wipe.h,v $
-// Revision 1.3  1998/05/03  22:11:27  killough
-// beautification
+// $Log: d_items.h,v $
+// Revision 1.3  1998/05/04  21:34:12  thldrmn
+// commenting and reformatting
 //
-// Revision 1.2  1998/01/26  19:26:49  phares
+// Revision 1.2  1998/01/26  19:26:26  phares
 // First rev with no ^Ms
 //
-// Revision 1.1.1.1  1998/01/19  14:02:54  rand
+// Revision 1.1.1.1  1998/01/19  14:03:07  rand
 // Lee's Jan 19 sources
+//
 //
 //----------------------------------------------------------------------------

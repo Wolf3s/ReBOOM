@@ -1,24 +1,18 @@
 // Emacs style mode select   -*- C++ -*- 
 //-----------------------------------------------------------------------------
 //
-//  BOOM, a modified and improved DOOM engine
-//  Copyright (C) 1999 by
-//  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
+// $Id: hu_stuff.h,v 1.6 1998/05/10 19:03:50 jim Exp $
 //
-//  This program is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU General Public License
-//  as published by the Free Software Foundation; either version 2
-//  of the License, or (at your option) any later version.
+// Copyright (C) 1993-1996 by id Software, Inc.
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+// This source is available for distribution and/or modification
+// only under the terms of the DOOM Source Code License as
+// published by id Software. All rights reserved.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
-//  02111-1307, USA.
+// The source is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// FITNESS FOR A PARTICULAR PURPOSE. See the DOOM Source Code License
+// for more details.
 //
 // DESCRIPTION:  Head up display
 //
@@ -80,6 +74,28 @@ extern int hud_displayed;   // hud is displayed
 extern int hud_active;      // hud mode 0=off, 1=small, 2=full
 extern int hud_nosecrets;   // status does not list secrets/items/kills
 
-extern int boom_hud_stats_always_on;    //Adam - always show hud stats
-extern int boom_show_level_name;        //Adam - disable the showing of the level name
 #endif
+
+//----------------------------------------------------------------------------
+//
+// $Log: hu_stuff.h,v $
+// Revision 1.6  1998/05/10  19:03:50  jim
+// formatted/documented hu_stuff
+//
+// Revision 1.5  1998/05/03  22:25:03  killough
+// add external declarations for hud options
+//
+// Revision 1.4  1998/02/18  00:59:04  jim
+// Addition of HUD
+//
+// Revision 1.3  1998/02/15  02:48:12  phares
+// User-defined keys
+//
+// Revision 1.2  1998/01/26  19:26:54  phares
+// First rev with no ^Ms
+//
+// Revision 1.1.1.1  1998/01/19  14:02:56  rand
+// Lee's Jan 19 sources
+//
+//
+//----------------------------------------------------------------------------

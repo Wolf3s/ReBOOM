@@ -3,24 +3,16 @@
 //
 // $Id: v_video.c,v 1.10 1998/05/06 11:12:48 jim Exp $
 //
-//  BOOM, a modified and improved DOOM engine
-//  Copyright (C) 1999 by
-//  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
+// Copyright (C) 1993-1996 by id Software, Inc.
 //
-//  This program is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU General Public License
-//  as published by the Free Software Foundation; either version 2
-//  of the License, or (at your option) any later version.
+// This source is available for distribution and/or modification
+// only under the terms of the DOOM Source Code License as
+// published by id Software. All rights reserved.
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
-//
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
-//  02111-1307, USA.
+// The source is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// FITNESS FOR A PARTICULAR PURPOSE. See the DOOM Source Code License
+// for more details.
 //
 //
 // DESCRIPTION:
@@ -31,12 +23,14 @@
 //
 //-----------------------------------------------------------------------------
 
+static const char
+rcsid[] = "$Id: v_video.c,v 1.10 1998/05/06 11:12:48 jim Exp $";
+
 #include "doomdef.h"
 #include "r_main.h"
 #include "m_bbox.h"
 #include "w_wad.h"   /* needed for color translation lump lookup */
 #include "v_video.h"
-#include "i_video.h"
 
 // Each screen is [SCREENWIDTH*SCREENHEIGHT];
 byte *screens[5];
@@ -151,7 +145,7 @@ int usegamma;
 // V_InitColorTranslation
 //
 // Loads the color translation tables from predefined lumps at game start
-// No return value
+// No return
 //
 // Used for translating text colors from the red palette range
 // to other colors. The first nine entries can be used to dynamically
@@ -184,7 +178,7 @@ static const crdef_t crdefs[] = {
 // killough 5/2/98: tiny engine driven by table above
 void V_InitColorTranslation(void)
 {
-  const crdef_t *p;
+  register const crdef_t *p;
   for (p=crdefs; p->name; p++)
     *p->map1 = *p->map2 = W_CacheLumpName(p->name, PU_STATIC);
 }
@@ -194,17 +188,13 @@ void V_InitColorTranslation(void)
 //
 // Marks a rectangular portion of the screen specified by
 // upper left origin and height and width dirty to minimize
-// the amount of screen update necessary. No return value.
+// the amount of screen update necessary. No return.
 //
-// killough 11/98: commented out, macroized to no-op, since it's unused now
-
-#if 0
 void V_MarkRect(int x, int y, int width, int height)
 {
   M_AddToBox(dirtybox, x, y);
   M_AddToBox(dirtybox, x+width-1, y+height-1);
 }
-#endif
 
 //
 // V_CopyRect
@@ -216,10 +206,10 @@ void V_MarkRect(int x, int y, int width, int height)
 //
 // Marks the destination rectangle on the screen dirty.
 //
-// No return value.
-
+// No return.
+//
 void V_CopyRect(int srcx, int srcy, int srcscrn, int width,
-		int height, int destx, int desty, int destscrn )
+                int height, int destx, int desty, int destscrn )
 {
   byte *src;
   byte *dest;
@@ -243,11 +233,11 @@ void V_CopyRect(int srcx, int srcy, int srcscrn, int width,
   dest = screens[destscrn]+SCREENWIDTH*desty+destx;
 
   for ( ; height>0 ; height--)
-	{
-	  memcpy (dest, src, width);
-	  src += SCREENWIDTH;
-	  dest += SCREENWIDTH;
-	}
+    {
+      memcpy (dest, src, width);
+      src += SCREENWIDTH;
+      dest += SCREENWIDTH;
+    }
 }
 
 //
@@ -256,26 +246,15 @@ void V_CopyRect(int srcx, int srcy, int srcscrn, int width,
 // Masks a column based masked pic to the screen.
 //
 // The patch is drawn at x,y in the buffer selected by scrn
-// No return value
-//
-// V_DrawPatchFlipped
-//
-// Masks a column based masked pic to the screen.
-// Flips horizontally, e.g. to mirror face.
-//
-// Patch is drawn at x,y in screenbuffer scrn.
-// No return value
-//
-// killough 11/98: Consolidated V_DrawPatch and V_DrawPatchFlipped into one
+// No return
 //
 
-void V_DrawPatchGeneral(int x, int y, int scrn, patch_t *patch,
-			boolean flipped)
+void V_DrawPatch(int x, int y, int scrn, patch_t *patch)
 {
-  int  w = SHORT(patch->width), col = w-1, colstop = -1, colstep = -1;
-  
-  if (!flipped)
-    col = 0, colstop = w, colstep = 1;
+  int      col;
+  column_t *column;
+  byte     *desttop;
+  int      w;
 
   y -= SHORT(patch->topoffset);
   x -= SHORT(patch->leftoffset);
@@ -292,48 +271,50 @@ void V_DrawPatchGeneral(int x, int y, int scrn, patch_t *patch,
   if (!scrn)
     V_MarkRect (x, y, SHORT(patch->width), SHORT(patch->height));
 
-      byte *desttop = screens[scrn]+y*SCREENWIDTH+x;
+  col = 0;
+  desttop = screens[scrn]+y*SCREENWIDTH+x;
 
-      for ( ; col != colstop ; col += colstep, desttop++)
-	{
-	  const column_t *column = 
-	    (const column_t *)((byte *)patch + LONG(patch->columnofs[col]));
+  w = SHORT(patch->width);
 
-	  // step through the posts in a column
-	  while (column->topdelta != 0xff)
-	    {
-	      // killough 2/21/98: Unrolled and performance-tuned
+  for ( ; col<w ; x++, col++, desttop++)
+    {
+      column = (column_t *)((byte *)patch + LONG(patch->columnofs[col]));
 
-	      const byte *source = (byte *) column + 3;
-	      byte *dest = desttop + column->topdelta*SCREENWIDTH;
-	      int count = column->length;
+      // step through the posts in a column
+      while (column->topdelta != 0xff )
+        {
+          // killough 2/21/98: Unrolled and performance-tuned
 
-	      if ((count-=4)>=0)
-		do
-		  {
-		    byte s0,s1;
-		    s0 = source[0];
-		    s1 = source[1];
-		    dest[0] = s0;
-		    dest[SCREENWIDTH] = s1;
-		    dest += SCREENWIDTH*2;
-		    s0 = source[2];
-		    s1 = source[3];
-		    source += 4;
-		    dest[0] = s0;
-		    dest[SCREENWIDTH] = s1;
-		    dest += SCREENWIDTH*2;
-		  }
-		while ((count-=4)>=0);
-	      if (count+=4)
-		do
-		  {
-		    *dest = *source++;
-		    dest += SCREENWIDTH;
-		  }
-		while (--count);
-	      column = (column_t *)(source+1); //killough 2/21/98 even faster
-	    }
+          register const byte *source = (byte *)column + 3;
+          register byte *dest = desttop + column->topdelta*SCREENWIDTH;
+          register int count = column->length;
+
+          if ((count-=4)>=0)
+            do
+              {
+                register byte s0,s1;
+                s0 = source[0];
+                s1 = source[1];
+                dest[0] = s0;
+                dest[SCREENWIDTH] = s1;
+                dest += SCREENWIDTH*2;
+                s0 = source[2];
+                s1 = source[3];
+                source += 4;
+                dest[0] = s0;
+                dest[SCREENWIDTH] = s1;
+                dest += SCREENWIDTH*2;
+              }
+            while ((count-=4)>=0);
+          if (count+=4)
+            do
+              {
+                *dest = *source++;
+                dest += SCREENWIDTH;
+              }
+            while (--count);
+          column = (column_t *)(source+1); //killough 2/21/98 even faster
+        }
     }
 }
 
@@ -349,11 +330,13 @@ void V_DrawPatchGeneral(int x, int y, int scrn, patch_t *patch,
 //
 // jff 1/15/98 new routine to translate patch colors
 //
-
 void V_DrawPatchTranslated(int x, int y, int scrn, patch_t *patch,
                            char *outr, int cm)
 {
-  int col, w;
+  int      col;
+  column_t *column;
+  byte     *desttop;
+  int      w;
 
   //jff 2/18/98 if translation not needed, just use the old routine
   if (outr==cr_red)
@@ -378,59 +361,119 @@ void V_DrawPatchTranslated(int x, int y, int scrn, patch_t *patch,
     V_MarkRect (x, y, SHORT(patch->width), SHORT(patch->height));
 
   col = 0;
+  desttop = screens[scrn]+y*SCREENWIDTH+x;
+
   w = SHORT(patch->width);
-  
-      byte *desttop = screens[scrn]+y*SCREENWIDTH+x;
+  for ( ; col<w ; x++, col++, desttop++)
+    {
+      column = (column_t *)((byte *)patch + LONG(patch->columnofs[col]));
 
-      for ( ; col<w ; col++, desttop++)
-	{
-	  const column_t *column =
-	    (const column_t *)((byte *)patch + LONG(patch->columnofs[col]));
+      // step through the posts in a column
+      while (column->topdelta != 0xff )
+        {
+          // killough 2/21/98: Unrolled and performance-tuned
 
-	  // step through the posts in a column
-	  while (column->topdelta != 0xff)
-	    {
-	      // killough 2/21/98: Unrolled and performance-tuned
+          register const byte *source = (byte *)column + 3;
+          register byte *dest = desttop + column->topdelta*SCREENWIDTH;
+          register int count = column->length;
 
-	      const byte *source = (byte *) column + 3;
-	      byte *dest = desttop + column->topdelta*SCREENWIDTH;
-	      int count = column->length;
+          if ((count-=4)>=0)
+            do
+              {
+                register byte s0,s1;
+                s0 = source[0];
+                s1 = source[1];
 
-	      if ((count-=4)>=0)
-		do
-		  {
-		    byte s0,s1;
-		    s0 = source[0];
-		    s1 = source[1];
+                //jff 2/18/98 apply red->range color translation
+                //2/18/98 don't brightness map for speed
 
-		    //jff 2/18/98 apply red->range color translation
-		    //2/18/98 don't brightness map for speed
+                s0 = outr[s0];
+                s1 = outr[s1];
+                dest[0] = s0;
+                dest[SCREENWIDTH] = s1;
+                dest += SCREENWIDTH*2;
+                s0 = source[2];
+                s1 = source[3];
+                s0 = outr[s0];
+                s1 = outr[s1];
+                source += 4;
+                dest[0] = s0;
+                dest[SCREENWIDTH] = s1;
+                dest += SCREENWIDTH*2;
+              }
+            while ((count-=4)>=0);
+          if (count+=4)
+            do
+              {
+                *dest = outr[*source++];
+                dest += SCREENWIDTH;
+              }
+            while (--count);
+          column = (column_t *)(source+1);
+        }
+    }
+}
 
-		    s0 = outr[s0];
-		    s1 = outr[s1];
-		    dest[0] = s0;
-		    dest[SCREENWIDTH] = s1;
-		    dest += SCREENWIDTH*2;
-		    s0 = source[2];
-		    s1 = source[3];
-		    s0 = outr[s0];
-		    s1 = outr[s1];
-		    source += 4;
-		    dest[0] = s0;
-		    dest[SCREENWIDTH] = s1;
-		    dest += SCREENWIDTH*2;
-		  }
-		while ((count-=4)>=0);
-	      if (count+=4)
-		do
-		  {
-		    *dest = outr[*source++];
-		    dest += SCREENWIDTH;
-		  }
-		while (--count);
-	      column = (column_t *)(source+1);
-	    }
+//
+// V_DrawPatchFlipped
+//
+// Masks a column based masked pic to the screen.
+// Flips horizontally, e.g. to mirror face.
+//
+// Patch is drawn at x,y in screenbuffer scrn.
+// No return
+//
 
+void V_DrawPatchFlipped(int x, int y, int scrn, patch_t *patch)
+{
+  int      count;
+  int      col;
+  column_t *column;
+  byte     *desttop;
+  byte     *dest;
+  byte     *source;
+  int      w;
+
+  y -= SHORT(patch->topoffset);
+  x -= SHORT(patch->leftoffset);
+
+#ifdef RANGECHECK
+  if (x<0
+      ||x+SHORT(patch->width) >SCREENWIDTH
+      || y<0
+      || y+SHORT(patch->height)>SCREENHEIGHT
+      || (unsigned)scrn>4)
+    // killough 1/19/98: improved error message:
+    I_Error("Patch origin %d,%d exceeds LFB\n"
+            "Bad V_DrawPatch in V_DrawPatchFlipped", x, y);
+#endif
+
+  if (!scrn)
+    V_MarkRect(x, y, SHORT(patch->width), SHORT(patch->height));
+
+  col = 0;
+  desttop = screens[scrn]+y*SCREENWIDTH+x;
+
+  w = SHORT(patch->width);
+
+  for ( ; col<w ; x++, col++, desttop++)
+    {
+      column = (column_t *)((byte *)patch + LONG(patch->columnofs[w-1-col]));
+
+      // step through the posts in a column
+      while (column->topdelta != 0xff )
+        {
+          source = (byte *)column + 3;
+          dest = desttop + column->topdelta*SCREENWIDTH;
+          count = column->length;
+
+          while (count--)
+            {
+              *dest = *source++;
+              dest += SCREENWIDTH;
+            }
+          column = (column_t *)((byte *) column + column->length + 4);
+        }
     }
 }
 
@@ -444,11 +487,13 @@ void V_DrawPatchTranslated(int x, int y, int scrn, patch_t *patch,
 //
 // The destination rectangle is marked dirty.
 //
-// No return value.
+// No return.
 // 
-
+//
 void V_DrawBlock(int x, int y, int scrn, int width, int height, byte *src)
 {
+  byte *dest;
+
 #ifdef RANGECHECK
   if (x<0
       ||x+width >SCREENWIDTH
@@ -458,16 +503,16 @@ void V_DrawBlock(int x, int y, int scrn, int width, int height, byte *src)
     I_Error ("Bad V_DrawBlock");
 #endif
 
-  V_MarkRect(x, y, width, height);
+  V_MarkRect (x, y, width, height);
 
-      byte *dest = screens[scrn] + y*SCREENWIDTH+x;
+  dest = screens[scrn] + y*SCREENWIDTH+x;
 
-      while (height--)
-	{
-	  memcpy (dest, src, width);
-	  src += width;
-	  dest += SCREENWIDTH;
-	}
+  while (height--)
+    {
+      memcpy (dest, src, width);
+      src += width;
+      dest += SCREENWIDTH;
+    }
 }
 
 //
@@ -477,7 +522,7 @@ void V_DrawBlock(int x, int y, int scrn, int width, int height, byte *src)
 //
 // The pixels in the rectangle at x,y in screenbuffer scrn with size
 // width by height are linearly packed into the buffer dest.
-// No return value
+// No return
 //
 
 void V_GetBlock(int x, int y, int scrn, int width, int height, byte *dest)
@@ -494,6 +539,7 @@ void V_GetBlock(int x, int y, int scrn, int width, int height, byte *dest)
 #endif
 
   src = screens[scrn] + y*SCREENWIDTH+x;
+
   while (height--)
     {
       memcpy (dest, src, width);
@@ -506,18 +552,283 @@ void V_GetBlock(int x, int y, int scrn, int width, int height, byte *dest)
 // V_Init
 //
 // Allocates the 4 full screen buffers in low DOS memory
-// No return value
+// No return
+//
 
-void V_Init(void)
+void V_Init (void)
 {
-   // Gibbon - removed stupid hires completely
-   int size = SCREENWIDTH*SCREENHEIGHT;
-   static byte *s;
-   
-   if(s)
-   {
-      free(s);
-   }
-   
-   screens[3] = (screens[2] = (screens[1] = s = calloc(size,3)) + size) + size;
+  int  i;
+  byte *base;
+
+  // stick these in low dos memory on PCs
+
+  base = I_AllocLow(SCREENWIDTH*SCREENHEIGHT*4);
+
+  for (i=0 ; i<4 ; i++)
+    screens[i] = base + i*SCREENWIDTH*SCREENHEIGHT;
 }
+
+// proff/nicolas 09/20/98: Added for stretching patches in high-res
+
+void V_DrawPatchStretched ( int x, int y, int scrn, patch_t* patch ) 
+{
+  column_t*	column;
+  byte*	desttop;
+  register byte* source;
+  register byte* dest;
+  
+  int col, w, count;
+  int stretchx, stretchy;
+  register int srccol;
+
+  int DX;
+  int DXI;
+  int DY;
+  register int DYI;
+  int DY2;
+  int DYI2;
+ 
+  if ((SCREENWIDTH==320) && (SCREENHEIGHT==200))
+    V_DrawPatchDirect(x,y,scrn,patch);
+
+  DX  = (SCREENWIDTH<<16)  / 320;
+  DXI = (320<<16)          / SCREENWIDTH;
+  DY  = (SCREENHEIGHT<<16) / 200;
+  DYI = (200<<16)          / SCREENHEIGHT;
+  DY2 = DY                 / 2;
+  DYI2= DYI                * 2;
+
+  x	-=	SHORT( patch->leftoffset );
+  y	-=	SHORT( patch->topoffset  );
+
+  
+#ifdef RANGECHECK
+
+  if ( x < 0 || x + SHORT(patch->width) > SCREENWIDTH
+             || y < 0
+             || y + SHORT(patch->height) > SCREENHEIGHT
+             || ( unsigned ) scrn > 4 
+	 ) return;
+
+#endif
+
+  stretchx = ( x * DX ) >> 16;
+  stretchy = ( y * DY ) >> 16;
+
+  if (!scrn)
+    V_MarkRect ( stretchx, stretchy, (SHORT( patch->width ) * DX ) >> 16,
+	                                 (SHORT( patch->height) * DY ) >> 16 );
+
+  desttop	= screens[scrn] + stretchy * SCREENWIDTH +  stretchx;
+	 
+  w = ( patch->width ) << 16;
+
+  for ( col = 0; col < w; x++, col+=DXI, desttop++ )
+  {
+    column = ( column_t* ) (( byte* ) patch + LONG( patch->columnofs[col>>16] ));
+ 
+    while ( column->topdelta != 0xff )
+    {
+	    source = ( byte* ) column + 3;
+      dest   = desttop + (( column->topdelta * DY ) >> 16 ) * SCREENWIDTH;
+      count  = ( column->length * DY ) >> 16;
+   	  srccol = 0x8000;
+	 
+	    while (count--)
+      {
+	      *dest  =  source[srccol>>16];
+	      dest  +=  SCREENWIDTH;
+        srccol+=  DYI;
+	    }
+	    column = ( column_t* ) (( byte* ) column + ( column->length ) + 4 );
+    }
+  }
+}
+
+void V_DrawPatchFlipStretched ( int x, int y, int scrn, patch_t* patch ) 
+{
+  column_t*	column;
+  byte*	desttop;
+  register byte* source;
+  register byte* dest;
+  
+  int col, w, count;
+  int stretchx, stretchy;
+  register int srccol;
+
+  int DX;
+  int DXI;
+  int DY;
+  register int DYI;
+  int DY2;
+  int DYI2;
+ 
+  if ((SCREENWIDTH==320) && (SCREENHEIGHT==200))
+    V_DrawPatchDirect(x,y,scrn,patch);
+
+  DX  = (SCREENWIDTH<<16)  / 320;
+  DXI = (320<<16)          / SCREENWIDTH;
+  DY  = (SCREENHEIGHT<<16) / 200;
+  DYI = (200<<16)          / SCREENHEIGHT;
+  DY2 = DY                 / 2;
+  DYI2= DYI                * 2;
+
+  x	-=	SHORT( patch->leftoffset );
+  y	-=	SHORT( patch->topoffset  );
+
+  
+#ifdef RANGECHECK
+
+  if ( x < 0 || x + SHORT(patch->width) > SCREENWIDTH
+             || y < 0
+             || y + SHORT(patch->height) > SCREENHEIGHT
+             || ( unsigned ) scrn > 4 
+	 ) return;
+
+#endif
+
+  stretchx = ( x * DX ) >> 16;
+  stretchy = ( y * DY ) >> 16;
+
+  if (!scrn)
+    V_MarkRect ( stretchx, stretchy, (SHORT( patch->width ) * DX ) >> 16,
+	                                 (SHORT( patch->height) * DY ) >> 16 );
+
+  desttop	= screens[scrn] + stretchy * SCREENWIDTH +  stretchx;
+	 
+  w = ( patch->width ) << 16;
+
+  for ( col = 0; col < w; x++, col+=DXI, desttop++ )
+  {
+    column = ( column_t* ) (( byte* ) patch + LONG( patch->columnofs[(w-1-col)>>16] ));
+ 
+    while ( column->topdelta != 0xff )
+    {
+	    source = ( byte* ) column + 3;
+      dest   = desttop + (( column->topdelta * DY ) >> 16 ) * SCREENWIDTH;
+      count  = ( column->length * DY ) >> 16;
+   	  srccol = 0x8000;
+	 
+	    while (count--)
+      {
+	      *dest  =  source[srccol>>16];
+	      dest  +=  SCREENWIDTH;
+        srccol+=  DYI;
+	    }
+	    column = ( column_t* ) (( byte* ) column + ( column->length ) + 4 );
+    }
+  }
+}
+
+void V_DrawPatchTransStretched( int x, int y, int scrn, patch_t* patch, char* outr, int cm )
+{
+  column_t*	column;
+  byte*	desttop;
+  register byte* source;
+  register byte* dest;
+  
+  int col, w, count;
+  int stretchx, stretchy;
+  register int srccol;
+
+  int DX;
+  int DXI;
+  int DY;
+  register int DYI;
+  int DY2;
+  int DYI2;
+ 
+  if ((SCREENWIDTH==320) && (SCREENHEIGHT==200))
+    V_DrawPatchDirect(x,y,scrn,patch);
+
+  DX  = (SCREENWIDTH<<16)  / 320;
+  DXI = (320<<16)          / SCREENWIDTH;
+  DY  = (SCREENHEIGHT<<16) / 200;
+  DYI = (200<<16)          / SCREENHEIGHT;
+  DY2 = DY                 / 2;
+  DYI2= DYI                * 2;
+
+  x	-=	SHORT( patch->leftoffset );
+  y	-=	SHORT( patch->topoffset  );
+
+  
+#ifdef RANGECHECK
+
+  if ( x < 0 || x + SHORT(patch->width) > SCREENWIDTH
+             || y < 0
+             || y + SHORT(patch->height) > SCREENHEIGHT
+             || ( unsigned ) scrn > 4 
+	 ) return;
+
+#endif
+
+  stretchx = ( x * DX ) >> 16;
+  stretchy = ( y * DY ) >> 16;
+
+  if (!scrn)
+    V_MarkRect ( stretchx, stretchy, (SHORT( patch->width ) * DX ) >> 16,
+	                                 (SHORT( patch->height) * DY ) >> 16 );
+
+  desttop	= screens[scrn] + stretchy * SCREENWIDTH +  stretchx;
+	 
+  w = ( patch->width ) << 16;
+
+  for ( col = 0; col < w; x++, col+=DXI, desttop++ )
+  {
+    column = ( column_t* ) (( byte* ) patch + LONG( patch->columnofs[col>>16] ));
+ 
+    while ( column->topdelta != 0xff )
+    {
+	    source = ( byte* ) column + 3;
+      dest   = desttop + (( column->topdelta * DY ) >> 16 ) * SCREENWIDTH;
+      count  = ( column->length * DY ) >> 16;
+   	  srccol = 0x8000;
+	 
+	    while (count--)
+      {
+	      *dest  =  outr[source[srccol>>16]];
+	      dest  +=  SCREENWIDTH;
+        srccol+=  DYI;
+	    }
+	    column = ( column_t* ) (( byte* ) column + ( column->length ) + 4 );
+    }
+  }
+}
+
+// proff/nicolas 09/20/98: End of additions
+
+//----------------------------------------------------------------------------
+//
+// $Log: v_video.c,v $
+// Revision 1.10  1998/05/06  11:12:48  jim
+// Formattted v_video.*
+//
+// Revision 1.9  1998/05/03  22:53:16  killough
+// beautification, simplify translation lookup
+//
+// Revision 1.8  1998/04/24  08:09:39  jim
+// Make text translate tables lumps
+//
+// Revision 1.7  1998/03/02  11:41:58  killough
+// Add cr_blue_status for blue statusbar numbers
+//
+// Revision 1.6  1998/02/24  01:40:12  jim
+// Tuned HUD font
+//
+// Revision 1.5  1998/02/23  04:58:17  killough
+// Fix performance problems
+//
+// Revision 1.4  1998/02/19  16:55:00  jim
+// Optimized HUD and made more configurable
+//
+// Revision 1.3  1998/02/17  23:00:36  jim
+// Added color translation machinery and data
+//
+// Revision 1.2  1998/01/26  19:25:08  phares
+// First rev with no ^Ms
+//
+// Revision 1.1.1.1  1998/01/19  14:03:05  rand
+// Lee's Jan 19 sources
+//
+//----------------------------------------------------------------------------
+

@@ -1,32 +1,31 @@
 // Emacs style mode select   -*- C++ -*-
 //-----------------------------------------------------------------------------
 //
-//  BOOM, a modified and improved DOOM engine
-//  Copyright (C) 1999 by
-//  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
+// $Id: doomstat.c,v 1.5 1998/05/12 12:46:12 phares Exp $
 //
-//  This program is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU General Public License
-//  as published by the Free Software Foundation; either version 2
-//  of the License, or (at your option) any later version.
+// Copyright (C) 1993-1996 by id Software, Inc.
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+// This source is available for distribution and/or modification
+// only under the terms of the DOOM Source Code License as
+// published by id Software. All rights reserved.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
-//  02111-1307, USA.
+// The source is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// FITNESS FOR A PARTICULAR PURPOSE. See the DOOM Source Code License
+// for more details.
+//
 //
 // DESCRIPTION:
 //      Put all global state variables here.
 //
 //-----------------------------------------------------------------------------
 
-//static const char rcsid[] = "$Id: doomstat.c,v 1.5 1998/05/12 12:46:12 phares Exp $";
+static const char
+rcsid[] = "$Id: doomstat.c,v 1.5 1998/05/12 12:46:12 phares Exp $";
 
+#ifdef __GNUG__
+#pragma implementation "doomstat.h"
+#endif
 #include "doomstat.h"
 
 // Game Mode - identify IWAD as shareware, retail etc.
@@ -41,30 +40,19 @@ boolean modifiedgame;
 
 //-----------------------------------------------------------------------------
 
-// More Gibs - With or Without Hyper Shotgun
-int more_gibs;
-
-// Hyper Berserk Shotgun
-int hyper_berserk_shotgun;
-
-// Accessibility colours
-int accessibility_colours;
-
-// Accessibility effects
-int accessibility_effects;
-
-// No horizontal autoaim
-int disable_horizontal_autoaim;
-
 // compatibility with old engines (monster behavior, metrics, etc.)
 int compatibility, default_compatibility;          // killough 1/31/98
 
-int demo_version;           // killough 7/19/98: Boom version of demo
+// Only true when playing back an old demo -- used only in "corner cases"
+// which break playback but are otherwise unnoticable or are just desirable:
+
+int demo_compatibility, default_compatibility;     // killough 1/16/98
 
 // v1.1-like pitched sounds
-int pitched_sounds;  // killough 10/98
+int pitched_sounds, default_pitched_sounds;        // killough
 
-int general_translucency;    // killough 10/98
+int     default_translucency; // config file says           // phares
+boolean general_translucency; // true if translucency is ok // phares
 
 int demo_insurance, default_demo_insurance;        // killough 1/16/98
 
@@ -83,14 +71,22 @@ int default_player_bobbing;  // killough 3/1/98: make local to each game
 int monsters_remember;          // killough 3/1/98
 int default_monsters_remember;
 
-char *MAPNAME(int e, int m)
-{
-  static char name[9];
-
-  if (gamemode == commercial)
-    snprintf(name, sizeof(name), "MAP%02d", m);
-  else
-    snprintf(name, sizeof(name), "E%dM%d", e, m);
-
-  return name;
-}
+//----------------------------------------------------------------------------
+//
+// $Log: doomstat.c,v $
+// Revision 1.5  1998/05/12  12:46:12  phares
+// Removed OVER_UNDER code
+//
+// Revision 1.4  1998/05/05  16:29:01  phares
+// Removed RECOIL and OPT_BOBBING defines
+//
+// Revision 1.3  1998/05/03  23:12:13  killough
+// beautify, move most global switch variables here
+//
+// Revision 1.2  1998/01/26  19:23:10  phares
+// First rev with no ^Ms
+//
+// Revision 1.1.1.1  1998/01/19  14:03:06  rand
+// Lee's Jan 19 sources
+//
+//----------------------------------------------------------------------------

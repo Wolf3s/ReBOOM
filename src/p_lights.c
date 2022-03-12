@@ -3,24 +3,17 @@
 //
 // $Id: p_lights.c,v 1.11 1998/05/18 09:04:41 jim Exp $
 //
-//  BOOM, a modified and improved DOOM engine
-//  Copyright (C) 1999 by
-//  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
+// Copyright (C) 1993-1996 by id Software, Inc.
 //
-//  This program is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU General Public License
-//  as published by the Free Software Foundation; either version 2
-//  of the License, or (at your option) any later version.
+// This source is available for distribution and/or modification
+// only under the terms of the DOOM Source Code License as
+// published by id Software. All rights reserved.
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+// The source is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// FITNESS FOR A PARTICULAR PURPOSE. See the DOOM Source Code License
+// for more details.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
-//  02111-1307, USA.
 //
 // DESCRIPTION:
 //  Action routines for lighting thinkers
@@ -28,6 +21,9 @@
 //  Handle lighting linedef types
 //
 //-----------------------------------------------------------------------------
+
+static const char
+rcsid[] = "$Id: p_lights.c,v 1.11 1998/05/18 09:04:41 jim Exp $";
 
 #include "doomstat.h" //jff 5/18/98
 #include "doomdef.h"
@@ -52,8 +48,6 @@
 //
 void T_FireFlicker (fireflicker_t* flick)
 {
-if (!accessibility_effects)
-{
   int amount;
   
   if (--flick->count)
@@ -67,8 +61,6 @@ if (!accessibility_effects)
     flick->sector->lightlevel = flick->maxlight - amount;
 
   flick->count = 4;
-} else {
-}
 }
 
 //
@@ -80,8 +72,6 @@ if (!accessibility_effects)
 // Returns nothing
 //
 void T_LightFlash (lightflash_t* flash)
-{
-if (!accessibility_effects)
 {
   if (--flash->count)
     return;
@@ -96,8 +86,7 @@ if (!accessibility_effects)
     flash-> sector->lightlevel = flash->maxlight;
     flash->count = (P_Random(pr_lights)&flash->maxtime)+1;
   }
-} else {
-}
+
 }
 
 //
@@ -109,8 +98,6 @@ if (!accessibility_effects)
 // Returns nothing
 //
 void T_StrobeFlash (strobe_t*   flash)
-{
-if (!accessibility_effects)
 {
   if (--flash->count)
     return;
@@ -125,8 +112,6 @@ if (!accessibility_effects)
     flash-> sector->lightlevel = flash->minlight;
     flash->count =flash->darktime;
   }
-} else {
-}
 }
 
 //
@@ -139,8 +124,6 @@ if (!accessibility_effects)
 //
 
 void T_Glow(glow_t* g)
-{
-if (!accessibility_effects)
 {
   switch(g->direction)
   {
@@ -164,8 +147,6 @@ if (!accessibility_effects)
       }
       break;
   }
-} else {
-}
 }
 
 //////////////////////////////////////////////////////////
@@ -187,8 +168,6 @@ if (!accessibility_effects)
 //
 void P_SpawnFireFlicker (sector_t*  sector)
 {
-if (!accessibility_effects)
-{
   fireflicker_t*  flick;
 
   // Note that we are resetting sector attributes.
@@ -199,13 +178,11 @@ if (!accessibility_effects)
 
   P_AddThinker (&flick->thinker);
 
-  flick->thinker.function = T_FireFlicker;
+  flick->thinker.function.acp1 = (actionf_p1) T_FireFlicker;
   flick->sector = sector;
   flick->maxlight = sector->lightlevel;
   flick->minlight = P_FindMinSurroundingLight(sector,sector->lightlevel)+16;
   flick->count = 4;
-} else {
-}
 }
 
 //
@@ -218,8 +195,6 @@ if (!accessibility_effects)
 //
 void P_SpawnLightFlash (sector_t* sector)
 {
-if (!accessibility_effects)
-{
   lightflash_t* flash;
 
   // nothing special about it during gameplay
@@ -229,7 +204,7 @@ if (!accessibility_effects)
 
   P_AddThinker (&flash->thinker);
 
-  flash->thinker.function = T_LightFlash;
+  flash->thinker.function.acp1 = (actionf_p1) T_LightFlash;
   flash->sector = sector;
   flash->maxlight = sector->lightlevel;
 
@@ -237,8 +212,6 @@ if (!accessibility_effects)
   flash->maxtime = 64;
   flash->mintime = 7;
   flash->count = (P_Random(pr_lights)&flash->maxtime)+1;
-} else {
-}
 }
 
 //
@@ -251,9 +224,10 @@ if (!accessibility_effects)
 //
 // Returns nothing
 //
-void P_SpawnStrobeFlash(sector_t* sector, int fastOrSlow, int inSync)
-{
-if (!accessibility_effects)
+void P_SpawnStrobeFlash
+( sector_t* sector,
+  int   fastOrSlow,
+  int   inSync )
 {
   strobe_t* flash;
 
@@ -264,7 +238,7 @@ if (!accessibility_effects)
   flash->sector = sector;
   flash->darktime = fastOrSlow;
   flash->brighttime = STROBEBRIGHT;
-  flash->thinker.function = T_StrobeFlash;
+  flash->thinker.function.acp1 = (actionf_p1) T_StrobeFlash;
   flash->maxlight = sector->lightlevel;
   flash->minlight = P_FindMinSurroundingLight(sector, sector->lightlevel);
   
@@ -278,8 +252,6 @@ if (!accessibility_effects)
     flash->count = (P_Random(pr_lights)&7)+1;
   else
     flash->count = 1;
-} else {
-}
 }
 
 //
@@ -292,8 +264,6 @@ if (!accessibility_effects)
 //
 void P_SpawnGlowingLight(sector_t*  sector)
 {
-if (!accessibility_effects)
-{
   glow_t* g;
 
   g = Z_Malloc( sizeof(*g), PU_LEVSPEC, 0);
@@ -303,12 +273,10 @@ if (!accessibility_effects)
   g->sector = sector;
   g->minlight = P_FindMinSurroundingLight(sector,sector->lightlevel);
   g->maxlight = sector->lightlevel;
-  g->thinker.function = T_Glow;
+  g->thinker.function.acp1 = (actionf_p1) T_Glow;
   g->direction = -1;
 
   sector->special &= ~31; //jff 3/14/98 clear non-generalized sector type
-} else {
-}
 }
 
 //////////////////////////////////////////////////////////
@@ -329,8 +297,6 @@ if (!accessibility_effects)
 //
 int EV_StartLightStrobing(line_t* line)
 {
-if (!accessibility_effects)
-{
   int   secnum;
   sector_t* sec;
 
@@ -346,9 +312,6 @@ if (!accessibility_effects)
     P_SpawnStrobeFlash (sec,SLOWDARK, 0);
   }
   return 1;
-} else {
-	return 0;
-}
 }
 
 //
@@ -363,28 +326,35 @@ if (!accessibility_effects)
 //
 int EV_TurnTagLightsOff(line_t* line)
 {
-if (!accessibility_effects)
-{
-  int j;
-  
-  // search sectors for those with same tag as activating line
+  int     i;
+  int     j;
+  int     min;
+  sector_t*   sector;
+  sector_t*   tsec;
+  line_t*   templine;
 
-  // killough 10/98: replaced inefficient search with fast search
-  for (j = -1; (j = P_FindSectorFromLineTag(line,j)) >= 0;)
+  sector = sectors;
+
+  // search sectors for those with same tag as activating line
+  for (j = 0;j < numsectors; j++, sector++)
+  {
+    if (sector->tag == line->tag)
     {
-      sector_t *sector = sectors + j, *tsec;
-      int i, min = sector->lightlevel;
+      min = sector->lightlevel;
       // find min neighbor light level
       for (i = 0;i < sector->linecount; i++)
-	if ((tsec = getNextSector(sector->lines[i], sector)) &&
-	    tsec->lightlevel < min)
-	  min = tsec->lightlevel;
+      {
+        templine = sector->lines[i];
+        tsec = getNextSector(templine,sector);
+        if (!tsec)
+          continue;
+        if (tsec->lightlevel < min)
+          min = tsec->lightlevel;
+      }
       sector->lightlevel = min;
     }
+  }
   return 1;
-} else {
-	return 0;
-}
 }
 
 //
@@ -398,37 +368,86 @@ if (!accessibility_effects)
 //
 // jff 2/12/98 added int return value, fixed return
 //
-int EV_LightTurnOn(line_t *line, int bright)
+int EV_LightTurnOn
+( line_t* line,
+  int   bright )
 {
-if (!accessibility_effects)
-{
-  int i;
+  int   i;
+  int   j;
+  sector_t* sector;
+  sector_t* temp;
+  line_t* templine;
+
+  sector = sectors;
 
   // search all sectors for ones with same tag as activating line
-
-  // killough 10/98: replace inefficient search with fast search
-  for (i = -1; (i = P_FindSectorFromLineTag(line,i)) >= 0;)
+  for (i=0;i<numsectors;i++, sector++)
+  {
+    int tbright = bright; //jff 5/17/98 search for maximum PER sector
+    if (sector->tag == line->tag)
     {
-      sector_t *temp, *sector = sectors+i;
-      int j, tbright = bright; //jff 5/17/98 search for maximum PER sector
-
-      // bright = 0 means to search for highest light level surrounding sector
-
+      // bright = 0 means to search
+      // for highest light level
+      // surrounding sector
       if (!bright)
-	for (j = 0;j < sector->linecount; j++)
-	  if ((temp = getNextSector(sector->lines[j],sector)) &&
-	      temp->lightlevel > tbright)
-	    tbright = temp->lightlevel;
+      {
+        for (j = 0;j < sector->linecount; j++)
+        {
+          templine = sector->lines[j];
+          temp = getNextSector(templine,sector);
 
-      sector->lightlevel = tbright;
-      
+          if (!temp)
+            continue;
+
+          if (temp->lightlevel > tbright)
+            tbright = temp->lightlevel;
+        }
+      }
+      sector-> lightlevel = tbright;
       //jff 5/17/98 unless compatibility optioned 
       //then maximum near ANY tagged sector
       if (compatibility)
-	bright = tbright;
+        bright = tbright;
     }
+  }
   return 1;
-} else {
-	return 0;
 }
-}
+
+//----------------------------------------------------------------------------
+//
+// $Log: p_lights.c,v $
+// Revision 1.11  1998/05/18  09:04:41  jim
+// fix compatibility decl
+//
+// Revision 1.10  1998/05/17  11:31:36  jim
+// fixed bug in lights to max neighbor
+//
+// Revision 1.9  1998/05/09  18:57:50  jim
+// formatted/documented p_lights
+//
+// Revision 1.8  1998/05/03  23:17:23  killough
+// Fix #includes at the top, nothing else
+//
+// Revision 1.7  1998/03/15  14:40:10  jim
+// added pure texture change linedefs & generalized sector types
+//
+// Revision 1.6  1998/02/23  23:46:56  jim
+// Compatibility flagged multiple thinker support
+//
+// Revision 1.5  1998/02/23  00:41:51  jim
+// Implemented elevators
+//
+// Revision 1.4  1998/02/17  06:07:11  killough
+// Change RNG calling sequence
+//
+// Revision 1.3  1998/02/13  03:28:42  jim
+// Fixed W1,G1 linedefs clearing untriggered special, cosmetic changes
+//
+// Revision 1.2  1998/01/26  19:24:07  phares
+// First rev with no ^Ms
+//
+// Revision 1.1.1.1  1998/01/19  14:02:59  rand
+// Lee's Jan 19 sources
+//
+//
+//----------------------------------------------------------------------------

@@ -3,30 +3,26 @@
 //
 // $Id: p_pspr.c,v 1.13 1998/05/07 00:53:36 killough Exp $
 //
-//  BOOM, a modified and improved DOOM engine
-//  Copyright (C) 1999 by
-//  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
+// Copyright (C) 1993-1996 by id Software, Inc.
 //
-//  This program is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU General Public License
-//  as published by the Free Software Foundation; either version 2
-//  of the License, or (at your option) any later version.
+// This source is available for distribution and/or modification
+// only under the terms of the DOOM Source Code License as
+// published by id Software. All rights reserved.
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+// The source is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// FITNESS FOR A PARTICULAR PURPOSE. See the DOOM Source Code License
+// for more details.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
-//  02111-1307, USA.
 //
 // DESCRIPTION:
 //      Weapon sprite animation, weapon objects.
 //      Action functions for weapons.
 //
 //-----------------------------------------------------------------------------
+
+static const char
+rcsid[] = "$Id: p_pspr.c,v 1.13 1998/05/07 00:53:36 killough Exp $";
 
 #include "doomstat.h"
 #include "r_main.h"
@@ -38,7 +34,6 @@
 #include "s_sound.h"
 #include "sounds.h"
 #include "d_event.h"
-#include "p_tick.h"
 
 #define LOWERSPEED   (FRACUNIT*6)
 #define RAISESPEED   (FRACUNIT*6)
@@ -48,6 +43,7 @@
 #define BFGCELLS bfgcells        /* Ty 03/09/98 externalized in p_inter.c */
 
 extern void P_Thrust(player_t *, angle_t, fixed_t);
+int weapon_recoil;      // weapon recoil
 
 // The following array holds the recoil values         // phares
 
@@ -95,9 +91,9 @@ static void P_SetPsprite(player_t *player, int position, statenum_t stnum)
 
       // Call action routine.
       // Modified handling.
-      if (state->action)
+      if (state->action.acp2)
         {
-          state->action(player, psp);
+          state->action.acp2(player, psp);
           if (!psp->state)
             break;
         }
@@ -121,7 +117,7 @@ static void P_BringUpWeapon(player_t *player)
     player->pendingweapon = player->readyweapon;
 
   if (player->pendingweapon == wp_chainsaw)
-    S_StartSound(player->mo, sfx_sawup);
+    S_StartSound (player->mo, sfx_sawup);
 
   newstate = weaponinfo[player->pendingweapon].upstate;
 
@@ -442,18 +438,17 @@ void A_Raise(player_t *player, pspdef_t *psp)
 
 static void A_FireSomething(player_t* player,int adder)
 {
-if(!accessibility_effects)
-{
   P_SetPsprite(player, ps_flash,
                weaponinfo[player->readyweapon].flashstate+adder);
-}
 
   // killough 3/27/98: prevent recoil in no-clipping mode
   if (!(player->mo->flags & MF_NOCLIP))
     if (!compatibility && weapon_recoil)
-      P_Thrust(player, ANG180 + player->mo->angle,
-               2048*recoil_values[player->readyweapon]);
-}
+      P_Thrust(player,
+               ANG180+player->mo->angle,                          //   ^
+               2048*recoil_values[player->readyweapon]);          //   |
+}                                                                 // phares
+
 //
 // A_GunFlash
 //
@@ -674,8 +669,6 @@ void A_FireShotgun2(player_t *player, pspdef_t *psp)
   for (i=0; i<20; i++)
     {
       int damage = 5*(P_Random(pr_shotgun)%3+1);
-	  if (player->powers[pw_strength] && hyper_berserk_shotgun)
-		  damage *= 5;
       angle_t angle = player->mo->angle;
       // killough 5/5/98: remove dependence on order of evaluation:
       int t = P_Random(pr_shotgun);
@@ -797,9 +790,51 @@ void P_MovePsprites(player_t *player)
   for (i=0; i<NUMPSPRITES; i++, psp++)
     if (psp->state && psp->tics != -1 && !--psp->tics)
       P_SetPsprite(player, i, psp->state->nextstate);
-if (!accessibility_effects)
-{
+
   player->psprites[ps_flash].sx = player->psprites[ps_weapon].sx;
   player->psprites[ps_flash].sy = player->psprites[ps_weapon].sy;
 }
-}
+
+//----------------------------------------------------------------------------
+//
+// $Log: p_pspr.c,v $
+// Revision 1.13  1998/05/07  00:53:36  killough
+// Remove dependence on order of evaluation
+//
+// Revision 1.12  1998/05/05  16:29:17  phares
+// Removed RECOIL and OPT_BOBBING defines
+//
+// Revision 1.11  1998/05/03  22:35:21  killough
+// Fix weapons switch bug again, beautification, headers
+//
+// Revision 1.10  1998/04/29  10:01:55  killough
+// Fix buggy weapons switch code
+//
+// Revision 1.9  1998/03/28  18:01:38  killough
+// Prevent weapon recoil in no-clipping mode
+//
+// Revision 1.8  1998/03/23  03:28:29  killough
+// Move weapons changes to G_BuildTiccmd()
+//
+// Revision 1.7  1998/03/10  07:14:47  jim
+// Initial DEH support added, minus text
+//
+// Revision 1.6  1998/02/24  08:46:27  phares
+// Pushers, recoil, new friction, and over/under work
+//
+// Revision 1.5  1998/02/17  05:59:41  killough
+// Use new RNG calling sequence
+//
+// Revision 1.4  1998/02/15  02:47:54  phares
+// User-defined keys
+//
+// Revision 1.3  1998/02/09  03:06:15  killough
+// Add player weapon preference options
+//
+// Revision 1.2  1998/01/26  19:24:18  phares
+// First rev with no ^Ms
+//
+// Revision 1.1.1.1  1998/01/19  14:03:00  rand
+// Lee's Jan 19 sources
+//
+//----------------------------------------------------------------------------

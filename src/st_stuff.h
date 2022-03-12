@@ -3,24 +3,16 @@
 //
 // $Id: st_stuff.h,v 1.4 1998/05/03 22:50:55 killough Exp $
 //
-//  BOOM, a modified and improved DOOM engine
-//  Copyright (C) 1999 by
-//  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
+// Copyright (C) 1993-1996 by id Software, Inc.
 //
-//  This program is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU General Public License
-//  as published by the Free Software Foundation; either version 2
-//  of the License, or (at your option) any later version.
+// This source is available for distribution and/or modification
+// only under the terms of the DOOM Source Code License as
+// published by id Software. All rights reserved.
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
-//
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
-//  02111-1307, USA.
+// The source is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// FITNESS FOR A PARTICULAR PURPOSE. See the DOOM Source Code License
+// for more details.
 //
 // DESCRIPTION:
 //      Status bar code.
@@ -39,7 +31,9 @@
 // Now sensitive for scaling.
 
 #define ST_HEIGHT (32*SCREEN_MUL)
-#define ST_WIDTH  SCREENWIDTH
+// proff 08/18/98: Changed for high-res
+#define ST_WIDTH  320
+//#define ST_WIDTH  SCREENWIDTH
 #define ST_Y      (SCREENHEIGHT - ST_HEIGHT)
 
 //
@@ -83,17 +77,31 @@ boolean ST_Responder(event_t* ev);
 extern int health_red;    // health amount less than which status is red
 extern int health_yellow; // health amount less than which status is yellow
 extern int health_green;  // health amount above is blue, below is green
-extern int health_gray;
 extern int armor_red;     // armor amount less than which status is red
 extern int armor_yellow;  // armor amount less than which status is yellow
 extern int armor_green;   // armor amount above is blue, below is green
-extern int armor_gray;
 extern int ammo_red;      // ammo percent less than which status is red
 extern int ammo_yellow;   // ammo percent less is yellow more green
-extern int ammo_gray;
 extern int sts_always_red;// status numbers do not change colors
-extern int sts_pct_always_yellow;// status percents do not change colors
+extern int sts_pct_always_gray;// status percents do not change colors
 extern int sts_traditional_keys;  // display keys the traditional way
-extern int sts_always_gray; // status numbers do not change colors
 
 #endif
+
+//----------------------------------------------------------------------------
+//
+// $Log: st_stuff.h,v $
+// Revision 1.4  1998/05/03  22:50:55  killough
+// beautification, move external declarations, remove cheats
+//
+// Revision 1.3  1998/04/19  01:10:39  killough
+// Generalize cheat engine to add deh support
+//
+// Revision 1.2  1998/01/26  19:27:56  phares
+// First rev with no ^Ms
+//
+// Revision 1.1.1.1  1998/01/19  14:03:04  rand
+// Lee's Jan 19 sources
+//
+//
+//----------------------------------------------------------------------------

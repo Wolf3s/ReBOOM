@@ -3,29 +3,25 @@
 //
 // $Id: p_sight.c,v 1.7 1998/05/07 00:55:55 killough Exp $
 //
-//  BOOM, a modified and improved DOOM engine
-//  Copyright (C) 1999 by
-//  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
+// Copyright (C) 1993-1996 by id Software, Inc.
 //
-//  This program is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU General Public License
-//  as published by the Free Software Foundation; either version 2
-//  of the License, or (at your option) any later version.
+// This source is available for distribution and/or modification
+// only under the terms of the DOOM Source Code License as
+// published by id Software. All rights reserved.
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+// The source is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// FITNESS FOR A PARTICULAR PURPOSE. See the DOOM Source Code License
+// for more details.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
-//  02111-1307, USA.
 //
 // DESCRIPTION:
 //      LineOfSight/Visibility checks, uses REJECT Lookup Table.
 //
 //-----------------------------------------------------------------------------
+
+static const char
+rcsid[] = "$Id: p_sight.c,v 1.7 1998/05/07 00:55:55 killough Exp $";
 
 #include "r_main.h"
 #include "p_maputl.h"
@@ -50,9 +46,8 @@ typedef struct {
 // Returns side 0 (front), 1 (back), or 2 (on).
 //
 // killough 4/19/98: made static, cleaned up
-// killough 12/98: made external
 
-int P_DivlineSide(fixed_t x, fixed_t y, const divline_t *node)
+static int P_DivlineSide(fixed_t x, fixed_t y, const divline_t *node)
 {
   fixed_t left, right;
   return
@@ -85,7 +80,7 @@ static fixed_t P_InterceptVector2(const divline_t *v2, const divline_t *v1)
 //
 // killough 4/19/98: made static and cleaned up
 
-static boolean P_CrossSubsector(int num, los_t *los)
+static boolean P_CrossSubsector(int num, register los_t *los)
 {
   seg_t *seg = segs + subsectors[num].firstline;
   int count;
@@ -188,11 +183,11 @@ static boolean P_CrossSubsector(int num, los_t *los)
 //
 // killough 4/20/98: rewritten to remove tail recursion, clean up, and optimize
 
-static boolean P_CrossBSPNode(int bspnum, los_t *los)
+static boolean P_CrossBSPNode(int bspnum, register los_t *los)
 {
   while (!(bspnum & NF_SUBSECTOR))
     {
-      const node_t *bsp = nodes + bspnum;
+      register const node_t *bsp = nodes + bspnum;
       int side = P_DivlineSide(los->strace.x,los->strace.y,(divline_t *)bsp)&1;
       if (side == P_DivlineSide(los->t2x, los->t2y, (divline_t *) bsp))
          bspnum = bsp->children[side]; // doesn't touch the other side
@@ -217,7 +212,7 @@ boolean P_CheckSight(mobj_t *t1, mobj_t *t2)
 {
   const sector_t *s1 = t1->subsector->sector;
   const sector_t *s2 = t2->subsector->sector;
-  long long pnum = (s1-sectors)*numsectors + (s2-sectors);
+  int pnum = (s1-sectors)*numsectors + (s2-sectors);
   los_t los;
 
   // First check for trivial rejection.
@@ -243,10 +238,6 @@ boolean P_CheckSight(mobj_t *t1, mobj_t *t2)
          t1->z + t2->height <= sectors[s2->heightsec].ceilingheight))))
     return false;
 
-    // killough 11/98: shortcut for melee situations
-  if (t1->subsector == t2->subsector)     // same subsector? obviously visible
-    return true;
-
   // An unobstructed LOS is possible.
   // Now look from eyes of t1 to any part of t2.
 
@@ -271,3 +262,29 @@ boolean P_CheckSight(mobj_t *t1, mobj_t *t2)
   // the head node is the last node output
   return P_CrossBSPNode(numnodes-1, &los);
 }
+
+//----------------------------------------------------------------------------
+//
+// $Log: p_sight.c,v $
+// Revision 1.7  1998/05/07  00:55:55  killough
+// Make monsters directly tangent to water surface blind
+//
+// Revision 1.6  1998/05/03  22:34:33  killough
+// beautification, header cleanup
+//
+// Revision 1.5  1998/05/01  14:52:09  killough
+// beautification
+//
+// Revision 1.4  1998/04/24  11:43:08  killough
+// minor optimization
+//
+// Revision 1.3  1998/04/20  11:13:41  killough
+// Fix v1.9 demo sync probs, make monsters blind across water
+//
+// Revision 1.2  1998/01/26  19:24:24  phares
+// First rev with no ^Ms
+//
+// Revision 1.1.1.1  1998/01/19  14:03:00  rand
+// Lee's Jan 19 sources
+//
+//----------------------------------------------------------------------------

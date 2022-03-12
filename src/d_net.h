@@ -1,36 +1,35 @@
 // Emacs style mode select   -*- C++ -*- 
 //-----------------------------------------------------------------------------
 //
-// $Id: d_net.h,v 1.8 1998/05/21 12:12:16 jim Exp $
+// $Id: d_net.h,v 1.9 1998/06/20 09:09:14 jim Exp $
 //
-//  BOOM, a modified and improved DOOM engine
-//  Copyright (C) 1999 by
-//  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
+// Copyright (C) 1993-1996 by id Software, Inc.
 //
-//  This program is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU General Public License
-//  as published by the Free Software Foundation; either version 2
-//  of the License, or (at your option) any later version.
+// This source is available for distribution and/or modification
+// only under the terms of the DOOM Source Code License as
+// published by id Software. All rights reserved.
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
-//
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
-//  02111-1307, USA.
+// The source is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// FITNESS FOR A PARTICULAR PURPOSE. See the DOOM Source Code License
+// for more details.
 //
 // DESCRIPTION:
 //      Networking stuff.
 //
 //-----------------------------------------------------------------------------
 
+
 #ifndef __D_NET__
 #define __D_NET__
 
 #include "d_player.h"
+
+
+#ifdef __GNUG__
+#pragma interface
+#endif
+
 
 //
 // Network play related stuff.
@@ -47,16 +46,13 @@
 
 
 // Networking and tick handling related.
-#if defined REMOVE_LIMITS
-#define BACKUPTICS              64
-#else
 #define BACKUPTICS              12
-#endif
 
 typedef enum
 {
     CMD_SEND    = 1,
     CMD_GET     = 2
+
 } command_t;
 
 
@@ -74,7 +70,9 @@ typedef struct
     byte                player;
     byte                numtics;
     ticcmd_t            cmds[BACKUPTICS];
+
 } doomdata_t;
+
 
 //
 // Startup packet difference
@@ -118,10 +116,11 @@ typedef struct
   char filler[sizeof(ticcmd_t)*BACKUPTICS-STARTUPLEN];
 } startup_t;
 
+
 typedef struct
 {
     // Supposed to be DOOMCOM_ID?
-    long long           id;
+    long                id;
     
     // DOOM executes an int to execute commands.
     short               intnum;         
@@ -168,6 +167,8 @@ typedef struct
     
 } doomcom_t;
 
+
+
 // Create any new ticcmds and broadcast to other players.
 void NetUpdate (void);
 
@@ -178,4 +179,34 @@ void D_QuitNetGame (void);
 //? how many ticks to run?
 void TryRunTics (void);
 
+
 #endif
+
+//----------------------------------------------------------------------------
+//
+// $Log: d_net.h,v $
+// Revision 1.9  1998/06/20  09:09:14  jim
+// change of net code to older version without consistency errors
+//
+// Revision 1.6  1998/05/03  23:40:38  killough
+// Fix net consistency problems, using G_WriteOptions/G_Readoptions
+//
+// Revision 1.5  1998/04/13  10:40:53  stan
+// Now synch up all items identified by Lee Killough as essential to
+// game synch (including bobbing, recoil, rngseed).  Commented out
+// code in g_game.c so rndseed is always set even in netgame.
+//
+// Revision 1.4  1998/02/05  12:14:33  phares
+// removed dummy comment
+//
+// Revision 1.3  1998/01/26  19:26:29  phares
+// First rev with no ^Ms
+//
+// Revision 1.2  1998/01/19  16:38:12  rand
+// Added dummy comments to be reomved later
+//
+// Revision 1.1.1.1  1998/01/19  14:03:07  rand
+// Lee's Jan 19 sources
+//
+//
+//----------------------------------------------------------------------------

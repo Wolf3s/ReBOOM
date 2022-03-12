@@ -1,26 +1,19 @@
 // Emacs style mode select   -*- C++ -*- 
 //-----------------------------------------------------------------------------
 //
-// $Id: r_main.c,v 1.13 1998/05/07 00:47:52 killough Exp $
+// $Id: r_main.c,v 1.14 1998/09/07 20:11:36 jim Exp $
 //
-//  BOOM, a modified and improved DOOM engine
-//  Copyright (C) 1999 by
-//  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
+// Copyright (C) 1993-1996 by id Software, Inc.
 //
-//  This program is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU General Public License
-//  as published by the Free Software Foundation; either version 2
-//  of the License, or (at your option) any later version.
+// This source is available for distribution and/or modification
+// only under the terms of the DOOM Source Code License as
+// published by id Software. All rights reserved.
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+// The source is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// FITNESS FOR A PARTICULAR PURPOSE. See the DOOM Source Code License
+// for more details.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
-//  02111-1307, USA.
 //
 // DESCRIPTION:
 //      Rendering main loop and setup functions,
@@ -28,6 +21,8 @@
 //      See tables.c, too.
 //
 //-----------------------------------------------------------------------------
+
+static const char rcsid[] = "$Id: r_main.c,v 1.14 1998/09/07 20:11:36 jim Exp $";
 
 #include "doomstat.h"
 #include "r_main.h"
@@ -38,7 +33,7 @@
 #include "m_bbox.h"
 #include "r_sky.h"
 #include "v_video.h"
-#include "lprintf.h"
+#include "lprintf.h"  // jff 08/03/98 - declaration of lprintf
 
 // Fineangles in the SCREENWIDTH wide window.
 #define FIELDOFVIEW 2048    
@@ -53,6 +48,8 @@ lighttable_t *fixedcolormap;
 int      centerx, centery;
 fixed_t  centerxfrac, centeryfrac;
 fixed_t  projection;
+// proff 11/06/98: Added for high-res
+fixed_t  projectiony;
 fixed_t  viewx, viewy, viewz;
 angle_t  viewangle;
 fixed_t  viewcos, viewsin;
@@ -165,7 +162,7 @@ angle_t R_PointToAngle(fixed_t x, fixed_t y)
       y >= 0 ? 
         (x > y) ? tantoangle[SlopeDiv(y,x)] :                      // octant 0 
                 ANG90-1-tantoangle[SlopeDiv(x,y)] :                // octant 1
-        x > (y = -y) ? 0-tantoangle[SlopeDiv(y,x)] :               // octant 8
+        x > (y = -y) ? -tantoangle[SlopeDiv(y,x)] :                // octant 8
                        ANG270+tantoangle[SlopeDiv(x,y)] :          // octant 7
       y >= 0 ? (x = -x) > y ? ANG180-1-tantoangle[SlopeDiv(y,x)] : // octant 3
                             ANG90 + tantoangle[SlopeDiv(x,y)] :    // octant 2
@@ -181,7 +178,7 @@ angle_t R_PointToAngle2(fixed_t viewx, fixed_t viewy, fixed_t x, fixed_t y)
       y >= 0 ? 
         (x > y) ? tantoangle[SlopeDiv(y,x)] :                      // octant 0 
                 ANG90-1-tantoangle[SlopeDiv(x,y)] :                // octant 1
-        x > (y = -y) ? 0-tantoangle[SlopeDiv(y,x)] :               // octant 8
+        x > (y = -y) ? -tantoangle[SlopeDiv(y,x)] :                // octant 8
                        ANG270+tantoangle[SlopeDiv(x,y)] :          // octant 7
       y >= 0 ? (x = -x) > y ? ANG180-1-tantoangle[SlopeDiv(y,x)] : // octant 3
                             ANG90 + tantoangle[SlopeDiv(x,y)] :    // octant 2
@@ -204,7 +201,9 @@ fixed_t R_ScaleFromGlobalAngle(angle_t visangle)
   int     anglea = ANG90 + (visangle-viewangle);
   int     angleb = ANG90 + (visangle-rw_normalangle);
   int     den = FixedMul(rw_distance, finesine[anglea>>ANGLETOFINESHIFT]);
-  fixed_t num = FixedMul(projection, finesine[angleb>>ANGLETOFINESHIFT]);
+// proff 11/06/98: Changed for high-res
+  fixed_t num = FixedMul(projectiony, finesine[angleb>>ANGLETOFINESHIFT]);
+//  fixed_t num = FixedMul(projection, finesine[angleb>>ANGLETOFINESHIFT]);
   return den > num>>16 ? (num = FixedDiv(num, den)) > 64*FRACUNIT ?
     64*FRACUNIT : num < 256 ? 256 : num : 64*FRACUNIT;
 }
@@ -216,7 +215,7 @@ fixed_t R_ScaleFromGlobalAngle(angle_t visangle)
 
 static void R_InitTextureMapping (void)
 {
-  int i,x;
+  register int i,x;
   fixed_t focallength;
     
   // Use tangent table to generate viewangletox:
@@ -364,14 +363,21 @@ void R_ExecuteSetViewSize (void)
   centerxfrac = centerx<<FRACBITS;
   centeryfrac = centery<<FRACBITS;
   projection = centerxfrac;
+// proff 11/06/98: Added for high-res
+	projectiony = ((SCREENHEIGHT * centerx * 320) / 200) / SCREENWIDTH * FRACUNIT;
 
   R_InitBuffer (scaledviewwidth, viewheight);
         
   R_InitTextureMapping();
     
   // psprite scales
-  pspritescale = FRACUNIT*viewwidth/SCREENWIDTH;
-  pspriteiscale = FRACUNIT*SCREENWIDTH/viewwidth;
+// proff 08/17/98: Changed for high-res
+  pspritescale = FRACUNIT*viewwidth/320;
+  pspriteiscale = FRACUNIT*320/viewwidth;
+//  pspritescale = FRACUNIT*viewwidth/SCREENWIDTH;
+//  pspriteiscale = FRACUNIT*SCREENWIDTH/viewwidth;
+// proff 11/06/98: Added for high-res
+	pspriteyscale = (((SCREENHEIGHT*viewwidth)/SCREENWIDTH) << FRACBITS) / 200;
     
   // thing clipping
   for (i=0 ; i<viewwidth ; i++)
@@ -380,13 +386,16 @@ void R_ExecuteSetViewSize (void)
   // planes
   for (i=0 ; i<viewheight ; i++)
     {   // killough 5/2/98: reformatted
-      fixed_t dy = abs(((i-viewheight/2)<<FRACBITS)+FRACUNIT/2);
-      yslope[i] = FixedDiv(viewwidth*(FRACUNIT/2), dy);
+      // proff: Changed abs to D_abs (see m_fixed.h)
+      fixed_t dy = D_abs(((i-viewheight/2)<<FRACBITS)+FRACUNIT/2);
+      yslope[i] = FixedDiv(projectiony, dy);
+//      yslope[i] = FixedDiv(viewwidth*(FRACUNIT/2), dy);
     }
         
   for (i=0 ; i<viewwidth ; i++)
     {
-      fixed_t cosadj = abs(finecosine[xtoviewangle[i]>>ANGLETOFINESHIFT]);
+      // proff: Changed abs to D_abs (see m_fixed.h)
+      fixed_t cosadj = D_abs(finecosine[xtoviewangle[i]>>ANGLETOFINESHIFT]);
       distscale[i] = FixedDiv(FRACUNIT,cosadj);
     }
     
@@ -423,16 +432,17 @@ extern int screenblocks;
 void R_Init (void)
 {
   R_InitData();
-  lprintf(LO_INFO, "\nR_InitData");
+  //jff 8/3/98 use logical output routine
+  lprintf(LO_INFO,"\nR_InitData\n");
   R_SetViewSize(screenblocks);
   R_InitPlanes();
-  lprintf(LO_INFO, "\nR_InitPlanes");
+  lprintf(LO_INFO,"R_InitPlanes\n");
   R_InitLightTables();
-  lprintf(LO_INFO, "\nR_InitLightTables");
+  lprintf(LO_INFO,"R_InitLightTables\n");
   R_InitSkyMap();
-  lprintf(LO_INFO, "\nR_InitSkyMap");
+  lprintf(LO_INFO,"R_InitSkyMap\n");
   R_InitTranslationTables();
-  lprintf(LO_INFO, "\nR_InitTranslationsTables");
+  lprintf(LO_INFO,"R_InitTranslationsTables\n");
 }
 
 //
@@ -609,3 +619,50 @@ void R_RenderPlayerView (player_t* player)
   NetUpdate ();
 }
 
+//----------------------------------------------------------------------------
+//
+// $Log: r_main.c,v $
+// Revision 1.14  1998/09/07  20:11:36  jim
+// Logical output routine added
+//
+// Revision 1.13  1998/05/07  00:47:52  killough
+// beautification
+//
+// Revision 1.12  1998/05/03  23:00:14  killough
+// beautification, fix #includes and declarations
+//
+// Revision 1.11  1998/04/07  15:24:15  killough
+// Remove obsolete HOM detector
+//
+// Revision 1.10  1998/04/06  04:47:46  killough
+// Support dynamic colormaps
+//
+// Revision 1.9  1998/03/23  03:37:14  killough
+// Add support for arbitrary number of colormaps
+//
+// Revision 1.8  1998/03/16  12:44:12  killough
+// Optimize away some function pointers
+//
+// Revision 1.7  1998/03/09  07:27:19  killough
+// Avoid using FP for point/line queries
+//
+// Revision 1.6  1998/02/17  06:22:45  killough
+// Comment out audible HOM alarm for now
+//
+// Revision 1.5  1998/02/10  06:48:17  killough
+// Add flashing red HOM indicator for TNTHOM cheat
+//
+// Revision 1.4  1998/02/09  03:22:17  killough
+// Make TNTHOM control HOM detector, change array decl to MAX_*
+//
+// Revision 1.3  1998/02/02  13:29:41  killough
+// comment out dead code, add HOM detector
+//
+// Revision 1.2  1998/01/26  19:24:42  phares
+// First rev with no ^Ms
+//
+// Revision 1.1.1.1  1998/01/19  14:03:02  rand
+// Lee's Jan 19 sources
+//
+//
+//----------------------------------------------------------------------------

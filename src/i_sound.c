@@ -271,7 +271,7 @@ static boolean addsfx(sfxinfo_t *sfx, int channel, int pitch)
       // [FG] do not connect pitch-shifted samples to a sound SFX
       if (pitch == NORM_PITCH)
       {
-         sfx_alen = (Uint32)(((uint_64_t)samplecount * snd_samplerate) / samplerate);
+         sfx_alen = (Uint32)(((unsigned long long)samplecount * snd_samplerate) / samplerate);
          // [FG] double up twice: 8 -> 16 bit and mono -> stereo
          sfx->alen = 4 * sfx_alen;
          sfx->data = Z_Malloc(sfx->alen, PU_STATIC, &sfx->data);
@@ -280,8 +280,8 @@ static boolean addsfx(sfxinfo_t *sfx, int channel, int pitch)
       else
       {
          // [FG] spoof sound samplerate if using randomly pitched sounds
-         samplerate = (Uint32)(((uint_64_t)samplerate * steptable[pitch]) >> 16);
-         sfx_alen = (Uint32)(((uint_64_t)samplecount * snd_samplerate) / samplerate);
+         samplerate = (Uint32)(((unsigned long long)samplerate * steptable[pitch]) >> 16);
+         sfx_alen = (Uint32)(((unsigned long long)samplecount * snd_samplerate) / samplerate);
          // [FG] double up twice: 8 -> 16 bit and mono -> stereo
          channelinfo[channel].data = Z_Malloc(4 * sfx_alen, PU_STATIC, (void **)&channelinfo[channel].data);
          sfx_data = channelinfo[channel].data;

@@ -3,24 +3,16 @@
 //
 // $Id: doomdef.h,v 1.23 1998/05/14 08:02:00 phares Exp $
 //
-//  BOOM, a modified and improved DOOM engine
-//  Copyright (C) 1999 by
-//  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
+// Copyright (C) 1993-1996 by id Software, Inc.
 //
-//  This program is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU General Public License
-//  as published by the Free Software Foundation; either version 2
-//  of the License, or (at your option) any later version.
+// This source is available for distribution and/or modification
+// only under the terms of the DOOM Source Code License as
+// published by id Software. All rights reserved.
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
-//
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
-//  02111-1307, USA.
+// The source is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// FITNESS FOR A PARTICULAR PURPOSE. See the DOOM Source Code License
+// for more details.
 //
 // DESCRIPTION:
 //  Internally used data structures for virtually everything,
@@ -34,9 +26,7 @@
 // killough 4/25/98: Make gcc extensions mean nothing on other compilers
 #ifndef __GNUC__
 #define __attribute__(x)
-#ifndef __inline__
 #define __inline__
-#endif
 #endif
 
 // This must come first, since it redefines malloc(), free(), etc. -- killough:
@@ -50,12 +40,6 @@
 
 #include "m_swap.h"
 #include "version.h"
-
-#ifdef UNIX
-#include <unistd.h>
-#include <stdio.h>
-#include <ctype.h>
-#endif
 
 // Game mode handling - identify IWAD version
 //  to handle IWAD dependend animations etc.
@@ -84,12 +68,6 @@ typedef enum {
   unknown
 } Language_t;
 
-// Directory scanning
-
-#ifdef _MSC_VER
-#define S_ISDIR(x) (((sbuf.st_mode & S_IFDIR)==S_IFDIR)?1:0)
-#endif
-
 //
 // For resize of screen, at start of game.
 //
@@ -108,14 +86,19 @@ typedef enum {
 // allows us to avoid the overhead of dynamic allocation
 // when multiple screen sizes are supported
 
-#define SUPERMAX_SCREENWIDTH  800
-#define SUPERMAX_SCREENHEIGHT 600
+// proff 08/17/98: Changed for high-res
+#ifdef _WIN32
+#define MAX_SCREENWIDTH  1600
+#define MAX_SCREENHEIGHT 1200
+#else
+#define MAX_SCREENWIDTH  320
+#define MAX_SCREENHEIGHT 200
+#endif
 
-#define MAX_SCREENWIDTH  640
-#define MAX_SCREENHEIGHT 400
-
-#define SCREENWIDTH      320
-#define SCREENHEIGHT     200
+//#define SCREENWIDTH      320
+//#define SCREENHEIGHT     200
+extern int SCREENWIDTH;
+extern int SCREENHEIGHT;
 
 // The maximum number of players, multiplayer/networking.
 #define MAXPLAYERS       4
@@ -245,7 +228,7 @@ typedef enum {
 #define KEYD_F10        (0x80+0x44)
 #define KEYD_F11        (0x80+0x57)
 #define KEYD_F12        (0x80+0x58)
-#define KEYD_BACKSPACE  0x7f
+#define KEYD_BACKSPACE  127
 #define KEYD_PAUSE      0xff
 #define KEYD_EQUALS     0x3d
 #define KEYD_MINUS      0x2d
@@ -253,72 +236,20 @@ typedef enum {
 #define KEYD_RCTRL      (0x80+0x1d)
 #define KEYD_RALT       (0x80+0x38)
 #define KEYD_LALT       KEYD_RALT
+#define KEYD_CAPSLOCK   0xba                                        // phares 
 
-// [FG] updated from Chocolate Doom 3.0 (src/doomkeys.h)
+// phares 3/2/98:
+#define KEYD_INSERT     0xd2
+#define KEYD_HOME       0xc7
+#define KEYD_PAGEUP     0xc9
+#define KEYD_PAGEDOWN   0xd1
+#define KEYD_DEL        KEYD_BACKSPACE
+#define KEYD_END        0xcf
+#define KEYD_SCROLLLOCK 0xc6
+#define KEYD_SPACEBAR   0x20
+// phares 3/2/98
 
-// new keys:
-
-#define KEYD_CAPSLOCK   (0x80+0x3a)
-#define KEYD_NUMLOCK    (0x80+0x45)
-#define KEYD_SCRLCK     (0x80+0x46)
-#define KEYD_PRTSCR     (0x80+0x59)
-
-#define KEYD_HOME       (0x80+0x47)
-#define KEYD_END        (0x80+0x4f)
-#define KEYD_PGUP       (0x80+0x49)
-#define KEYD_PGDN       (0x80+0x51)
-#define KEYD_INS        (0x80+0x52)
-#define KEYD_DEL        (0x80+0x53)
-
-#define KEYP_0          KEYD_INS
-#define KEYP_1          KEYD_END
-#define KEYP_2          KEYD_DOWNARROW
-#define KEYP_3          KEYD_PGDN
-#define KEYP_4          KEYD_LEFTARROW
-#define KEYP_5          (0x80+0x4c)
-#define KEYP_6          KEYD_RIGHTARROW
-#define KEYP_7          KEYD_HOME
-#define KEYP_8          KEYD_UPARROW
-#define KEYP_9          KEYD_PGUP
-
-#define KEYP_DIVIDE     '/'
-#define KEYP_PLUS       '+'
-#define KEYP_MINUS      '-'
-#define KEYP_MULTIPLY   '*'
-#define KEYP_PERIOD     0
-#define KEYP_EQUALS     KEYD_EQUALS
-#define KEYP_ENTER      KEYD_ENTER
-
-#define KEYD_SPACEBAR   ' '
-#define KEYD_SCROLLLOCK KEYD_SCRLCK
-#define KEYD_PAGEUP     KEYD_PGUP
-#define KEYD_PAGEDOWN   KEYD_PGDN
-#define KEYD_INSERT     KEYD_INS
-
-#define SCANCODE_TO_KEYS_ARRAY {                                             \
-    0,   0,   0,   0,   'a',                                   /* 0-9 */     \
-    'b', 'c', 'd', 'e', 'f',                                                 \
-    'g', 'h', 'i', 'j', 'k',                                   /* 10-19 */   \
-    'l', 'm', 'n', 'o', 'p',                                                 \
-    'q', 'r', 's', 't', 'u',                                   /* 20-29 */   \
-    'v', 'w', 'x', 'y', 'z',                                                 \
-    '1', '2', '3', '4', '5',                                   /* 30-39 */   \
-    '6', '7', '8', '9', '0',                                                 \
-    KEYD_ENTER, KEYD_ESCAPE, KEYD_BACKSPACE, KEYD_TAB, ' ',    /* 40-49 */   \
-    KEYD_MINUS, KEYD_EQUALS, '[', ']', '\\',                                 \
-    0,   ';', '\'', '`', ',',                                  /* 50-59 */   \
-    '.', '/', KEYD_CAPSLOCK, KEYD_F1, KEYD_F2,                               \
-    KEYD_F3, KEYD_F4, KEYD_F5, KEYD_F6, KEYD_F7,               /* 60-69 */   \
-    KEYD_F8, KEYD_F9, KEYD_F10, KEYD_F11, KEYD_F12,                          \
-    KEYD_PRTSCR, KEYD_SCRLCK, KEYD_PAUSE, KEYD_INS, KEYD_HOME, /* 70-79 */   \
-    KEYD_PGUP, KEYD_DEL, KEYD_END, KEYD_PGDN, KEYD_RIGHTARROW,               \
-    KEYD_LEFTARROW, KEYD_DOWNARROW, KEYD_UPARROW,              /* 80-89 */   \
-    KEYD_NUMLOCK, KEYP_DIVIDE,                                               \
-    KEYP_MULTIPLY, KEYP_MINUS, KEYP_PLUS, KEYP_ENTER, KEYP_1,                \
-    KEYP_2, KEYP_3, KEYP_4, KEYP_5, KEYP_6,                    /* 90-99 */   \
-    KEYP_7, KEYP_8, KEYP_9, KEYP_0, KEYP_PERIOD,                             \
-    0, 0, 0, KEYP_EQUALS,                                      /* 100-103 */ \
-}
+#define KEYD_NUMLOCK    0xC5                 // killough 3/6/98
 
 // phares 4/19/98:
 // Defines Setup Screen groups that config variables appear in.
@@ -336,8 +267,6 @@ typedef enum {
   ss_max
 } ss_types;
 
-#define STARTFLASHING           127
-
 // phares 3/20/98:
 //
 // Player friction is variable, based on controlling
@@ -349,3 +278,77 @@ typedef enum {
 #define ORIG_FRICTION_FACTOR   2048        // original value
 
 #endif          // __DOOMDEF__
+
+//----------------------------------------------------------------------------
+//
+// $Log: doomdef.h,v $
+// Revision 1.23  1998/05/14  08:02:00  phares
+// Added Player Starts 5-8 (4001-4004)
+//
+// Revision 1.22  1998/05/05  15:34:48  phares
+// Documentation and Reformatting changes
+//
+// Revision 1.21  1998/05/03  22:39:56  killough
+// beautification
+//
+// Revision 1.20  1998/04/27  01:50:51  killough
+// Make gcc's __attribute__ mean nothing on other compilers
+//
+// Revision 1.19  1998/04/22  13:45:23  phares
+// Added Setup screen Reset to Defaults
+//
+// Revision 1.18  1998/03/24  15:59:13  jim
+// Added default_skill parameter to config file
+//
+// Revision 1.17  1998/03/23  15:23:34  phares
+// Changed pushers to linedef control
+//
+// Revision 1.16  1998/03/20  00:29:34  phares
+// Changed friction to linedef control
+//
+// Revision 1.15  1998/03/12  14:28:36  phares
+// friction and IDCLIP changes
+//
+// Revision 1.14  1998/03/09  18:27:16  phares
+// Fixed bug in neighboring variable friction sectors
+//
+// Revision 1.13  1998/03/09  07:08:30  killough
+// Add numlock key scancode
+//
+// Revision 1.12  1998/03/04  21:26:27  phares
+// Repaired syntax error (left-over conflict marker)
+//
+// Revision 1.11  1998/03/04  21:02:16  phares
+// Dynamic HELP screen
+//
+// Revision 1.10  1998/03/02  11:25:52  killough
+// Remove now-dead monster_ai mask idea
+//
+// Revision 1.9  1998/02/24  08:45:32  phares
+// Pushers, recoil, new friction, and over/under work
+//
+// Revision 1.8  1998/02/23  04:15:50  killough
+// New monster AI option mask enums
+//
+// Revision 1.7  1998/02/15  02:48:06  phares
+// User-defined keys
+//
+// Revision 1.6  1998/02/09  02:52:01  killough
+// Make SCREENWIDTH/HEIGHT more flexible
+//
+// Revision 1.5  1998/02/02  13:22:47  killough
+// user new version files
+//
+// Revision 1.4  1998/01/30  18:48:07  phares
+// Changed textspeed and textwait to functions
+//
+// Revision 1.3  1998/01/30  16:09:06  phares
+// Faster end-mission text display
+//
+// Revision 1.2  1998/01/26  19:26:39  phares
+// First rev with no ^Ms
+//
+// Revision 1.1.1.1  1998/01/19  14:02:51  rand
+// Lee's Jan 19 sources
+//
+//----------------------------------------------------------------------------

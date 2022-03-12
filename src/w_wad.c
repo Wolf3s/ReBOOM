@@ -3,50 +3,41 @@
 //
 // $Id: w_wad.c,v 1.22 1998/09/07 20:10:30 jim Exp $
 //
-//  BOOM, a modified and improved DOOM engine
-//  Copyright (C) 1999 by
-//  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
+// Copyright (C) 1993-1996 by id Software, Inc.
 //
-//  This program is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU General Public License
-//  as published by the Free Software Foundation; either version 2
-//  of the License, or (at your option) any later version.
+// This source is available for distribution and/or modification
+// only under the terms of the DOOM Source Code License as
+// published by id Software. All rights reserved.
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
-//
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
-//  02111-1307, USA.
+// The source is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// FITNESS FOR A PARTICULAR PURPOSE. See the DOOM Source Code License
+// for more details.
 //
 // DESCRIPTION:
 //      Handles WAD file header, directory, lump I/O.
 //
 //-----------------------------------------------------------------------------
 
-#ifndef WINDOWS
-#include <strings.h>
-#include <unistd.h>
-#endif
+static const char
+rcsid[] = "$Id: w_wad.c,v 1.22 1998/09/07 20:10:30 jim Exp $";
 
-#ifdef WINDOWS
-#include <io.h>
-#endif
-
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h> 
-#include "doomtype.h"
 #include "doomstat.h"
+#include "lprintf.h"  // jff 08/03/98 - declaration of lprintf
+#ifdef _MSC_VER // proff
+#include <io.h>
+#define strcasecmp _stricmp
+#define strncasecmp _strnicmp
+#else //_MSC_VER
+#include <unistd.h>
+#endif //_MSC_VER
+#include <fcntl.h>
+#include <sys/stat.h>
+
+#ifdef __GNUG__
+#pragma implementation "w_wad.h"
+#endif
 #include "w_wad.h"
-#include "i_video.h"
-#include "d_main.h"
-#include "m_misc.h"
-#include "dstrings.h"
-#include "lprintf.h"
 
 //
 // GLOBALS
@@ -57,15 +48,19 @@ lumpinfo_t *lumpinfo;
 int        numlumps;         // killough
 void       **lumpcache;      // killough
 
-static int file_length(int handle)
+// proff 07/04/98: Changed from _WIN32 to _MSC_VER for CYGWIN32 compatibility
+// proff: This is defined in <io.h>
+#if !defined(_MSC_VER) && !defined(__MINGW32__)
+static int filelength(int handle)
 {
   struct stat   fileinfo;
   if (fstat(handle,&fileinfo) == -1)
     I_Error("Error fstating");
   return fileinfo.st_size;
 }
+#endif //_MSC_VER
 
-void ExtractFileBase(const char *path, char *dest)
+void ExtractFileBase (const char *path, char *dest)
 {
   const char *src = path + strlen(path) - 1;
   int length;
@@ -134,11 +129,7 @@ static void W_AddFile(const char *filename,int source) // killough 1/31/98: stat
 
   // open the file and add to directory
 
-#ifdef WINDOWS
-  if ((handle = _open(filename,O_RDONLY | O_BINARY)) == -1)
-#else
-  if ((handle = open(filename,O_RDONLY | 0)) == -1)
-#endif
+  if ((handle = open(filename,O_RDONLY | O_BINARY)) == -1)
     {
       if (strlen(filename)<=4 ||      // add error check -- killough
           strcasecmp(filename+strlen(filename)-4 , ".lmp" ) )
@@ -156,17 +147,14 @@ static void W_AddFile(const char *filename,int source) // killough 1/31/98: stat
       // single lump file
       fileinfo = &singleinfo;
       singleinfo.filepos = 0;
-      singleinfo.size = LONG(file_length(handle));
+      singleinfo.size = LONG(filelength(handle));
       ExtractFileBase(filename, singleinfo.name);
       numlumps++;
     }
   else
     {
-#ifdef WINDOWS
-      if (!_read(handle, &header, sizeof(header)))
-#else
-      if (!read(handle, &header, sizeof(header)))
-#endif
+      // WAD file
+      read(handle, &header, sizeof(header));
       if (strncmp(header.identification,"IWAD",4) &&
           strncmp(header.identification,"PWAD",4))
         I_Error ("Wad file %s doesn't have IWAD or PWAD id\n", filename);
@@ -174,13 +162,8 @@ static void W_AddFile(const char *filename,int source) // killough 1/31/98: stat
       header.infotableofs = LONG(header.infotableofs);
       length = header.numlumps*sizeof(filelump_t);
       fileinfo2free = fileinfo = malloc(length);    // killough
-#ifdef WINDOWS
-      _lseek(handle, header.infotableofs, SEEK_SET);
-      _read(handle, fileinfo, length);
-#else
       lseek(handle, header.infotableofs, SEEK_SET);
       read(handle, fileinfo, length);
-#endif
       numlumps += header.numlumps;
     }
 
@@ -218,8 +201,9 @@ static int IsMarker(const char *marker, const char *name)
 
 // killough 4/17/98: add namespace tags
 
-static void W_CoalesceMarkedResource(const char *start_marker, const char *end_marker, int namespace)
-{ 
+static void W_CoalesceMarkedResource(const char *start_marker,
+                                     const char *end_marker, int namespace)
+{
   lumpinfo_t *marked = malloc(sizeof(*marked) * numlumps);
   size_t i, num_marked = 0, num_unmarked = 0;
   int is_marked = 0, mark_end = 0;
@@ -306,12 +290,12 @@ unsigned W_LumpNameHash(const char *s)
 // between different resources such as flats, sprites, colormaps
 //
 
-int (W_CheckNumForName)(const char *name, int namespace)
+int (W_CheckNumForName)(register const char *name, register int namespace)
 {
   // Hash function maps the name to one of possibly numlump chains.
   // It has been tuned so that the average chain length never exceeds 2.
 
-  int i = lumpinfo[W_LumpNameHash(name) % (unsigned) numlumps].index;
+  register int i = lumpinfo[W_LumpNameHash(name) % (unsigned) numlumps].index;
 
   // We search along the chain until end, looking for case-insensitive
   // matches which also match a namespace tag. Separate hash tables are
@@ -358,7 +342,7 @@ static void W_InitLumpHash(void)
 // Calls W_CheckNumForName, but bombs out if not found.
 //
 
-int W_GetNumForName(const char* name)     // killough -- const added
+int W_GetNumForName (const char* name)     // killough -- const added
 {
   int i = W_CheckNumForName (name);
   if (i == -1)
@@ -431,7 +415,7 @@ void W_InitMultipleFiles(char *const *filenames, int *const pfilesource)
 // W_LumpLength
 // Returns the buffer size needed to load the given lump.
 //
-int W_LumpLength(int lump)
+int W_LumpLength (int lump)
 {
   if (lump >= numlumps)
     I_Error ("W_LumpLength: %i >= numlumps",lump);
@@ -461,13 +445,8 @@ void W_ReadLump(int lump, void *dest)
 
       // killough 1/31/98: Reload hack (-wart) removed
 
-#ifdef WINDOWS
-      _lseek(l->handle, l->position, SEEK_SET);
-      c = _read(l->handle, dest, l->size);
-#else
       lseek(l->handle, l->position, SEEK_SET);
       c = read(l->handle, dest, l->size);
-#endif
       if (c < l->size)
         I_Error("W_ReadLump: only read %i of %i on lump %i", c, l->size, lump);
     }
@@ -478,7 +457,7 @@ void W_ReadLump(int lump, void *dest)
 //
 // killough 4/25/98: simplified
 
-void *W_CacheLumpNum(int lump, int tag)
+void *W_CacheLumpNum (int lump, int tag)
 {
 #ifdef RANGECHECK
   if ((unsigned)lump >= numlumps)
@@ -516,11 +495,11 @@ void WritePredefinedLumpWad(const char *filename)
 
   // The following code writes a PWAD from the predefined lumps array
   // How to write a PWAD will not be explained here.
-#ifdef WINDOWS // proff: In Visual C open is defined a bit different
-  if ( (handle = _open (filenam, O_RDWR | O_CREAT | O_BINARY, _S_IWRITE|_S_IREAD)) != -1)
-#else
-  if ( (handle = open (filenam, O_RDWR | O_CREAT | 0, S_IWUSR|S_IRUSR)) != -1)
-#endif
+#ifdef _MSC_VER // proff: In Visual C open is defined a bit different
+  if ( (handle = open (filenam, O_RDWR | O_CREAT | O_BINARY, _S_IWRITE|_S_IREAD)) != -1)
+#else //_MSC_VER
+  if ( (handle = open (filenam, O_RDWR | O_CREAT | O_BINARY, S_IWUSR|S_IRUSR)) != -1)
+#endif //_MSC_VER
   {
     wadinfo_t header = {"PWAD"};
     size_t filepos = sizeof(wadinfo_t) + num_predefined_lumps * sizeof(filelump_t);
@@ -530,11 +509,7 @@ void WritePredefinedLumpWad(const char *filename)
     header.infotableofs = LONG(sizeof(header));
 
     // write header
-#ifdef WINDOWS
-    _write(handle, &header, sizeof(header));
-#else
     write(handle, &header, sizeof(header));
-#endif
 
     // write directory
     for (i=0;i<num_predefined_lumps;i++)
@@ -543,38 +518,79 @@ void WritePredefinedLumpWad(const char *filename)
       fileinfo.filepos = LONG(filepos);
       fileinfo.size = LONG(predefined_lumps[i].size);
       strncpy(fileinfo.name, predefined_lumps[i].name, 8);
-#ifdef WINDOWS
-      _write(handle, &fileinfo, sizeof(fileinfo));
-#else
       write(handle, &fileinfo, sizeof(fileinfo));
-#endif
       filepos += predefined_lumps[i].size;
     }
 
     // write lumps
     for (i=0;i<num_predefined_lumps;i++)
-#ifdef WINDOWS
-      _write(handle, predefined_lumps[i].data, predefined_lumps[i].size);
-      _close(handle);
-#else
       write(handle, predefined_lumps[i].data, predefined_lumps[i].size);
-      close(handle);
-#endif
+
+    close(handle);
     I_Error("Predefined lumps wad, %s written, exiting\n", filename);
   }
  I_Error("Cannot open predefined lumps wad %s for output\n", filename);
 }
 
-const char *W_WadNameForLump(const int lump)
-{
-  return (lump >= 0 && lump < numlumps) ?
-         (lumpinfo[lump].wad_file ?
-         M_BaseName(lumpinfo[lump].wad_file) :
-         "predefined") : "invalid";
-}
+//----------------------------------------------------------------------------
+//
+// $Log: w_wad.c,v $
+// Revision 1.22  1998/09/07  20:10:30  jim
+// Logical output routine added
+//
+// Revision 1.21  1998/08/29  22:59:55  thldrmn
+// Lump source field logic etc.
+//
+// Revision 1.20  1998/05/06  11:32:00  jim
+// Moved predefined lump writer info->w_wad
+//
+// Revision 1.19  1998/05/03  22:43:09  killough
+// beautification, header #includes
+//
+// Revision 1.18  1998/05/01  14:53:59  killough
+// beautification
+//
+// Revision 1.17  1998/04/27  02:06:41  killough
+// Program beautification
+//
+// Revision 1.16  1998/04/17  10:34:53  killough
+// Tag lumps with namespace tags to resolve collisions
+//
+// Revision 1.15  1998/04/06  04:43:59  killough
+// Add C_START/C_END support, remove non-standard C code
+//
+// Revision 1.14  1998/03/23  03:42:59  killough
+// Fix drive-letter bug and force marker lumps to 0-size
+//
+// Revision 1.12  1998/02/23  04:59:18  killough
+// Move TRANMAP init code to r_data.c
+//
+// Revision 1.11  1998/02/20  23:32:30  phares
+// Added external tranmap
+//
+// Revision 1.10  1998/02/20  22:53:25  phares
+// Moved TRANMAP initialization to w_wad.c
+//
+// Revision 1.9  1998/02/17  06:25:07  killough
+// Make numlumps static add #ifdef RANGECHECK for perf
+//
+// Revision 1.8  1998/02/09  03:20:16  killough
+// Fix garbage printed in lump error message
+//
+// Revision 1.7  1998/02/02  13:21:04  killough
+// improve hashing, add predef lumps, fix err handling
+//
+// Revision 1.6  1998/01/26  19:25:10  phares
+// First rev with no ^Ms
+//
+// Revision 1.5  1998/01/26  06:30:50  killough
+// Rewrite merge routine to use simpler, robust algorithm
+//
+// Revision 1.3  1998/01/23  20:28:11  jim
+// Basic sprite/flat functionality in PWAD added
+//
+// Revision 1.2  1998/01/22  05:55:58  killough
+// Improve hashing algorithm
+//
+//----------------------------------------------------------------------------
 
-boolean W_IsIWADLump(const int lump)
-{
-  return lump >= 0 && lump < numlumps &&
-         lumpinfo[lump].wad_file == wad_files[0];
-}

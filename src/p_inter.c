@@ -3,29 +3,25 @@
 //
 // $Id: p_inter.c,v 1.10 1998/05/03 23:09:29 killough Exp $
 //
-//  BOOM, a modified and improved DOOM engine
-//  Copyright (C) 1999 by
-//  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
+// Copyright (C) 1993-1996 by id Software, Inc.
 //
-//  This program is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU General Public License
-//  as published by the Free Software Foundation; either version 2
-//  of the License, or (at your option) any later version.
+// This source is available for distribution and/or modification
+// only under the terms of the DOOM Source Code License as
+// published by id Software. All rights reserved.
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+// The source is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// FITNESS FOR A PARTICULAR PURPOSE. See the DOOM Source Code License
+// for more details.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-//  02111-1307, USA.
 //
 // DESCRIPTION:
 //      Handling interactions (i.e., collisions).
 //
 //-----------------------------------------------------------------------------
+
+static const char
+rcsid[] = "$Id: p_inter.c,v 1.10 1998/05/03 23:09:29 killough Exp $";
 
 #include "doomstat.h"
 #include "dstrings.h"
@@ -34,9 +30,11 @@
 #include "r_main.h"
 #include "s_sound.h"
 #include "sounds.h"
-#include "p_tick.h"
 #include "d_deh.h"  // Ty 03/22/98 - externalized strings
 
+#ifdef __GNUG__
+#pragma implementation "p_inter.h"
+#endif
 #include "p_inter.h"
 
 #define BONUSADD        6
@@ -88,7 +86,7 @@ boolean P_GiveAmmo(player_t *player, ammotype_t ammo, int num)
   if (ammo == am_noammo)
     return false;
 
-  if ((unsigned) ammo > NUMAMMO)
+  if (ammo < 0 || ammo > NUMAMMO)
     I_Error ("P_GiveAmmo: bad type %i", ammo);
 
   if ( player->ammo[ammo] == player->maxammo[ammo]  )
@@ -173,7 +171,7 @@ boolean P_GiveWeapon(player_t *player, weapontype_t weapon, boolean dropped)
         P_GiveAmmo(player, weaponinfo[weapon].ammo, 2);
 
       player->pendingweapon = weapon;
-      S_StartSound (player->mo, sfx_wpnup); // killough 4/25/98
+      S_StartSound (player->mo, sfx_wpnup|PICKUP_SOUND); // killough 4/25/98
       return false;
     }
 
@@ -434,7 +432,7 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher)
         return;
       player->message = s_GOTBERSERK; // Ty 03/22/98 - externalized
       if (player->readyweapon != wp_fist)
-    player->pendingweapon = wp_fist;
+        player->pendingweapon = wp_fist;
       sound = sfx_getpow;
       break;
 
@@ -544,14 +542,14 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher)
       break;
 
     case SPR_MGUN:
-      if (!P_GiveWeapon (player, wp_chaingun, special->flags & MF_DROPPED))
+      if (!P_GiveWeapon (player, wp_chaingun, special->flags&MF_DROPPED) )
         return;
       player->message = s_GOTCHAINGUN; // Ty 03/22/98 - externalized
       sound = sfx_wpnup;
       break;
 
     case SPR_CSAW:
-      if (!P_GiveWeapon(player, wp_chainsaw, false))
+      if (!P_GiveWeapon (player, wp_chainsaw, false) )
         return;
       player->message = s_GOTCHAINSAW; // Ty 03/22/98 - externalized
       sound = sfx_wpnup;
@@ -565,21 +563,21 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher)
       break;
 
     case SPR_PLAS:
-      if (!P_GiveWeapon(player, wp_plasma, false))
+      if (!P_GiveWeapon (player, wp_plasma, false) )
         return;
       player->message = s_GOTPLASMA; // Ty 03/22/98 - externalized
       sound = sfx_wpnup;
       break;
 
     case SPR_SHOT:
-      if (!P_GiveWeapon(player, wp_shotgun, special->flags & MF_DROPPED))
+      if (!P_GiveWeapon (player, wp_shotgun, special->flags&MF_DROPPED ) )
         return;
       player->message = s_GOTSHOTGUN; // Ty 03/22/98 - externalized
       sound = sfx_wpnup;
       break;
 
     case SPR_SGN2:
-      if (!P_GiveWeapon(player, wp_supershotgun, special->flags & MF_DROPPED))
+      if (!P_GiveWeapon(player, wp_supershotgun, special->flags&MF_DROPPED))
         return;
       player->message = s_GOTSHOTGUN2; // Ty 03/22/98 - externalized
       sound = sfx_wpnup;
@@ -594,15 +592,14 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher)
   P_RemoveMobj (special);
   player->bonuscount += BONUSADD;
 
-  S_StartSound (player->mo, sound);   // killough 4/25/98
+  S_StartSound (player->mo, sound | PICKUP_SOUND);   // killough 4/25/98
 }
 
 //
 // KillMobj
 //
-// killough 11/98: make static
 
-static void P_KillMobj(mobj_t *source, mobj_t *target)
+void P_KillMobj(mobj_t *source, mobj_t *target)
 {
   mobjtype_t item;
   mobj_t     *mo;
@@ -628,7 +625,7 @@ static void P_KillMobj(mobj_t *source, mobj_t *target)
         {
           // count all monster deaths,
           // even those caused by other monsters
-          players->killcount++;
+          players[0].killcount++;
         }
 
   if (target->player)
@@ -644,21 +641,13 @@ static void P_KillMobj(mobj_t *source, mobj_t *target)
       if (target->player == &players[consoleplayer] && automapactive)
         AM_Stop();    // don't die in auto map; switch view prior to dying
     }
-    // More Gibs
-    if((more_gibs && source && source->player && target->info->xdeathstate && !(demoplayback || demorecording)))
-        {
-            P_SetMobjState(target, target->info->xdeathstate);
-        }
-        else if (target->health < -target->info->spawnhealth && target->info->xdeathstate)
-        {
-            P_SetMobjState(target, target->info->xdeathstate);
-        }
-        else
-        {
-            P_SetMobjState(target, target->info->deathstate);
-        }
 
-  target->tics -= P_Random(pr_killtics) & 3;
+  if (target->health < -target->info->spawnhealth && target->info->xdeathstate)
+    P_SetMobjState (target, target->info->xdeathstate);
+  else
+    P_SetMobjState (target, target->info->deathstate);
+
+  target->tics -= P_Random(pr_killtics)&3;
 
   if (target->tics < 1)
     target->tics = 1;
@@ -759,7 +748,7 @@ void P_DamageMobj(mobj_t *target,mobj_t *inflictor, mobj_t *source, int damage)
       // ignore damage in GOD mode, or with INVUL power.
       // killough 3/26/98: make god mode 100% god mode in non-compat mode
 
-      if ((damage < 1000 || (!compatibility && player->cheats&CF_GODMODE)) &&
+      if ((damage < 1000 || (!compatibility && (player->cheats&CF_GODMODE))) &&
           (player->cheats&CF_GODMODE || player->powers[pw_invulnerability]))
         return;
 
@@ -829,3 +818,38 @@ void P_DamageMobj(mobj_t *target,mobj_t *inflictor, mobj_t *source, int damage)
         P_SetMobjState (target, target->info->seestate);
     }
 }
+
+//----------------------------------------------------------------------------
+//
+// $Log: p_inter.c,v $
+// Revision 1.10  1998/05/03  23:09:29  killough
+// beautification, fix #includes, move some global vars here
+//
+// Revision 1.9  1998/04/27  01:54:43  killough
+// Prevent pickup sounds from silencing player weapons
+//
+// Revision 1.8  1998/03/28  17:58:27  killough
+// Fix spawn telefrag bug
+//
+// Revision 1.7  1998/03/28  05:32:41  jim
+// Text enabling changes for DEH
+//
+// Revision 1.6  1998/03/23  03:25:44  killough
+// Fix weapon pickup sounds in spy mode
+//
+// Revision 1.5  1998/03/10  07:15:10  jim
+// Initial DEH support added, minus text
+//
+// Revision 1.4  1998/02/23  04:44:33  killough
+// Make monsters smarter
+//
+// Revision 1.3  1998/02/17  06:00:54  killough
+// Save last enemy, change RNG calling sequence
+//
+// Revision 1.2  1998/01/26  19:24:05  phares
+// First rev with no ^Ms
+//
+// Revision 1.1.1.1  1998/01/19  14:02:59  rand
+// Lee's Jan 19 sources
+//
+//----------------------------------------------------------------------------

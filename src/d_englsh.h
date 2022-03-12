@@ -3,24 +3,16 @@
 //
 // $Id: d_englsh.h,v 1.5 1998/05/04 21:33:57 thldrmn Exp $
 //
-//  BOOM, a modified and improved DOOM engine
-//  Copyright (C) 1999 by
-//  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
+// Copyright (C) 1993-1996 by id Software, Inc.
 //
-//  This program is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU General Public License
-//  as published by the Free Software Foundation; either version 2
-//  of the License, or (at your option) any later version.
+// This source is available for distribution and/or modification
+// only under the terms of the DOOM Source Code License as
+// published by id Software. All rights reserved.
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
-//
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
-//  02111-1307, USA.
+// The source is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// FITNESS FOR A PARTICULAR PURPOSE. See the DOOM Source Code License
+// for more details.
 //
 // DESCRIPTION:
 //  Printed strings for translation.
@@ -31,10 +23,6 @@
 
 #ifndef __D_ENGLSH__
 #define __D_ENGLSH__
-
-// Custom
-
-#define FOUNDASECRET "you have found a secret!"
 
 //
 //  Printed strings for translation
@@ -111,9 +99,7 @@
 #define GOTINVIS    "Partial Invisibility"
 #define GOTSUIT     "Radiation Shielding Suit"
 #define GOTMAP      "Computer Area Map"
-
 #define GOTVISOR    "Light Amplification Visor"
-
 #define GOTMSPHERE  "MegaSphere!"
 
 #define GOTCLIP     "Picked up a clip."
@@ -124,7 +110,6 @@
 #define GOTCELLBOX  "Picked up an energy cell pack."
 #define GOTSHELLS   "Picked up 4 shotgun shells."
 #define GOTSHELLBOX "Picked up a box of shotgun shells."
-
 #define GOTBACKPACK "Picked up a backpack full of ammo!"
 
 #define GOTBFG9000  "You got the BFG9000!  Oh, yes."
@@ -240,7 +225,7 @@
   
 #define HUSTR_31    "level 31: wolfenstein"
 #define HUSTR_32    "level 32: grosse"
-
+  
 #define PHUSTR_1    "level 1: congo"
 #define PHUSTR_2    "level 2: well of souls"
 #define PHUSTR_3    "level 3: aztec"
@@ -374,9 +359,6 @@
 #define STSTR_NCOFF     "No Clipping Mode OFF"
 
 #define STSTR_BEHOLD    "inVuln, Str, Inviso, Rad, Allmap, or Lite-amp"
-#define STSTR_LEGEND	"ReBOOM is dedicated to Ty Halderman (RIP)"
-#define STSTR_PHARES	"Your memory will never die (RIP)"
-#define STSTR_FLYNN	"BOOM would not be BOOM without you (RIP)"
 #define STSTR_BEHOLDX   "Power-up Toggled"
 
 #define STSTR_CHOPPERS  "... doesn't suck - GM"
@@ -555,6 +537,7 @@
   "SUPER SECRET LEVEL!  YOU'D BETTER\n"\
   "BLAZE THROUGH THIS ONE!\n"
   
+  
 // after map 06 
   
   #define P1TEXT  \
@@ -725,3 +708,24 @@
 
 
 #endif
+
+//----------------------------------------------------------------------------
+//
+// $Log: d_englsh.h,v $
+// Revision 1.5  1998/05/04  21:33:57  thldrmn
+// commenting and reformatting
+//
+// Revision 1.4  1998/02/08  15:26:40  jim
+// New messages for keyed doors
+//
+// Revision 1.3  1998/01/28  12:23:02  phares
+// TNTCOMP cheat code added
+//
+// Revision 1.2  1998/01/26  19:26:21  phares
+// First rev with no ^Ms
+//
+// Revision 1.1.1.1  1998/01/19  14:02:51  rand
+// Lee's Jan 19 sources
+//
+//
+//----------------------------------------------------------------------------

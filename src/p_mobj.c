@@ -3,29 +3,25 @@
 //
 // $Id: p_mobj.c,v 1.27 1998/09/10 20:12:55 phares Exp $
 //
-//  BOOM, a modified and improved DOOM engine
-//  Copyright (C) 1999 by
-//  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
+// Copyright (C) 1993-1996 by id Software, Inc.
 //
-//  This program is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU General Public License
-//  as published by the Free Software Foundation; either version 2
-//  of the License, or (at your option) any later version.
+// This source is available for distribution and/or modification
+// only under the terms of the DOOM Source Code License as
+// published by id Software. All rights reserved.
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+// The source is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// FITNESS FOR A PARTICULAR PURPOSE. See the DOOM Source Code License
+// for more details.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
-//  02111-1307, USA.
 //
 // DESCRIPTION:
 //      Moving object handling. Spawn functions.
 //
 //-----------------------------------------------------------------------------
+
+static const char
+rcsid[] = "$Id: p_mobj.c,v 1.27 1998/09/10 20:12:55 phares Exp $";
 
 #include "doomdef.h"
 #include "doomstat.h"
@@ -40,9 +36,6 @@
 #include "s_sound.h"
 #include "info.h"
 #include "g_game.h"
-#include "p_inter.h"
-
-extern int P_GetFriction(const mobj_t *mo, int *frictionfactor);
 
 //
 // P_SetMobjState
@@ -50,7 +43,7 @@ extern int P_GetFriction(const mobj_t *mo, int *frictionfactor);
 //
 
 boolean P_SetMobjState(mobj_t* mobj,statenum_t state)
-{
+  {
   state_t*  st;
 
   // killough 4/9/98: remember states seen, to detect cycles:
@@ -84,8 +77,8 @@ boolean P_SetMobjState(mobj_t* mobj,statenum_t state)
     // Modified handling.
     // Call action functions when the state is set
 
-    if (st->action)
-      st->action(mobj);
+    if (st->action.acp1)
+      st->action.acp1(mobj);
 
     seenstate[state] = 1 + st->nextstate;   // killough 4/9/98
 
@@ -93,24 +86,25 @@ boolean P_SetMobjState(mobj_t* mobj,statenum_t state)
     } while (!mobj->tics && !seenstate[state]);   // killough 4/9/98
 
   if (ret && !mobj->tics)  // killough 4/9/98: detect state cycles
-    doom_printf("Warning: State Cycle Detected");
+    dprintf("Warning: State Cycle Detected");
 
   if (!--recursion)
     for (;(state=seenstate[i]);i=state-1)
       seenstate[i] = 0;  // killough 4/9/98: erase memory of states
 
   return ret;
-}
+  }
+
 
 //
 // P_ExplodeMissile
 //
 
 void P_ExplodeMissile (mobj_t* mo)
-{
+  {
   mo->momx = mo->momy = mo->momz = 0;
 
-  P_SetMobjState(mo, mobjinfo[mo->type].deathstate);
+  P_SetMobjState (mo, mobjinfo[mo->type].deathstate);
 
   mo->tics -= P_Random(pr_explode)&3;
 
@@ -121,7 +115,8 @@ void P_ExplodeMissile (mobj_t* mo)
 
   if (mo->info->deathsound)
     S_StartSound (mo, mo->info->deathsound);
-}
+  }
+
 
 //
 // P_XYMovement
@@ -138,8 +133,6 @@ void P_XYMovement (mobj_t* mo)
   fixed_t   ymove;
   fixed_t   oldx,oldy; // phares 9/10/98: reducing bobbing/momentum on ice
                        // when up against walls
-
-  fixed_t friction = P_GetFriction(mo, NULL);
 
   if (!mo->momx && !mo->momy) // Any momentum?
     {
@@ -267,9 +260,6 @@ void P_XYMovement (mobj_t* mo)
 
     mo->momx = 0;
     mo->momy = 0;
-
-      if (player && player->mo == mo)
-	player->momx = player->momy = 0;
     }
   else
     {
@@ -290,24 +280,21 @@ void P_XYMovement (mobj_t* mo)
       }
     else
       { // Yes. Use stored friction.
-      mo->momx = FixedMul(mo->momx, friction);
-      mo->momy = FixedMul(mo->momy, friction);
+      mo->momx = FixedMul(mo->momx,mo->friction);
+      mo->momy = FixedMul(mo->momy,mo->friction);
       }
-      if (player && player->mo == mo)     //  Not voodoo dolls
-	{
-	  player->momx = FixedMul(player->momx, ORIG_FRICTION);
-	  player->momy = FixedMul(player->momy, ORIG_FRICTION);
-	}
+    mo->friction = ORIG_FRICTION; // reset to normal for next tic
     }
   }
+
 
 //
 // P_ZMovement
 //
 // Attempt vertical movement.
 
-static void P_ZMovement (mobj_t* mo)
-{
+void P_ZMovement (mobj_t* mo)
+  {
   fixed_t dist;
   fixed_t delta;
 
@@ -408,7 +395,7 @@ static void P_ZMovement (mobj_t* mo)
 //
 
 void P_NightmareRespawn(mobj_t* mobj)
-{
+  {
   fixed_t      x;
   fixed_t      y;
   fixed_t      z;
@@ -421,7 +408,7 @@ void P_NightmareRespawn(mobj_t* mobj)
 
   // something is occupying its position?
 
-  if (!P_CheckPosition (mobj, x, y))
+  if (!P_CheckPosition (mobj, x, y) )
     return; // no respwan
 
   // spawn a teleport fog at old spot
@@ -466,34 +453,38 @@ void P_NightmareRespawn(mobj_t* mobj)
   // remove the old monster,
 
   P_RemoveMobj (mobj);
-}
+  }
+
 
 //
 // P_MobjThinker
 //
 
 void P_MobjThinker (mobj_t* mobj)
-{
+  {
   // killough 4/25/98:
   //
   // If a mobj thinker's target points to a thinker about to be deleted,
   // delay the deletion of that thinker. See p_tick.c for more details.
 
-  if (mobj->target && mobj->target->thinker.function == P_RemoveThinker)
-    mobj->target->thinker.function = P_RemoveThinkerDelayed;
+  if (mobj->target && mobj->target->thinker.function.acv == P_RemoveThinker)
+    mobj->target->thinker.function.acv = P_RemoveThinkerDelayed;
 
   // momentum movement
-  if (mobj->momx | mobj->momy || mobj->flags & MF_SKULLFLY)
+
+  if (mobj->momx || mobj->momy || (mobj->flags&MF_SKULLFLY))
     {
-      P_XYMovement(mobj);
-      if (mobj->thinker.function == P_RemoveThinkerDelayed) // killough
-	return;       // mobj was removed
+    P_XYMovement (mobj);
+
+    if (mobj->thinker.function.acv == P_RemoveThinkerDelayed) // killough
+      return;       // mobj was removed
     }
 
-  if (mobj->z != mobj->floorz || mobj->momz)
+  if ( (mobj->z != mobj->floorz) || mobj->momz )
     {
-    P_ZMovement(mobj);
-    if (mobj->thinker.function == P_RemoveThinkerDelayed) // killough
+    P_ZMovement (mobj);
+
+    if (mobj->thinker.function.acv == P_RemoveThinkerDelayed) // killough
       return;       // mobj was removed
     }
 
@@ -535,20 +526,21 @@ void P_MobjThinker (mobj_t* mobj)
     P_NightmareRespawn (mobj);
     }
 
-}
+  }
 
 
 //
 // P_SpawnMobj
 //
+mobj_t* P_SpawnMobj(fixed_t x,fixed_t y,fixed_t z,mobjtype_t type)
+  {
+  mobj_t*     mobj;
+  state_t*    st;
+  mobjinfo_t* info;
 
-mobj_t *P_SpawnMobj(fixed_t x, fixed_t y, fixed_t z, mobjtype_t type)
-{
-  mobj_t *mobj = Z_Malloc(sizeof *mobj, PU_LEVEL, NULL);
-  mobjinfo_t *info = &mobjinfo[type];
-  state_t    *st;
-
-  memset(mobj, 0, sizeof *mobj);
+  mobj = Z_Malloc (sizeof(*mobj), PU_LEVEL, NULL);
+  memset (mobj, 0, sizeof (*mobj));
+  info = &mobjinfo[type];
 
   mobj->type = type;
   mobj->info = info;
@@ -577,7 +569,7 @@ mobj_t *P_SpawnMobj(fixed_t x, fixed_t y, fixed_t z, mobjtype_t type)
 
   // set subsector and/or block links
 
-  P_SetThingPosition(mobj);
+  P_SetThingPosition (mobj);
 
   mobj->floorz   = mobj->subsector->sector->floorheight;
   mobj->ceilingz = mobj->subsector->sector->ceilingheight;
@@ -590,16 +582,20 @@ mobj_t *P_SpawnMobj(fixed_t x, fixed_t y, fixed_t z, mobjtype_t type)
   else
     mobj->z = z;
 
-  mobj->thinker.function = P_MobjThinker;
+  mobj->thinker.function.acp1 = (actionf_p1)P_MobjThinker;
   mobj->above_thing = 0;                                            // phares
   mobj->below_thing = 0;                                            // phares
+  mobj->friction    = ORIG_FRICTION;                        // phares 3/17/98
   P_AddThinker (&mobj->thinker);
   return mobj;
-}
+  }
+
 
 mapthing_t itemrespawnque[ITEMQUESIZE];
-int itemrespawntime[ITEMQUESIZE];
-int iquehead, iquetail;
+int        itemrespawntime[ITEMQUESIZE];
+int        iquehead;
+int        iquetail;
+
 
 //
 // P_RemoveMobj
@@ -643,13 +639,16 @@ void P_RemoveMobj (mobj_t* mobj)
   P_RemoveThinker ((thinker_t*)mobj);
   }
 
+
 //
 // P_RespawnSpecials
 //
 
 void P_RespawnSpecials (void)
-{
-  fixed_t x, y, z;
+  {
+  fixed_t       x;
+  fixed_t       y;
+  fixed_t       z;
   subsector_t*  ss;
   mobj_t*       mo;
   mapthing_t*   mthing;
@@ -678,10 +677,11 @@ void P_RespawnSpecials (void)
   // spawn a teleport fog at the new spot
 
   ss = R_PointInSubsector (x,y);
-  mo = P_SpawnMobj(x, y, ss->sector->floorheight , MT_IFOG);
-  S_StartSound(mo, sfx_itmbk);
+  mo = P_SpawnMobj (x, y, ss->sector->floorheight , MT_IFOG);
+  S_StartSound (mo, sfx_itmbk);
 
   // find which type to spawn
+
   for (i=0 ; i< NUMMOBJTYPES ; i++)
     if (mthing->type == mobjinfo[i].doomednum)
       break;
@@ -700,7 +700,7 @@ void P_RespawnSpecials (void)
   // pull it from the queue
 
   iquetail = (iquetail+1)&(ITEMQUESIZE-1);
-}
+  }
 
 //
 // P_SpawnPlayer
@@ -710,9 +710,11 @@ void P_RespawnSpecials (void)
 //
 
 void P_SpawnPlayer (mapthing_t* mthing)
-{
+  {
   player_t* p;
-  fixed_t   x, y, z;
+  fixed_t   x;
+  fixed_t   y;
+  fixed_t   z;
   mobj_t*   mobj;
   int       i;
 
@@ -735,7 +737,7 @@ void P_SpawnPlayer (mapthing_t* mthing)
 
   if (mthing->type > 1)
     mobj->flags |= (mthing->type-1)<<MF_TRANSSHIFT;
-  
+
   mobj->angle      = ANG45 * (mthing->angle/45);
   mobj->player     = p;
   mobj->health     = p->health;
@@ -750,8 +752,6 @@ void P_SpawnPlayer (mapthing_t* mthing)
   p->fixedcolormap = 0;
   p->viewheight    = VIEWHEIGHT;
 
-  p->momx = p->momy = 0;   // killough 10/98: initialize bobbing to 0.
-
   // setup gun psprite
 
   P_SetupPsprites (p);
@@ -764,10 +764,10 @@ void P_SpawnPlayer (mapthing_t* mthing)
 
   if (mthing->type-1 == consoleplayer)
     {
-      ST_Start(); // wake up the status bar
-      HU_Start(); // wake up the heads up text
+    ST_Start(); // wake up the status bar
+    HU_Start(); // wake up the heads up text
     }
-}
+  }
 
 
 //
@@ -777,7 +777,7 @@ void P_SpawnPlayer (mapthing_t* mthing)
 //
 
 void P_SpawnMapThing (mapthing_t* mthing)
-{
+  {
   int     i;
   int     bit;
   mobj_t* mobj;
@@ -785,23 +785,34 @@ void P_SpawnMapThing (mapthing_t* mthing)
   fixed_t y;
   fixed_t z;
 
+  if (!mthing->type)  // killough 2/26/98: Ignore type-0 things as NOPs
+    return;
+
+  // phares 5/14/98: Ignore Player 5-8 starts (for now)
+
   switch(mthing->type)
     {
-    case 0:             // killough 2/26/98: Ignore type-0 things as NOPs
-    case DEN_PLAYER5:   // phares 5/14/98: Ignore Player 5-8 starts (for now)
-    case DEN_PLAYER6:
-    case DEN_PLAYER7:
-    case DEN_PLAYER8:
-      return;
+  case DEN_PLAYER5:
+  case DEN_PLAYER6:
+  case DEN_PLAYER7:
+  case DEN_PLAYER8:
+    return;
     }
 
   // count deathmatch start positions
 
   if (mthing->type == 11)
     {
-      // 1/11/98 killough -- new code removes limit on deathmatch starts:
+    // old code -- killough
+    //     if (deathmatch_p < &deathmatchstarts[10])
+    //    {
+    //      memcpy (deathmatch_p, mthing, sizeof(*mthing));
+    //      deathmatch_p++;
+    //    }
+    //
+    // 1/11/98 killough -- new code removes limit on deathmatch starts:
 
-      size_t offset = deathmatch_p - deathmatchstarts;
+    size_t offset = deathmatch_p - deathmatchstarts;
 
     if (offset >= num_deathmatchstarts)
       {
@@ -820,6 +831,7 @@ void P_SpawnMapThing (mapthing_t* mthing)
 
   if (mthing->type <= 4 && mthing->type > 0)  // killough 2/26/98 -- fix crashes
     {
+
     // save spots for respawning in network games
 
     playerstarts[mthing->type-1] = *mthing;
@@ -830,17 +842,17 @@ void P_SpawnMapThing (mapthing_t* mthing)
 
   // check for apropriate skill level
 
-  if (!netgame && mthing->options & 16)//jff "not single" thing flag
+  if (!netgame && (mthing->options & 16) ) //jff "not single" thing flag
     return;
 
   //jff 3/30/98 implement "not deathmatch" thing flag
 
-  if (netgame && deathmatch && mthing->options & 32)
+  if (netgame && deathmatch && (mthing->options & 32) )
     return;
 
   //jff 3/30/98 implement "not cooperative" thing flag
 
-  if (netgame && !deathmatch && mthing->options & 64)
+  if (netgame && !deathmatch && (mthing->options & 64) )
     return;
 
   if (gameskill == sk_baby)
@@ -864,10 +876,11 @@ void P_SpawnMapThing (mapthing_t* mthing)
   // warning message for the player.
 
   if (i == NUMMOBJTYPES)
+//    I_Error ("P_SpawnMapThing: Unknown type %i at (%i, %i)",
+//             mthing->type,mthing->x,mthing->y);
     {
-      doom_printf("Unknown Thing type %i at (%i, %i)",
-	      mthing->type, mthing->x, mthing->y);
-      return;
+    dprintf("Unknown Thing type %i at (%i, %i)",mthing->type,mthing->x,mthing->y);
+    return;
     }
 
   // don't spawn keycards and players in deathmatch
@@ -903,7 +916,8 @@ void P_SpawnMapThing (mapthing_t* mthing)
   mobj->angle = ANG45 * (mthing->angle/45);
   if (mthing->options & MTF_AMBUSH)
     mobj->flags |= MF_AMBUSH;
-}
+  }
+
 
 //
 // GAME SPAWN FUNCTIONS
@@ -916,7 +930,7 @@ void P_SpawnMapThing (mapthing_t* mthing)
 extern fixed_t attackrange;
 
 void P_SpawnPuff(fixed_t x,fixed_t y,fixed_t z)
-{
+  {
   mobj_t* th;
   // killough 5/5/98: remove dependence on order of evaluation:
   int t = P_Random(pr_spawnpuff);
@@ -933,14 +947,14 @@ void P_SpawnPuff(fixed_t x,fixed_t y,fixed_t z)
 
   if (attackrange == MELEERANGE)
     P_SetMobjState (th, S_PUFF3);
-}
+  }
 
 
 //
 // P_SpawnBlood
 //
 void P_SpawnBlood(fixed_t x,fixed_t y,fixed_t z,int damage)
-{
+  {
   mobj_t* th;
   // killough 5/5/98: remove dependence on order of evaluation:
   int t = P_Random(pr_spawnblood);
@@ -956,7 +970,7 @@ void P_SpawnBlood(fixed_t x,fixed_t y,fixed_t z,int damage)
     P_SetMobjState (th,S_BLOOD2);
   else if (damage < 9)
     P_SetMobjState (th,S_BLOOD3);
-}
+  }
 
 
 //
@@ -966,7 +980,7 @@ void P_SpawnBlood(fixed_t x,fixed_t y,fixed_t z,int damage)
 //
 
 void P_CheckMissileSpawn (mobj_t* th)
-{
+  {
   th->tics -= P_Random(pr_missile)&3;
   if (th->tics < 1)
     th->tics = 1;
@@ -974,25 +988,27 @@ void P_CheckMissileSpawn (mobj_t* th)
   // move a little forward so an angle can
   // be computed if it immediately explodes
 
-  th->x += th->momx>>1;
-  th->y += th->momy>>1;
-  th->z += th->momz>>1;
+  th->x += (th->momx>>1);
+  th->y += (th->momy>>1);
+  th->z += (th->momz>>1);
 
   // killough 3/15/98: no dropoff (really = don't care for missiles)
 
-  if (!P_TryMove(th, th->x, th->y, false))
+  if (!P_TryMove (th, th->x, th->y, false))
     P_ExplodeMissile (th);
-}
+  }
+
 
 //
 // P_SpawnMissile
 //
 
 mobj_t* P_SpawnMissile(mobj_t* source,mobj_t* dest,mobjtype_t type)
-{
+  {
   mobj_t* th;
   angle_t an;
   int     dist;
+
   th = P_SpawnMobj (source->x,source->y,source->z + 4*8*FRACUNIT,type);
 
   if (th->info->seesound)
@@ -1002,6 +1018,7 @@ mobj_t* P_SpawnMissile(mobj_t* source,mobj_t* dest,mobjtype_t type)
   an = R_PointToAngle2 (source->x, source->y, dest->x, dest->y);
 
   // fuzzy player
+
   if (dest->flags & MF_SHADOW)
     {  // killough 5/5/98: remove dependence on order of evaluation:
     int t = P_Random(pr_shadow);
@@ -1020,9 +1037,11 @@ mobj_t* P_SpawnMissile(mobj_t* source,mobj_t* dest,mobjtype_t type)
     dist = 1;
 
   th->momz = (dest->z - source->z) / dist;
-  P_CheckMissileSpawn(th);
+  P_CheckMissileSpawn (th);
+
   return th;
-}
+  }
+
 
 //
 // P_SpawnPlayerMissile
@@ -1030,7 +1049,7 @@ mobj_t* P_SpawnMissile(mobj_t* source,mobj_t* dest,mobjtype_t type)
 //
 
 void P_SpawnPlayerMissile(mobj_t* source,mobjtype_t type)
-{
+  {
   mobj_t* th;
   angle_t an;
   fixed_t x;
@@ -1044,28 +1063,22 @@ void P_SpawnPlayerMissile(mobj_t* source,mobjtype_t type)
   slope = P_AimLineAttack (source, an, 16*64*FRACUNIT);
 
   if (!linetarget)
-  {
-      an += 1 << 26;
-      if (!disable_horizontal_autoaim)
+    {
+    an += 1<<26;
+    slope = P_AimLineAttack (source, an, 16*64*FRACUNIT);
+
+    if (!linetarget)
       {
-          slope = P_AimLineAttack(source, an, 16 * 64 * FRACUNIT);
+      an -= 2<<26;
+      slope = P_AimLineAttack (source, an, 16*64*FRACUNIT);
       }
 
-      if (!linetarget)
+    if (!linetarget)
       {
-          an -= 2 << 26;
-          if (!disable_horizontal_autoaim)
-          {
-              slope = P_AimLineAttack(source, an, 16 * 64 * FRACUNIT);
-          }
-
-          if (!linetarget)
-          {
-              an = source->angle;
-              slope = 0;
-          }
+      an = source->angle;
+      slope = 0;
       }
-  }
+    }
 
   x = source->x;
   y = source->y;
@@ -1083,4 +1096,91 @@ void P_SpawnPlayerMissile(mobj_t* source,mobjtype_t type)
   th->momz = FixedMul(th->info->speed,slope);
 
   P_CheckMissileSpawn(th);
-}
+  }
+
+//----------------------------------------------------------------------------
+//
+// $Log: p_mobj.c,v $
+// Revision 1.27  1998/09/10  20:12:55  phares
+// Fix DM Stuck bug and refix ice-bobbing/momentum
+//
+// Revision 1.26  1998/05/16  00:24:12  phares
+// Unknown things now flash warning msg instead of causing abort
+//
+// Revision 1.25  1998/05/15  00:33:19  killough
+// Change function used in thing deletion check
+//
+// Revision 1.24  1998/05/14  08:01:56  phares
+// Added Player Starts 5-8 (4001-4004)
+//
+// Revision 1.23  1998/05/12  12:47:21  phares
+// Removed OVER_UNDER code
+//
+// Revision 1.22  1998/05/12  06:09:32  killough
+// Prevent voodoo dolls from causing player bopping
+//
+// Revision 1.21  1998/05/07  00:54:23  killough
+// Remove dependence on evaluation order, fix (-1) ptr bug
+//
+// Revision 1.20  1998/05/05  15:35:16  phares
+// Documentation and Reformatting changes
+//
+// Revision 1.19  1998/05/03  23:16:49  killough
+// Remove unnecessary declarations, fix #includes
+//
+// Revision 1.18  1998/04/27  02:02:12  killough
+// Fix crashes caused by mobjs targeting deleted thinkers
+//
+// Revision 1.17  1998/04/10  06:35:56  killough
+// Fix mobj state machine cycle hangs
+//
+// Revision 1.16  1998/03/30  12:05:57  jim
+// Added support for not-dm not-coop thing flags
+//
+// Revision 1.15  1998/03/28  18:00:58  killough
+// Remove old dead code which is commented out
+//
+// Revision 1.14  1998/03/23  15:24:30  phares
+// Changed pushers to linedef control
+//
+// Revision 1.13  1998/03/20  00:30:06  phares
+// Changed friction to linedef control
+//
+// Revision 1.12  1998/03/16  12:43:41  killough
+// Use new P_TryMove() allowing dropoffs in certain cases
+//
+// Revision 1.11  1998/03/12  14:28:46  phares
+// friction and IDCLIP changes
+//
+// Revision 1.10  1998/03/11  17:48:28  phares
+// New cheats, clean help code, friction fix
+//
+// Revision 1.9  1998/03/09  18:27:04  phares
+// Fixed bug in neighboring variable friction sectors
+//
+// Revision 1.8  1998/03/04  07:40:04  killough
+// comment out noclipping hack for now
+//
+// Revision 1.7  1998/02/26  21:15:30  killough
+// Fix thing type 0 crashes, e.g. MAP25
+//
+// Revision 1.6  1998/02/24  09:20:11  phares
+// Removed 'onground' local variable
+//
+// Revision 1.5  1998/02/24  08:46:21  phares
+// Pushers, recoil, new friction, and over/under work
+//
+// Revision 1.4  1998/02/23  04:46:21  killough
+// Preserve no-clipping cheat across idclev
+//
+// Revision 1.3  1998/02/17  05:47:11  killough
+// Change RNG calls to use keys for each block
+//
+// Revision 1.2  1998/01/26  19:24:15  phares
+// First rev with no ^Ms
+//
+// Revision 1.1.1.1  1998/01/19  14:03:00  rand
+// Lee's Jan 19 sources
+//
+//
+//----------------------------------------------------------------------------

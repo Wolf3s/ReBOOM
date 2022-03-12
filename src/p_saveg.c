@@ -1,31 +1,27 @@
 // Emacs style mode select   -*- C++ -*-
 //-----------------------------------------------------------------------------
 //
-// $Id: p_saveg.c,v 1.17 1998/05/03 23:10:22 killough Exp $
+// $Id: p_saveg.c,v 1.19 1998/09/16 06:59:39 phares Exp $
 //
-//  BOOM, a modified and improved DOOM engine
-//  Copyright (C) 1999 by
-//  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
+// Copyright (C) 1993-1996 by id Software, Inc.
 //
-//  This program is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU General Public License
-//  as published by the Free Software Foundation; either version 2
-//  of the License, or (at your option) any later version.
+// This source is available for distribution and/or modification
+// only under the terms of the DOOM Source Code License as
+// published by id Software. All rights reserved.
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+// The source is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// FITNESS FOR A PARTICULAR PURPOSE. See the DOOM Source Code License
+// for more details.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
-//  02111-1307, USA.
 //
 // DESCRIPTION:
 //      Archiving: SaveGame I/O.
 //
 //-----------------------------------------------------------------------------
+
+static const char
+rcsid[] = "$Id: p_saveg.c,v 1.19 1998/09/16 06:59:39 phares Exp $";
 
 #include "doomstat.h"
 #include "r_main.h"
@@ -36,13 +32,12 @@
 #include "m_random.h"
 #include "am_map.h"
 #include "p_enemy.h"
-#include "am_map_structs.h"
 
 byte *save_p;
 
 // Pads save_p to a 4-byte boundary
 //  so that the load/save works on SGI&Gecko.
-#define PADSAVEP()    do { save_p += (4 - ((intptr_t) save_p & 3)) & 3; } while (0)
+#define PADSAVEP()    do { save_p += (4 - ((int) save_p & 3)) & 3; } while (0)
 //
 // P_ArchivePlayers
 //
@@ -93,7 +88,7 @@ void P_UnArchivePlayers (void)
         for (j=0 ; j<NUMPSPRITES ; j++)
           if (players[i]. psprites[j].state)
             players[i]. psprites[j].state =
-              &states[ (size_t)players[i].psprites[j].state ];
+              &states[ (int)players[i].psprites[j].state ];
       }
 }
 
@@ -106,23 +101,18 @@ void P_ArchiveWorld (void)
   int            i;
   const sector_t *sec;
   const line_t   *li;
-  const side_t   *si;
   short          *put;
 
   // killough 3/22/98: fix bug caused by hoisting save_p too early
-  // killough 10/98: adjust size for changes below
-  size_t size = 
-    (sizeof(short)*5 + sizeof sec->floorheight + sizeof sec->ceilingheight) 
-    * numsectors + sizeof(short)*3*numlines + 4;
+
+  size_t size = (sizeof(short)*7)*numsectors + (sizeof(short)*3)*numlines + 4;
 
   for (i=0; i<numlines; i++)
     {
       if (lines[i].sidenum[0] != -1)
-        size +=
-	  sizeof(short)*3 + sizeof si->textureoffset + sizeof si->rowoffset;
+        size += sizeof(short)*5;
       if (lines[i].sidenum[1] != -1)
-	size +=
-	  sizeof(short)*3 + sizeof si->textureoffset + sizeof si->rowoffset;
+        size += sizeof(short)*5;
     }
 
   CheckSaveGame(size); // killough
@@ -134,17 +124,22 @@ void P_ArchiveWorld (void)
   // do sectors
   for (i=0, sec = sectors ; i<numsectors ; i++,sec++)
     {
-      // killough 10/98: save full floor & ceiling heights, including fraction
-      memcpy(put, &sec->floorheight, sizeof sec->floorheight);
-      put = (void *)((char *) put + sizeof sec->floorheight);
-      memcpy(put, &sec->ceilingheight, sizeof sec->ceilingheight);
-      put = (void *)((char *) put + sizeof sec->ceilingheight);
-
+      *put++ = sec->floorheight >> FRACBITS;
+      *put++ = sec->ceilingheight >> FRACBITS;
       *put++ = sec->floorpic;
       *put++ = sec->ceilingpic;
       *put++ = sec->lightlevel;
       *put++ = sec->special;            // needed?   yes -- transfer types
       *put++ = sec->tag;                // needed?   need them -- killough
+
+      // phares 9/13/98: Save the index of the thinker, so that sound
+      // traces can survive savegames. The prev pointer in the thinker
+      // list has been mapped to an index in P_ThinkerToIndex().
+
+      if (sec->soundtarget)
+        *put++ = (long) sec->soundtarget->thinker.prev;
+      else
+        *put++ = 0; // no soundtarget
     }
 
   // do lines
@@ -159,16 +154,9 @@ void P_ArchiveWorld (void)
       for (j=0; j<2; j++)
         if (li->sidenum[j] != -1)
           {
-	    si = &sides[li->sidenum[j]];
-
-	    // killough 10/98: save full sidedef offsets,
-	    // preserving fractional scroll offsets
-
-	    memcpy(put, &si->textureoffset, sizeof si->textureoffset);
-	    put = (void *)((char *) put + sizeof si->textureoffset);
-	    memcpy(put, &si->rowoffset, sizeof si->rowoffset);
-	    put = (void *)((char *) put + sizeof si->rowoffset);
-
+            const side_t *si = &sides[li->sidenum[j]];
+            *put++ = si->textureoffset >> FRACBITS;
+            *put++ = si->rowoffset >> FRACBITS;
             *put++ = si->toptexture;
             *put++ = si->bottomtexture;
             *put++ = si->midtexture;
@@ -196,13 +184,8 @@ void P_UnArchiveWorld (void)
   // do sectors
   for (i=0, sec = sectors ; i<numsectors ; i++,sec++)
     {
-      // killough 10/98: load full floor & ceiling heights, including fractions
-
-      memcpy(&sec->floorheight, get, sizeof sec->floorheight);
-      get = (void *)((char *) get + sizeof sec->floorheight);
-      memcpy(&sec->ceilingheight, get, sizeof sec->ceilingheight);
-      get = (void *)((char *) get + sizeof sec->ceilingheight);
-
+      sec->floorheight = *get++ << FRACBITS;
+      sec->ceilingheight = *get++ << FRACBITS;
       sec->floorpic = *get++;
       sec->ceilingpic = *get++;
       sec->lightlevel = *get++;
@@ -211,7 +194,15 @@ void P_UnArchiveWorld (void)
       sec->ceilingdata = 0; //jff 2/22/98 now three thinker fields, not two
       sec->floordata = 0;
       sec->lightingdata = 0;
-      sec->soundtarget = 0;
+
+      // phares 9/13/98: soundtarget has meaning, to save sound info across
+      // savegames.
+
+//    sec->soundtarget = 0; // old code
+      sec->soundtarget = (mobj_t *) ((long) *get++); // just get the index
+                                                     // for now. convert it
+                                                     // later, in
+                                                     // P_UnArchiveThinkers.
     }
 
   // do lines
@@ -226,14 +217,8 @@ void P_UnArchiveWorld (void)
         if (li->sidenum[j] != -1)
           {
             side_t *si = &sides[li->sidenum[j]];
-
-	    // killough 10/98: load full sidedef offsets, including fractions
-
-	    memcpy(&si->textureoffset, get, sizeof si->textureoffset);
-	    get = (void *)((char *) get + sizeof si->textureoffset);
-	    memcpy(&si->rowoffset, get, sizeof si->rowoffset);
-	    get = (void *)((char *) get + sizeof si->rowoffset);
-
+            si->textureoffset = *get++ << FRACBITS;
+            si->rowoffset = *get++ << FRACBITS;
             si->toptexture = *get++;
             si->bottomtexture = *get++;
             si->midtexture = *get++;
@@ -251,6 +236,38 @@ typedef enum {
   tc_mobj
 } thinkerclass_t;
 
+// phares 9/13/98: Moved this code outside of P_ArchiveThinkers so the
+// thinker indices could be used by the code that saves sector info.
+
+static int number_of_thinkers;
+
+void P_ThinkerToIndex(void)
+  {
+  thinker_t *th;
+
+  // killough 2/14/98:
+  // count the number of thinkers, and mark each one with its index, using
+  // the prev field as a placeholder, since it can be restored later.
+
+  number_of_thinkers = 0;
+  for (th = thinkercap.next ; th != &thinkercap ; th=th->next)
+    if (th->function.acp1 == (actionf_p1) P_MobjThinker)
+      th->prev = (thinker_t *) ++number_of_thinkers;
+  }
+
+// phares 9/13/98: Moved this code outside of P_ArchiveThinkers so the
+// thinker indices could be used by the code that saves sector info.
+
+void P_IndexToThinker(void)
+  {
+  // killough 2/14/98: restore prev pointers
+  thinker_t *th;
+  thinker_t *prev = &thinkercap;
+
+  for (th = thinkercap.next ; th != &thinkercap ; prev=th, th=th->next)
+    th->prev = prev;
+  }
+
 //
 // P_ArchiveThinkers
 //
@@ -259,26 +276,17 @@ typedef enum {
 void P_ArchiveThinkers (void)
 {
   thinker_t *th;
-  size_t    size = 0;
 
   CheckSaveGame(sizeof brain);      // killough 3/26/98: Save boss brain state
   memcpy(save_p, &brain, sizeof brain);
   save_p += sizeof brain;
 
-  // killough 2/14/98:
-  // count the number of thinkers, and mark each one with its index, using
-  // the prev field as a placeholder, since it can be restored later.
-
-  for (th = thinkercap.next ; th != &thinkercap ; th=th->next)
-    if (th->function == P_MobjThinker)
-      th->prev = (thinker_t *) ++size;
-
   // check that enough room is available in savegame buffer
-  CheckSaveGame(size*(sizeof(mobj_t)+4));       // killough 2/14/98
+  CheckSaveGame(number_of_thinkers*(sizeof(mobj_t)+4));       // killough 2/14/98
 
   // save off the current thinkers
   for (th = thinkercap.next ; th != &thinkercap ; th=th->next)
-    if (th->function == P_MobjThinker)
+    if (th->function.acp1 == (actionf_p1) P_MobjThinker)
       {
         mobj_t *mobj;
 
@@ -296,13 +304,13 @@ void P_ArchiveThinkers (void)
         // mobj thinker.
 
         if (mobj->target)
-          mobj->target = mobj->target->thinker.function ==
-            P_MobjThinker ?
+          mobj->target = mobj->target->thinker.function.acp1 ==
+            (actionf_p1) P_MobjThinker ?
             (mobj_t *) mobj->target->thinker.prev : NULL;
 
         if (mobj->tracer)
-          mobj->tracer = mobj->tracer->thinker.function ==
-            P_MobjThinker ?
+          mobj->tracer = mobj->tracer->thinker.function.acp1 ==
+            (actionf_p1) P_MobjThinker ?
             (mobj_t *) mobj->tracer->thinker.prev : NULL;
 
         // killough 2/14/98: new field: save last known enemy. Prevents
@@ -310,20 +318,20 @@ void P_ArchiveThinkers (void)
         // seeing player anymore.
 
         if (mobj->lastenemy)
-          mobj->lastenemy = mobj->lastenemy->thinker.function ==
-            P_MobjThinker ?
+          mobj->lastenemy = mobj->lastenemy->thinker.function.acp1 ==
+            (actionf_p1) P_MobjThinker ?
             (mobj_t *) mobj->lastenemy->thinker.prev : NULL;
 
         // killough 2/14/98: end changes
 
         if (mobj->above_thing)                                      // phares
-          mobj->above_thing = mobj->above_thing->thinker.function ==
-            P_MobjThinker ?
+          mobj->above_thing = mobj->above_thing->thinker.function.acp1 ==
+            (actionf_p1) P_MobjThinker ?
             (mobj_t *) mobj->above_thing->thinker.prev : NULL;
 
         if (mobj->below_thing)
-          mobj->below_thing = mobj->below_thing->thinker.function ==
-            P_MobjThinker ?
+          mobj->below_thing = mobj->below_thing->thinker.function.acp1 ==
+            (actionf_p1) P_MobjThinker ?
             (mobj_t *) mobj->below_thing->thinker.prev : NULL;      // phares
 
         if (mobj->player)
@@ -332,51 +340,6 @@ void P_ArchiveThinkers (void)
 
   // add a terminating marker
   *save_p++ = tc_end;
-
-  // killough 9/14/98: save soundtargets
-  {
-     int i;
-     CheckSaveGame(numsectors * sizeof(mobj_t *));       // killough 9/14/98
-     for (i = 0; i < numsectors; i++)
-     {
-        mobj_t *target = sectors[i].soundtarget;
-        if (target)
-        {
-            // haleyjd 03/23/09: Imported from Eternity:
-            // haleyjd 11/03/06: We must check for P_MobjThinker here as well,
-            // or player corpses waiting for deferred removal will be saved as
-            // raw pointer values instead of twizzled numbers, causing a crash
-            // on savegame load!
-            target = target->thinker.function == P_MobjThinker ? 
-                        (mobj_t *)target->thinker.prev : NULL;
-
-        }
-        memcpy(save_p, &target, sizeof target);
-        save_p += sizeof target;
-     }
-  }
-  
-  // killough 2/14/98: restore prev pointers
-  {
-    thinker_t *prev = &thinkercap;
-    for (th = thinkercap.next ; th != &thinkercap ; prev=th, th=th->next)
-      th->prev = prev;
-  }
-  // killough 2/14/98: end changes
-}
-
-//
-// killough 11/98
-//
-// Same as P_SetTarget() in p_tick.c, except that the target is nullified
-// first, so that no old target's reference count is decreased (when loading
-// savegames, old targets are indices, not really pointers to targets).
-//
-
-static void P_SetNewTarget(mobj_t **mop, mobj_t *targ)
-{
-  *mop = NULL;
-  P_SetTarget(mop, targ);
 }
 
 //
@@ -390,7 +353,8 @@ void P_UnArchiveThinkers (void)
   thinker_t *th;
   mobj_t    **mobj_p;    // killough 2/14/98: Translation table
   size_t    size;        // killough 2/14/98: size of or index into table
-  size_t    idx;         // haleyjd 11/03/06: separate index var
+  int       i;           // phares 9/13/98:   For sec->soundtarget restore
+  sector_t* sec;         // phares 9/13/98:   For sec->soundtarget restore
 
   // killough 3/26/98: Load boss brain state
   memcpy(&brain, save_p, sizeof brain);
@@ -400,7 +364,7 @@ void P_UnArchiveThinkers (void)
   for (th = thinkercap.next; th != &thinkercap; )
     {
       thinker_t *next = th->next;
-      if (th->function == P_MobjThinker)
+      if (th->function.acp1 == (actionf_p1) P_MobjThinker)
         P_RemoveMobj ((mobj_t *) th);
       else
         Z_Free (th);
@@ -426,21 +390,20 @@ void P_UnArchiveThinkers (void)
   }
 
   // read in saved thinkers
-  // haleyjd 11/03/06: use idx to save "size" for rangechecking
-  for (idx = 1; *save_p++ == tc_mobj; idx++)    // killough 2/14/98
+  for (size = 1; *save_p++ == tc_mobj; size++)    // killough 2/14/98
     {
       mobj_t *mobj = Z_Malloc(sizeof(mobj_t), PU_LEVEL, NULL);
 
       // killough 2/14/98 -- insert pointers to thinkers into table, in order:
-      mobj_p[idx] = mobj;
+      mobj_p[size] = mobj;
 
       PADSAVEP();
       memcpy (mobj, save_p, sizeof(mobj_t));
       save_p += sizeof(mobj_t);
-      mobj->state = states + (size_t) mobj->state;
+      mobj->state = states + (int) mobj->state;
 
       if (mobj->player)
-        (mobj->player = &players[(size_t) mobj->player - 1]) -> mo = mobj;
+        (mobj->player = &players[(int) mobj->player - 1]) -> mo = mobj;
 
       P_SetThingPosition (mobj);
       mobj->info = &mobjinfo[mobj->type];
@@ -450,51 +413,39 @@ void P_UnArchiveThinkers (void)
       //      mobj->floorz = mobj->subsector->sector->floorheight;
       //      mobj->ceilingz = mobj->subsector->sector->ceilingheight;
 
-      mobj->thinker.function = P_MobjThinker;
+      mobj->thinker.function.acp1 = (actionf_p1) P_MobjThinker;
       P_AddThinker (&mobj->thinker);
     }
 
   // killough 2/14/98: adjust target and tracer fields, plus
   // lastenemy field, to correctly point to mobj thinkers.
   // NULL entries automatically handled by first table entry.
-  //
-  // killough 11/98: use P_SetNewTarget() to set fields
 
   for (th = thinkercap.next ; th != &thinkercap ; th=th->next)
     {
-      P_SetNewTarget(&((mobj_t *) th)->target,
-        mobj_p[(size_t)((mobj_t *)th)->target]);
+      ((mobj_t *) th)->target =
+        mobj_p[(size_t)((mobj_t *)th)->target];
 
-      P_SetNewTarget(&((mobj_t *) th)->tracer,
-        mobj_p[(size_t)((mobj_t *)th)->tracer]);
+      ((mobj_t *) th)->tracer =
+        mobj_p[(size_t)((mobj_t *)th)->tracer];
 
-      P_SetNewTarget(&((mobj_t *) th)->lastenemy,
-        mobj_p[(size_t)((mobj_t *)th)->lastenemy]);
+      ((mobj_t *) th)->lastenemy =
+        mobj_p[(size_t)((mobj_t *)th)->lastenemy];
 
       // phares: added two new fields for Sprite Height problem
 
-      P_SetNewTarget(&((mobj_t *) th)->above_thing,
-        mobj_p[(size_t)((mobj_t *)th)->above_thing]);
+      ((mobj_t *) th)->above_thing =
+        mobj_p[(size_t)((mobj_t *)th)->above_thing];
 
-      P_SetNewTarget(&((mobj_t *) th)->below_thing,
-        mobj_p[(size_t)((mobj_t *)th)->below_thing]);
+      ((mobj_t *) th)->below_thing =
+        mobj_p[(size_t)((mobj_t *)th)->below_thing];
     }
 
-  {  // killough 9/14/98: restore soundtargets
-    int i;
-    for (i = 0; i < numsectors; i++)
-    {
-       mobj_t *target;
-       memcpy(&target, save_p, sizeof target);
-       save_p += sizeof target;
+  // phares 9/13/98: Restore sec->soundtarget pointers from indices.
+  // NULL entries automatically handled by first table entry.
 
-       // haleyjd 11/03/06: rangecheck for security
-       if((size_t)target < size)
-          P_SetNewTarget(&sectors[i].soundtarget, mobj_p[(size_t) target]);
-       else
-          sectors[i].soundtarget = NULL;
-    }
-  }
+  for (i = 0, sec = sectors ; i < numsectors ; i++, sec++)
+    sec->soundtarget = mobj_p[(size_t) sec->soundtarget];
 
   free(mobj_p);    // free translation table
 
@@ -513,11 +464,12 @@ enum {
   tc_plat,
   tc_flash,
   tc_strobe,
+  tc_flicker,     //jff 8/8/98 add missing fire flicker entry
   tc_glow,
-  tc_elevator,    //jff 2/22/98 new elevator type thinker
+  tc_elevator,    //jff 2/22/98 new elevator type thinker                 
   tc_scroll,      // killough 3/7/98: new scroll effect thinker
+  tc_friction,    // phares 3/18/98:  new friction effect thinker
   tc_pusher,      // phares 3/22/98:  new push/pull effect thinker
-  tc_flicker,     // killough 10/4/98
   tc_endspecials
 } specials_e;
 
@@ -533,8 +485,8 @@ enum {
 // T_PlatRaise, (plat_t: sector_t *), - active list
 // T_MoveElevator, (plat_t: sector_t *), - active list      // jff 2/22/98
 // T_Scroll                                                 // killough 3/7/98
+// T_Friction                                               // phares 3/18/98
 // T_Pusher                                                 // phares 3/22/98
-// T_FireFlicker                                            // killough 10/4/98
 //
 
 void P_ArchiveSpecials (void)
@@ -545,7 +497,7 @@ void P_ArchiveSpecials (void)
   // save off the current thinkers (memory size calculation -- killough)
 
   for (th = thinkercap.next ; th != &thinkercap ; th=th->next)
-    if (!th->function)
+    if (th->function.acv == (actionf_v)NULL)
       {
         platlist_t *pl;
         ceilinglist_t *cl;     //jff 2/22/98 need this for ceilings too now
@@ -565,17 +517,19 @@ void P_ArchiveSpecials (void)
       }
     else
       size +=
-        th->function==T_MoveCeiling  ? 4+sizeof(ceiling_t) :
-        th->function==T_VerticalDoor ? 4+sizeof(vldoor_t)  :
-        th->function==T_MoveFloor    ? 4+sizeof(floormove_t):
-        th->function==T_PlatRaise    ? 4+sizeof(plat_t)    :
-        th->function==T_LightFlash   ? 4+sizeof(lightflash_t):
-        th->function==T_StrobeFlash  ? 4+sizeof(strobe_t)  :
-        th->function==T_Glow         ? 4+sizeof(glow_t)    :
-        th->function==T_MoveElevator ? 4+sizeof(elevator_t):
-        th->function==T_Scroll       ? 4+sizeof(scroll_t)  :
-        th->function==T_Pusher       ? 4+sizeof(pusher_t)  :
-        th->function==T_FireFlicker? 4+sizeof(fireflicker_t) :
+        th->function.acp1==(actionf_p1)T_MoveCeiling  ? 4+sizeof(ceiling_t) :
+        th->function.acp1==(actionf_p1)T_VerticalDoor ? 4+sizeof(vldoor_t)  :
+        th->function.acp1==(actionf_p1)T_MoveFloor    ? 4+sizeof(floormove_t):
+        th->function.acp1==(actionf_p1)T_PlatRaise    ? 4+sizeof(plat_t)    :
+        th->function.acp1==(actionf_p1)T_LightFlash   ? 4+sizeof(lightflash_t):
+        th->function.acp1==(actionf_p1)T_StrobeFlash  ? 4+sizeof(strobe_t)  :
+        //jff 8/8/98 add missing fire flicker special
+        th->function.acp1==(actionf_p1)T_FireFlicker  ? 4+sizeof(fireflicker_t) :
+        th->function.acp1==(actionf_p1)T_Glow         ? 4+sizeof(glow_t)    :
+        th->function.acp1==(actionf_p1)T_MoveElevator ? 4+sizeof(elevator_t):
+        th->function.acp1==(actionf_p1)T_Scroll       ? 4+sizeof(scroll_t)  :
+        th->function.acp1==(actionf_p1)T_Friction     ? 4+sizeof(friction_t):
+        th->function.acp1==(actionf_p1)T_Pusher       ? 4+sizeof(pusher_t)  :
       0;
 
   CheckSaveGame(size);          // killough
@@ -583,7 +537,7 @@ void P_ArchiveSpecials (void)
   // save off the current thinkers
   for (th=thinkercap.next; th!=&thinkercap; th=th->next)
     {
-      if (!th->function)
+      if (th->function.acv == (actionf_v)NULL)
         {
           platlist_t *pl;
           ceilinglist_t *cl;    //jff 2/22/98 add iter variable for ceilings
@@ -604,7 +558,7 @@ void P_ArchiveSpecials (void)
           continue;
         }
 
-      if (th->function == T_MoveCeiling)
+      if (th->function.acp1 == (actionf_p1) T_MoveCeiling)
         {
           ceiling_t *ceiling;
         ceiling:                               // killough 2/14/98
@@ -617,7 +571,7 @@ void P_ArchiveSpecials (void)
           continue;
         }
 
-      if (th->function == T_VerticalDoor)
+      if (th->function.acp1 == (actionf_p1) T_VerticalDoor)
         {
           vldoor_t *door;
           *save_p++ = tc_door;
@@ -631,7 +585,7 @@ void P_ArchiveSpecials (void)
           continue;
         }
 
-      if (th->function == T_MoveFloor)
+      if (th->function.acp1 == (actionf_p1) T_MoveFloor)
         {
           floormove_t *floor;
           *save_p++ = tc_floor;
@@ -643,7 +597,7 @@ void P_ArchiveSpecials (void)
           continue;
         }
 
-      if (th->function == T_PlatRaise)
+      if (th->function.acp1 == (actionf_p1) T_PlatRaise)
         {
           plat_t *plat;
         plat:   // killough 2/14/98: added fix for original plat height above
@@ -656,7 +610,7 @@ void P_ArchiveSpecials (void)
           continue;
         }
 
-      if (th->function == T_LightFlash)
+      if (th->function.acp1 == (actionf_p1) T_LightFlash)
         {
           lightflash_t *flash;
           *save_p++ = tc_flash;
@@ -668,7 +622,7 @@ void P_ArchiveSpecials (void)
           continue;
         }
 
-      if (th->function == T_StrobeFlash)
+      if (th->function.acp1 == (actionf_p1) T_StrobeFlash)
         {
           strobe_t *strobe;
           *save_p++ = tc_strobe;
@@ -680,7 +634,20 @@ void P_ArchiveSpecials (void)
           continue;
         }
 
-      if (th->function == T_Glow)
+      //jff 8/8/98 add missing fire flicker special
+      if (th->function.acp1 == (actionf_p1) T_FireFlicker)
+        {
+          fireflicker_t *flick;
+          *save_p++ = tc_flicker;
+          PADSAVEP();
+          flick = (fireflicker_t *)save_p;
+          memcpy (flick, th, sizeof(*flick));
+          save_p += sizeof(*flick);
+          flick->sector = (sector_t *)(flick->sector - sectors);
+          continue;
+        }
+
+      if (th->function.acp1 == (actionf_p1) T_Glow)
         {
           glow_t *glow;
           *save_p++ = tc_glow;
@@ -692,21 +659,8 @@ void P_ArchiveSpecials (void)
           continue;
         }
 
-      // killough 10/4/98: save flickers
-      if (th->function == T_FireFlicker)
-        {
-          fireflicker_t *flicker;
-          *save_p++ = tc_flicker;
-          PADSAVEP();
-          flicker = (fireflicker_t *)save_p;
-          memcpy (flicker, th, sizeof(*flicker));
-          save_p += sizeof(*flicker);
-          flicker->sector = (sector_t *)(flicker->sector - sectors);
-          continue;
-        }
-
       //jff 2/22/98 new case for elevators
-      if (th->function == T_MoveElevator)
+      if (th->function.acp1 == (actionf_p1) T_MoveElevator)
         {
           elevator_t *elevator;         //jff 2/22/98
           *save_p++ = tc_elevator;
@@ -719,7 +673,7 @@ void P_ArchiveSpecials (void)
         }
 
       // killough 3/7/98: Scroll effect thinkers
-      if (th->function == T_Scroll)
+      if (th->function.acp1 == (actionf_p1) T_Scroll)
         {
           *save_p++ = tc_scroll;
           memcpy (save_p, th, sizeof(scroll_t));
@@ -727,9 +681,19 @@ void P_ArchiveSpecials (void)
           continue;
         }
 
+      // phares 3/18/98: Friction effect thinkers
+
+      if (th->function.acp1 == (actionf_p1) T_Friction)
+        {
+          *save_p++ = tc_friction;
+          memcpy (save_p, th, sizeof(friction_t));
+          save_p += sizeof(friction_t);
+          continue;
+        }
+
       // phares 3/22/98: Push/Pull effect thinkers
 
-      if (th->function == T_Pusher)
+      if (th->function.acp1 == (actionf_p1) T_Pusher)
         {
           *save_p++ = tc_pusher;
           memcpy (save_p, th, sizeof(pusher_t));
@@ -760,11 +724,11 @@ void P_UnArchiveSpecials (void)
           ceiling_t *ceiling = Z_Malloc (sizeof(*ceiling), PU_LEVEL, NULL);
           memcpy (ceiling, save_p, sizeof(*ceiling));
           save_p += sizeof(*ceiling);
-          ceiling->sector = &sectors[(size_t)ceiling->sector];
+          ceiling->sector = &sectors[(int)ceiling->sector];
           ceiling->sector->ceilingdata = ceiling; //jff 2/22/98
 
-          if (ceiling->thinker.function)
-            ceiling->thinker.function = T_MoveCeiling;
+          if (ceiling->thinker.function.acp1)
+            ceiling->thinker.function.acp1 = (actionf_p1) T_MoveCeiling;
 
           P_AddThinker (&ceiling->thinker);
           P_AddActiveCeiling(ceiling);
@@ -777,13 +741,13 @@ void P_UnArchiveSpecials (void)
           vldoor_t *door = Z_Malloc (sizeof(*door), PU_LEVEL, NULL);
           memcpy (door, save_p, sizeof(*door));
           save_p += sizeof(*door);
-          door->sector = &sectors[(size_t)door->sector];
+          door->sector = &sectors[(int)door->sector];
 
           //jff 1/31/98 unarchive line remembered by door as well
-          door->line = (size_t)door->line!=-1? &lines[(size_t)door->line] : NULL;
+          door->line = (int)door->line!=-1? &lines[(int)door->line] : NULL;
 
           door->sector->ceilingdata = door;       //jff 2/22/98
-          door->thinker.function = T_VerticalDoor;
+          door->thinker.function.acp1 = (actionf_p1) T_VerticalDoor;
           P_AddThinker (&door->thinker);
           break;
         }
@@ -794,9 +758,9 @@ void P_UnArchiveSpecials (void)
           floormove_t *floor = Z_Malloc (sizeof(*floor), PU_LEVEL, NULL);
           memcpy (floor, save_p, sizeof(*floor));
           save_p += sizeof(*floor);
-          floor->sector = &sectors[(size_t)floor->sector];
+          floor->sector = &sectors[(int)floor->sector];
           floor->sector->floordata = floor; //jff 2/22/98
-          floor->thinker.function = T_MoveFloor;
+          floor->thinker.function.acp1 = (actionf_p1) T_MoveFloor;
           P_AddThinker (&floor->thinker);
           break;
         }
@@ -807,11 +771,11 @@ void P_UnArchiveSpecials (void)
           plat_t *plat = Z_Malloc (sizeof(*plat), PU_LEVEL, NULL);
           memcpy (plat, save_p, sizeof(*plat));
           save_p += sizeof(*plat);
-          plat->sector = &sectors[(size_t)plat->sector];
+          plat->sector = &sectors[(int)plat->sector];
           plat->sector->floordata = plat; //jff 2/22/98
 
-          if (plat->thinker.function)
-            plat->thinker.function = T_PlatRaise;
+          if (plat->thinker.function.acp1)
+            plat->thinker.function.acp1 = (actionf_p1) T_PlatRaise;
 
           P_AddThinker (&plat->thinker);
           P_AddActivePlat(plat);
@@ -824,8 +788,8 @@ void P_UnArchiveSpecials (void)
           lightflash_t *flash = Z_Malloc (sizeof(*flash), PU_LEVEL, NULL);
           memcpy (flash, save_p, sizeof(*flash));
           save_p += sizeof(*flash);
-          flash->sector = &sectors[(size_t)flash->sector];
-          flash->thinker.function = T_LightFlash;
+          flash->sector = &sectors[(int)flash->sector];
+          flash->thinker.function.acp1 = (actionf_p1) T_LightFlash;
           P_AddThinker (&flash->thinker);
           break;
         }
@@ -836,9 +800,22 @@ void P_UnArchiveSpecials (void)
           strobe_t *strobe = Z_Malloc (sizeof(*strobe), PU_LEVEL, NULL);
           memcpy (strobe, save_p, sizeof(*strobe));
           save_p += sizeof(*strobe);
-          strobe->sector = &sectors[(size_t)strobe->sector];
-          strobe->thinker.function = T_StrobeFlash;
+          strobe->sector = &sectors[(int)strobe->sector];
+          strobe->thinker.function.acp1 = (actionf_p1) T_StrobeFlash;
           P_AddThinker (&strobe->thinker);
+          break;
+        }
+
+      //jff 8/8/98 add missing flicker special
+      case tc_flicker:
+        PADSAVEP();
+        {
+          fireflicker_t *flick = Z_Malloc (sizeof(*flick), PU_LEVEL, NULL);
+          memcpy (flick, save_p, sizeof(*flick));
+          save_p += sizeof(*flick);
+          flick->sector = &sectors[(int)flick->sector];
+          flick->thinker.function.acp1 = (actionf_p1) T_FireFlicker;
+          P_AddThinker (&flick->thinker);
           break;
         }
 
@@ -848,21 +825,9 @@ void P_UnArchiveSpecials (void)
           glow_t *glow = Z_Malloc (sizeof(*glow), PU_LEVEL, NULL);
           memcpy (glow, save_p, sizeof(*glow));
           save_p += sizeof(*glow);
-          glow->sector = &sectors[(size_t)glow->sector];
-          glow->thinker.function = T_Glow;
+          glow->sector = &sectors[(int)glow->sector];
+          glow->thinker.function.acp1 = (actionf_p1) T_Glow;
           P_AddThinker (&glow->thinker);
-          break;
-        }
-
-      case tc_flicker:           // killough 10/4/98
-        PADSAVEP();
-        {
-          fireflicker_t *flicker = Z_Malloc (sizeof(*flicker), PU_LEVEL, NULL);
-          memcpy (flicker, save_p, sizeof(*flicker));
-          save_p += sizeof(*flicker);
-          flicker->sector = &sectors[(size_t)flicker->sector];
-          flicker->thinker.function = T_FireFlicker;
-          P_AddThinker (&flicker->thinker);
           break;
         }
 
@@ -873,10 +838,10 @@ void P_UnArchiveSpecials (void)
           elevator_t *elevator = Z_Malloc (sizeof(*elevator), PU_LEVEL, NULL);
           memcpy (elevator, save_p, sizeof(*elevator));
           save_p += sizeof(*elevator);
-          elevator->sector = &sectors[(size_t)elevator->sector];
+          elevator->sector = &sectors[(int)elevator->sector];
           elevator->sector->floordata = elevator; //jff 2/22/98
           elevator->sector->ceilingdata = elevator; //jff 2/22/98
-          elevator->thinker.function = T_MoveElevator;
+          elevator->thinker.function.acp1 = (actionf_p1) T_MoveElevator;
           P_AddThinker (&elevator->thinker);
           break;
         }
@@ -886,8 +851,18 @@ void P_UnArchiveSpecials (void)
           scroll_t *scroll = Z_Malloc (sizeof(scroll_t), PU_LEVEL, NULL);
           memcpy (scroll, save_p, sizeof(scroll_t));
           save_p += sizeof(scroll_t);
-          scroll->thinker.function = T_Scroll;
+          scroll->thinker.function.acp1 = (actionf_p1) T_Scroll;
           P_AddThinker(&scroll->thinker);
+          break;
+        }
+
+      case tc_friction:   // phares 3/18/98: new friction effect thinkers
+        {
+          friction_t *friction = Z_Malloc (sizeof(friction_t), PU_LEVEL, NULL);
+          memcpy (friction, save_p, sizeof(friction_t));
+          save_p += sizeof(friction_t);
+          friction->thinker.function.acp1 = (actionf_p1) T_Friction;
+          P_AddThinker(&friction->thinker);
           break;
         }
 
@@ -896,7 +871,7 @@ void P_UnArchiveSpecials (void)
           pusher_t *pusher = Z_Malloc (sizeof(pusher_t), PU_LEVEL, NULL);
           memcpy (pusher, save_p, sizeof(pusher_t));
           save_p += sizeof(pusher_t);
-          pusher->thinker.function = T_Pusher;
+          pusher->thinker.function.acp1 = (actionf_p1) T_Pusher;
           pusher->source = P_GetPushThing(pusher->affectee);
           P_AddThinker(&pusher->thinker);
           break;
@@ -974,3 +949,61 @@ void P_UnArchiveMap(void)
       save_p += markpointnum * sizeof *markpoints;
     }
 }
+
+//----------------------------------------------------------------------------
+//
+// $Log: p_saveg.c,v $
+// Revision 1.19  1998/09/16  06:59:39  phares
+// Save soundtarget across savegames
+//
+// Revision 1.18  1998/08/08  15:18:53  jim
+// flicker special restora
+//
+// Revision 1.17  1998/05/03  23:10:22  killough
+// beautification
+//
+// Revision 1.16  1998/04/19  01:16:06  killough
+// Fix boss brain spawn crashes after loadgames
+//
+// Revision 1.15  1998/03/28  18:02:17  killough
+// Fix boss spawner savegame crash bug
+//
+// Revision 1.14  1998/03/23  15:24:36  phares
+// Changed pushers to linedef control
+//
+// Revision 1.13  1998/03/23  03:29:54  killough
+// Fix savegame crash caused in P_ArchiveWorld
+//
+// Revision 1.12  1998/03/20  00:30:12  phares
+// Changed friction to linedef control
+//
+// Revision 1.11  1998/03/09  07:20:23  killough
+// Add generalized scrollers
+//
+// Revision 1.10  1998/03/02  12:07:18  killough
+// fix stuck-in wall loadgame bug, automap status
+//
+// Revision 1.9  1998/02/24  08:46:31  phares
+// Pushers, recoil, new friction, and over/under work
+//
+// Revision 1.8  1998/02/23  04:49:42  killough
+// Add automap marks and properties to saved state
+//
+// Revision 1.7  1998/02/23  01:02:13  jim
+// fixed elevator size, comments
+//
+// Revision 1.4  1998/02/17  05:43:33  killough
+// Fix savegame crashes and monster sleepiness
+// Save new RNG info
+// Fix original plats height bug
+//
+// Revision 1.3  1998/02/02  22:17:55  jim
+// Extended linedef types
+//
+// Revision 1.2  1998/01/26  19:24:21  phares
+// First rev with no ^Ms
+//
+// Revision 1.1.1.1  1998/01/19  14:03:07  rand
+// Lee's Jan 19 sources
+//
+//----------------------------------------------------------------------------

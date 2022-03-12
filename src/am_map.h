@@ -1,31 +1,28 @@
-/*  BOOM, a modified and improved DOOM engine
-    Copyright (C) 1999 by id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
-    Copyright (C) 2021 by atsb
-
-    This program is free software : you can redistribute it and /or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.If not, see < https://www.gnu.org/licenses/>.
-
-    DESCRIPTION:
-    the automap module
-*/
+// Emacs style mode select   -*- C++ -*- 
+//-----------------------------------------------------------------------------
+//
+// $Id: am_map.h,v 1.7 1998/05/10 12:05:18 jim Exp $
+//
+// Copyright (C) 1993-1996 by id Software, Inc.
+//
+// This source is available for distribution and/or modification
+// only under the terms of the DOOM Source Code License as
+// published by id Software. All rights reserved.
+//
+// The source is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// FITNESS FOR A PARTICULAR PURPOSE. See the DOOM Source Code License
+// for more details.
+//
+// DESCRIPTION:
+//  AutoMap module.
+//
+//-----------------------------------------------------------------------------
 
 #ifndef __AMMAP_H__
 #define __AMMAP_H__
 
 #include "d_event.h"
-
-#define MAPBITS 12
-#define FRACTOMAPBITS (FRACBITS-MAPBITS)
 
 // Used by ST StatusBar stuff.
 #define AM_MSGHEADER (('a'<<24)+('m'<<16))
@@ -54,6 +51,12 @@ extern void AM_Start(void);
 
 extern void AM_clearMarks(void);
 
+typedef struct
+{
+ fixed_t x,y;
+} mpoint_t;
+
+extern mpoint_t *markpoints;
 extern int markpointnum, markpointnum_max;
 extern int followplayer;
 extern int automap_grid;
@@ -89,3 +92,30 @@ extern int mapcolor_plyr[4];  // colors for player arrows in multiplayer
 extern int map_secret_after;  // secrets do not appear til after bagged
 
 #endif
+
+//----------------------------------------------------------------------------
+//
+// $Log: am_map.h,v $
+// Revision 1.7  1998/05/10  12:05:18  jim
+// formatted/documented am_map
+//
+// Revision 1.6  1998/05/03  22:12:58  killough
+// Add most external automap variable declarations
+//
+// Revision 1.5  1998/04/16  16:17:05  jim
+// Fixed disappearing marks after new level
+//
+// Revision 1.4  1998/03/02  11:23:10  killough
+// Add automap_grid decl for savegames
+//
+// Revision 1.3  1998/02/23  04:10:11  killough
+// Remove limit on automap marks, save them in savegame
+//
+// Revision 1.2  1998/01/26  19:26:19  phares
+// First rev with no ^Ms
+//
+// Revision 1.1.1.1  1998/01/19  14:02:50  rand
+// Lee's Jan 19 sources
+//
+//
+//----------------------------------------------------------------------------

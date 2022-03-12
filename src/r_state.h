@@ -3,29 +3,22 @@
 //
 // $Id: r_state.h,v 1.6 1998/05/01 14:49:12 killough Exp $
 //
-//  BOOM, a modified and improved DOOM engine
-//  Copyright (C) 1999 by
-//  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
+// Copyright (C) 1993-1996 by id Software, Inc.
 //
-//  This program is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU General Public License
-//  as published by the Free Software Foundation; either version 2
-//  of the License, or (at your option) any later version.
+// This source is available for distribution and/or modification
+// only under the terms of the DOOM Source Code License as
+// published by id Software. All rights reserved.
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
-//
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
-//  02111-1307, USA.
+// The source is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// FITNESS FOR A PARTICULAR PURPOSE. See the DOOM Source Code License
+// for more details.
 //
 // DESCRIPTION:
 //      Refresh/render internal state variables (global).
 //
 //-----------------------------------------------------------------------------
+
 
 #ifndef __R_STATE__
 #define __R_STATE__
@@ -33,6 +26,11 @@
 // Need data structure definitions.
 #include "d_player.h"
 #include "r_data.h"
+
+#ifdef __GNUG__
+#pragma interface
+#endif
+
 
 //
 // Refresh internal data structures,
@@ -54,7 +52,6 @@ extern lighttable_t *fullcolormap;        // killough 3/20/98
 extern int viewwidth;
 extern int scaledviewwidth;
 extern int viewheight;
-extern int scaledviewheight;              // killough 11/98
 
 extern int firstflat;
 
@@ -119,3 +116,27 @@ extern visplane_t       *floorplane;
 extern visplane_t       *ceilingplane;
 
 #endif
+
+//----------------------------------------------------------------------------
+//
+// $Log: r_state.h,v $
+// Revision 1.6  1998/05/01  14:49:12  killough
+// beautification
+//
+// Revision 1.5  1998/04/06  04:40:54  killough
+// Make colormaps completely dynamic
+//
+// Revision 1.4  1998/03/23  03:39:48  killough
+// Add support for arbitrary number of colormaps
+//
+// Revision 1.3  1998/02/09  03:23:56  killough
+// Change array decl to use MAX screen width/height
+//
+// Revision 1.2  1998/01/26  19:27:47  phares
+// First rev with no ^Ms
+//
+// Revision 1.1.1.1  1998/01/19  14:03:09  rand
+// Lee's Jan 19 sources
+//
+//
+//----------------------------------------------------------------------------

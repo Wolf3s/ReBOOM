@@ -1,23 +1,26 @@
-/*  BOOM, a modified and improved DOOM engine
-    Copyright (C) 1999 by id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
-    Copyright (C) 2021 by atsb
+// Emacs style mode select   -*- C++ -*- 
+//-----------------------------------------------------------------------------
+//
+// $Id: am_map.c,v 1.25 1998/09/07 20:05:44 jim Exp $
+//
+// Copyright (C) 1993-1996 by id Software, Inc.
+//
+// This source is available for distribution and/or modification
+// only under the terms of the DOOM Source Code License as
+// published by id Software. All rights reserved.
+//
+// The source is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// FITNESS FOR A PARTICULAR PURPOSE. See the DOOM Source Code License
+// for more details.
+//
+// DESCRIPTION:  
+//   the automap code
+//
+//-----------------------------------------------------------------------------
 
-    This program is free software : you can redistribute it and /or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.If not, see < https://www.gnu.org/licenses/>.
-
-    DESCRIPTION:  
-    the automap code
-*/
+static const char rcsid[] =
+  "$Id: am_map.c,v 1.25 1998/09/07 20:05:44 jim Exp $";
 
 #include "doomstat.h"
 #include "st_stuff.h"
@@ -30,7 +33,7 @@
 #include "am_map.h"
 #include "dstrings.h"
 #include "d_deh.h"    // Ty 03/27/98 - externalizations
-#include "am_map_structs.h"
+#include "lprintf.h"  // jff 08/03/98 - declaration of lprintf
 
 //jff 1/7/98 default automap colors added
 int mapcolor_back;    // map background
@@ -96,6 +99,26 @@ extern int  key_map_grid;                                           // phares
 // translates between frame-buffer and map coordinates
 #define CXMTOF(x)  (f_x + MTOF((x)-m_x))
 #define CYMTOF(y)  (f_y + (f_h - MTOF((y)-m_y)))
+
+typedef struct
+{
+    int x, y;
+} fpoint_t;
+
+typedef struct
+{
+    fpoint_t a, b;
+} fline_t;
+
+typedef struct
+{
+    mpoint_t a, b;
+} mline_t;
+
+typedef struct
+{
+    fixed_t slp, islp;
+} islope_t;
 
 //
 // The vector graphics for the automap.
@@ -228,7 +251,7 @@ static fixed_t old_m_x, old_m_y;
 static mpoint_t f_oldloc;
 
 // used by MTOF to scale from map-to-frame-buffer coords
-static fixed_t scale_mtof = (fixed_t)INITSCALEMTOF;
+static fixed_t scale_mtof = INITSCALEMTOF;
 // used by FTOM to scale from frame-buffer-to-map coords (=1/scale_mtof)
 static fixed_t scale_ftom;
 
@@ -265,11 +288,11 @@ void AM_getIslope
   dy = ml->a.y - ml->b.y;
   dx = ml->b.x - ml->a.x;
   if (!dy)
-    is->islp = (dx<0?-D_MAXINT:D_MAXINT);
+    is->islp = (dx<0?-MAXINT:MAXINT);
   else
     is->islp = FixedDiv(dx, dy);
   if (!dx)
-    is->slp = (dy<0?-D_MAXINT:D_MAXINT);
+    is->slp = (dy<0?-MAXINT:MAXINT);
   else
     is->slp = FixedDiv(dy, dx);
 }
@@ -376,8 +399,8 @@ void AM_findMinMaxBoundaries(void)
   fixed_t a;
   fixed_t b;
 
-  min_x = min_y =  D_MAXINT;
-  max_x = max_y = -D_MAXINT;
+  min_x = min_y =  MAXINT;
+  max_x = max_y = -MAXINT;
 
   for (i=0;i<numvertexes;i++)
   {
@@ -417,7 +440,7 @@ void AM_changeWindowLoc(void)
   if (m_paninc.x || m_paninc.y)
   {
     followplayer = 0;
-    f_oldloc.x = D_MAXINT;
+    f_oldloc.x = MAXINT;
   }
 
   m_x += m_paninc.x;
@@ -455,7 +478,7 @@ void AM_initVariables(void)
   automapactive = true;
   fb = screens[0];
 
-  f_oldloc.x = D_MAXINT;
+  f_oldloc.x = MAXINT;
   amclock = 0;
   lightlev = 0;
 
@@ -642,6 +665,7 @@ boolean AM_Responder
 ( event_t*  ev )
 {
   int rc;
+  static int cheatstate=0;
   static int bigstate=0;
   static char buffer[20];
   int ch;                                                       // phares
@@ -711,7 +735,7 @@ boolean AM_Responder
     else if (ch == key_map_follow)
     {
       followplayer = !followplayer;
-      f_oldloc.x = D_MAXINT;
+      f_oldloc.x = MAXINT;
       // Ty 03/27/98 - externalized
       plr->message = followplayer ? s_AMSTR_FOLLOWON : s_AMSTR_FOLLOWOFF;  
     }
@@ -735,6 +759,7 @@ boolean AM_Responder
     }                                                           //    |
     else                                                        // phares
     {
+      cheatstate=0;
       rc = false;
     }
   }
@@ -872,9 +897,9 @@ boolean AM_clipMline
     TOP     =8
   };
 
-  int outcode1 = 0;
-  int outcode2 = 0;
-  int outside;
+  register int outcode1 = 0;
+  register int outcode2 = 0;
+  register int outside;
 
   fpoint_t  tmp;
   int   dx;
@@ -999,15 +1024,15 @@ void AM_drawFline
 ( fline_t*  fl,
   int   color )
 {
-  int x;
-  int y;
-  int dx;
-  int dy;
-  int sx;
-  int sy;
-  int ax;
-  int ay;
-  int d;
+  register int x;
+  register int y;
+  register int dx;
+  register int dy;
+  register int sx;
+  register int sy;
+  register int ax;
+  register int ay;
+  register int d;
 
 #ifdef RANGECHECK         // killough 2/22/98    
   static int fuck = 0;
@@ -1022,7 +1047,7 @@ void AM_drawFline
   )
   {
     //jff 8/3/98 use logical output routine
-    printf("fuck %d \r", fuck++);
+    lprintf(LO_DEBUG, "fuck %d \r", fuck++);
     return;
   }
 #endif
@@ -1713,4 +1738,79 @@ void AM_Drawer (void)
 
   V_MarkRect(f_x, f_y, f_w, f_h);
 }
+
+//----------------------------------------------------------------------------
+//
+// $Log: am_map.c,v $
+// Revision 1.25  1998/09/07  20:05:44  jim
+// Added logical output routine
+//
+// Revision 1.24  1998/05/10  12:05:24  jim
+// formatted/documented am_map
+//
+// Revision 1.23  1998/05/03  22:13:49  killough
+// Provide minimal headers at top; no other changes
+//
+// Revision 1.22  1998/04/23  13:06:53  jim
+// Add exit line to automap
+//
+// Revision 1.21  1998/04/16  16:16:56  jim
+// Fixed disappearing marks after new level
+//
+// Revision 1.20  1998/04/03  14:45:17  jim
+// Fixed automap disables at 0, mouse sens unbounded
+//
+// Revision 1.19  1998/03/28  05:31:40  jim
+// Text enabling changes for DEH
+//
+// Revision 1.18  1998/03/23  03:06:22  killough
+// I wonder
+//
+// Revision 1.17  1998/03/15  14:36:46  jim
+// fixed secrets transfer bug in automap
+//
+// Revision 1.16  1998/03/10  07:06:21  jim
+// Added secrets on automap after found only option
+//
+// Revision 1.15  1998/03/09  18:29:22  phares
+// Created separately bound automap and menu keys
+//
+// Revision 1.14  1998/03/02  11:22:30  killough
+// change grid to automap_grid and make external
+//
+// Revision 1.13  1998/02/23  04:08:11  killough
+// Remove limit on automap marks, save them in savegame
+//
+// Revision 1.12  1998/02/17  22:58:40  jim
+// Fixed bug of vanishinb secret sectors in automap
+//
+// Revision 1.11  1998/02/15  03:12:42  phares
+// Jim's previous comment: Fixed bug in automap from mistaking framebuffer index for mark color
+//
+// Revision 1.10  1998/02/15  02:47:33  phares
+// User-defined keys
+//
+// Revision 1.8  1998/02/09  02:50:13  killough
+// move ddt cheat to st_stuff.c and some cleanup
+//
+// Revision 1.7  1998/02/02  22:16:31  jim
+// Fixed bug in automap that showed secret lines
+//
+// Revision 1.6  1998/01/26  20:57:54  phares
+// Second test of checkin/checkout
+//
+// Revision 1.5  1998/01/26  20:28:15  phares
+// First checkin/checkout script test
+//
+// Revision 1.4  1998/01/26  19:23:00  phares
+// First rev with no ^Ms
+//
+// Revision 1.3  1998/01/24  11:21:25  jim
+// Changed disables in automap to -1 and -2 (nodraw)
+//
+// Revision 1.1.1.1  1998/01/19  14:02:53  rand
+// Lee's Jan 19 sources
+//
+//
+//----------------------------------------------------------------------------
 

@@ -3,24 +3,16 @@
 //
 // $Id: info.h,v 1.10 1998/05/12 12:47:31 phares Exp $
 //
-//  BOOM, a modified and improved DOOM engine
-//  Copyright (C) 1999 by
-//  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
+// Copyright (C) 1993-1996 by id Software, Inc.
 //
-//  This program is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU General Public License
-//  as published by the Free Software Foundation; either version 2
-//  of the License, or (at your option) any later version.
+// This source is available for distribution and/or modification
+// only under the terms of the DOOM Source Code License as
+// published by id Software. All rights reserved.
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
-//
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
-//  02111-1307, USA.
+// The source is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// FITNESS FOR A PARTICULAR PURPOSE. See the DOOM Source Code License
+// for more details.
 //
 // DESCRIPTION:
 //      Thing frame/state LUT,
@@ -181,6 +173,7 @@ typedef enum
   SPR_TNT1, // add invisible sprite             // phares 3/8/98 
 
   NUMSPRITES  // counter of how many there are
+
 } spritenum_t;
 
 // ********************************************************************
@@ -1167,11 +1160,12 @@ typedef enum
 typedef struct
 {
   spritenum_t sprite;       // sprite number to show
-  long long   frame;        // which frame/subframe of the sprite is shown
-  long long   tics;         // number of gametics this frame should last
-  void        (*action)();  // code pointer to function for action if any
+  long        frame;        // which frame/subframe of the sprite is shown
+  long        tics;         // number of gametics this frame should last
+  // void     (*action) (); // this is what an actionf_t really is
+  actionf_t   action;       // code pointer to function for action if any
   statenum_t  nextstate;    // linked list pointer to next state or zero
-  long long   misc1, misc2; // used for psprite positioning
+  long        misc1, misc2; // apparently never used in DOOM
 } state_t;
 
 // these are in info.c
@@ -1385,4 +1379,41 @@ typedef struct
 // See p_mobj_h for addition more technical info
 extern mobjinfo_t mobjinfo[NUMMOBJTYPES];
 
+
 #endif
+
+//----------------------------------------------------------------------------
+//
+// $Log: info.h,v $
+// Revision 1.10  1998/05/12  12:47:31  phares
+// Removed OVER_UNDER code
+//
+// Revision 1.9  1998/05/06  11:31:53  jim
+// Moved predefined lump writer info->w_wad
+//
+// Revision 1.8  1998/05/04  21:35:54  thldrmn
+// commenting and reformatting
+//
+// Revision 1.7  1998/04/22  06:33:58  killough
+// Add const to WritePredefinedLumpWad() parm
+//
+// Revision 1.6  1998/04/21  23:47:10  jim
+// Predefined lump dumper option
+//
+// Revision 1.5  1998/03/23  15:24:09  phares
+// Changed pushers to linedef control
+//
+// Revision 1.4  1998/03/09  18:30:43  phares
+// Added invisible sprite for MT_PUSH
+//
+// Revision 1.3  1998/02/24  08:45:53  phares
+// Pushers, recoil, new friction, and over/under work
+//
+// Revision 1.2  1998/01/26  19:27:02  phares
+// First rev with no ^Ms
+//
+// Revision 1.1.1.1  1998/01/19  14:02:57  rand
+// Lee's Jan 19 sources
+//
+//
+//----------------------------------------------------------------------------

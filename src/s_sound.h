@@ -29,8 +29,6 @@
 #ifndef __S_SOUND__
 #define __S_SOUND__
 
-#include "p_mobj.h"
-
 //
 // Initializes sound stuff, including volume
 // Sets channels, SFX and music volume,
@@ -49,22 +47,16 @@ void S_Start(void);
 // Start sound for thing at <origin>
 //  using <sound_id> from sounds.h
 //
-void S_StartSound(const mobj_t* origin, int sound_id);
+void S_StartSound(const mobj_t *origin, int sound_id);
 
 // Stop sound for thing at <origin>
-void S_StopSound(const mobj_t* origin);
-
-// [FG] play sounds in full length
-extern boolean full_sounds;
-// [FG] removed map objects may finish their sounds
-void S_UnlinkSound(mobj_t* origin);
+void S_StopSound(const mobj_t *origin);
 
 // Start music using <music_id> from sounds.h
 void S_StartMusic(int music_id);
 
 // Start music using <music_id> from sounds.h, and set whether looping
 void S_ChangeMusic(int music_id, int looping);
-void S_ChangeMusInfoMusic(int lumpnum, int looping);
 
 // Stops the music fer sure.
 void S_StopMusic(void);
@@ -76,7 +68,7 @@ void S_ResumeSound(void);
 //
 // Updates music & sounds
 //
-void S_UpdateSounds(const mobj_t* listener);
+void S_UpdateSounds(const mobj_t *listener);
 void S_SetMusicVolume(int volume);
 void S_SetSfxVolume(int volume);
 
@@ -88,3 +80,20 @@ extern int default_numChannels;  // killough 10/98
 extern int idmusnum;
 
 #endif
+
+//----------------------------------------------------------------------------
+//
+// $Log: s_sound.h,v $
+// Revision 1.4  1998/05/03  22:57:36  killough
+// beautification, add external declarations
+//
+// Revision 1.3  1998/04/27  01:47:32  killough
+// Fix pickups silencing player weapons
+//
+// Revision 1.2  1998/01/26  19:27:51  phares
+// First rev with no ^Ms
+//
+// Revision 1.1.1.1  1998/01/19  14:03:09  rand
+// Lee's Jan 19 sources
+//
+//----------------------------------------------------------------------------

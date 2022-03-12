@@ -3,36 +3,29 @@
 //
 // $Id: m_argv.c,v 1.5 1998/05/03 22:51:40 killough Exp $
 //
-//  BOOM, a modified and improved DOOM engine
-//  Copyright (C) 1999 by
-//  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
+// Copyright (C) 1993-1996 by id Software, Inc.
 //
-//  This program is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU General Public License
-//  as published by the Free Software Foundation; either version 2
-//  of the License, or (at your option) any later version.
+// This source is available for distribution and/or modification
+// only under the terms of the DOOM Source Code License as
+// published by id Software. All rights reserved.
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+// The source is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// FITNESS FOR A PARTICULAR PURPOSE. See the DOOM Source Code License
+// for more details.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
-//  02111-1307, USA.
 //
 // DESCRIPTION:
 //
 //-----------------------------------------------------------------------------
 
-#include <stdio.h>
-#include <string.h>
-#include "m_argv.h"
-#include "doomtype.h"
+static const char
+rcsid[] = "$Id: m_argv.c,v 1.5 1998/05/03 22:51:40 killough Exp $";
 
-int  myargc;
-const char** myargv;
+#include <string.h>
+
+int    myargc;
+char **myargv;
 
 //
 // M_CheckParm
@@ -42,16 +35,36 @@ const char** myargv;
 // or 0 if not present
 //
 
-// Adam - cleaned up and made C++ compliant (still compiled as C though)
+#ifdef _MSC_VER // proff
+#define strcasecmp _stricmp
+#define strncasecmp _strnicmp
+#endif //_MSC_VER
 
-int M_CheckParm(const char* check)
+int M_CheckParm(const char *check)
 {
-	for (signed i = 1; i < myargc; ++i) // fixed a signed/unsigned comparison mismatch, for args signed is fine
-	{
-		if (!strcasecmp(check, myargv[i]))
-		{
-			return i;
-		}
-	}
-	return 0;
+  int i;
+  for (i=1; i<myargc; i++)
+    if (!strcasecmp(check, myargv[i]))
+      return i;
+  return 0;
 }
+
+//----------------------------------------------------------------------------
+//
+// $Log: m_argv.c,v $
+// Revision 1.5  1998/05/03  22:51:40  killough
+// beautification
+//
+// Revision 1.4  1998/05/01  14:26:14  killough
+// beautification
+//
+// Revision 1.3  1998/05/01  14:23:29  killough
+// beautification
+//
+// Revision 1.2  1998/01/26  19:23:40  phares
+// First rev with no ^Ms
+//
+// Revision 1.1.1.1  1998/01/19  14:02:58  rand
+// Lee's Jan 19 sources
+//
+//----------------------------------------------------------------------------

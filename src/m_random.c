@@ -3,24 +3,16 @@
 //
 // $Id: m_random.c,v 1.6 1998/05/03 23:13:18 killough Exp $
 //
-//  BOOM, a modified and improved DOOM engine
-//  Copyright (C) 1999 by
-//  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
+// Copyright (C) 1993-1996 by id Software, Inc.
 //
-//  This program is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU General Public License
-//  as published by the Free Software Foundation; either version 2
-//  of the License, or (at your option) any later version.
+// This source is available for distribution and/or modification
+// only under the terms of the DOOM Source Code License as
+// published by id Software. All rights reserved.
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
-//
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
-//  02111-1307, USA.
+// The source is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// FITNESS FOR A PARTICULAR PURPOSE. See the DOOM Source Code License
+// for more details.
 //
 //
 // DESCRIPTION:
@@ -33,6 +25,8 @@
 // to reduce the chances of demo sync problems.
 //
 //-----------------------------------------------------------------------------
+
+static const char rcsid[] = "$Id: m_random.c,v 1.6 1998/05/03 23:13:18 killough Exp $";
 
 #include "doomstat.h"
 #include "m_random.h"
@@ -63,9 +57,11 @@ static const unsigned char rndtable[256] = { // 1/19/98 killough -- made const
     120, 163, 236, 249
 };
 
+int demo_insurance=0, default_demo_insurance=0;   // killough 3/31/98
+
 rng_t rng;     // the random number state
 
-unsigned long long rngseed = 1993;   // killough 3/26/98: The seed
+unsigned long rngseed = 1993;   // killough 3/26/98: The seed
 
 int P_Random(pr_class_t pr_class)
 {
@@ -82,7 +78,7 @@ int P_Random(pr_class_t pr_class)
     (rng.prndindex = (rng.prndindex + 1) & 255) :
     (rng. rndindex = (rng. rndindex + 1) & 255) ;
 
-  unsigned long long boom;
+  unsigned long boom;
 
   // killough 3/31/98:
   // If demo sync insurance is not requested, use
@@ -123,8 +119,31 @@ int P_Random(pr_class_t pr_class)
 void M_ClearRandom (void)
 {
   int i;
-  unsigned long long seed = rngseed*2+1;    // add 3/26/98: add rngseed
+  unsigned long seed = rngseed*2+1;    // add 3/26/98: add rngseed
   for (i=0; i<NUMPRCLASS; i++)         // go through each pr_class and set
     rng.seed[i] = seed *= 69069ul;     // each starting seed differently
   rng.prndindex = rng.rndindex = 0;    // clear two compatibility indices
 }
+
+//----------------------------------------------------------------------------
+//
+// $Log: m_random.c,v $
+// Revision 1.6  1998/05/03  23:13:18  killough
+// Fix #include
+//
+// Revision 1.5  1998/03/31  10:43:05  killough
+// Fix (supposed) RNG problems, add new demo_insurance
+//
+// Revision 1.4  1998/03/28  17:56:05  killough
+// Improve RNG by adding external seed
+//
+// Revision 1.3  1998/02/17  05:40:08  killough
+// Make RNGs local to each calling block, for demo sync
+//
+// Revision 1.2  1998/01/26  19:23:51  phares
+// First rev with no ^Ms
+//
+// Revision 1.1.1.1  1998/01/19  14:02:58  rand
+// Lee's Jan 19 sources
+//
+//----------------------------------------------------------------------------

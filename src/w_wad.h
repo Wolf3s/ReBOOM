@@ -3,32 +3,29 @@
 //
 // $Id: w_wad.h,v 1.11 1998/08/29 22:59:17 thldrmn Exp $
 //
-//  BOOM, a modified and improved DOOM engine
-//  Copyright (C) 1999 by
-//  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
+// Copyright (C) 1993-1996 by id Software, Inc.
 //
-//  This program is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU General Public License
-//  as published by the Free Software Foundation; either version 2
-//  of the License, or (at your option) any later version.
+// This source is available for distribution and/or modification
+// only under the terms of the DOOM Source Code License as
+// published by id Software. All rights reserved.
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
-//
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
-//  02111-1307, USA.
+// The source is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// FITNESS FOR A PARTICULAR PURPOSE. See the DOOM Source Code License
+// for more details.
 //
 // DESCRIPTION:
 //      WAD I/O functions.
 //
 //-----------------------------------------------------------------------------
 
+
 #ifndef __W_WAD__
 #define __W_WAD__
+
+#ifdef __GNUG__
+#pragma interface
+#endif
 
 //
 // TYPES
@@ -73,7 +70,6 @@ typedef struct
 
   int handle;
   int position;
-  const char* wad_file;
   // Ty 08/29/98 - add source field to identify where this lump came from
   enum {
     source_iwad=0, // iwad file load 
@@ -112,7 +108,44 @@ unsigned W_LumpNameHash(const char *s);           // killough 1/31/98
 
 // Function to write all predefined lumps to a PWAD if requested
 extern void WritePredefinedLumpWad(const char *filename); // jff 5/6/98
-const char* W_WadNameForLump(const int lump);
-boolean W_IsIWADLump(const int lump);
 
 #endif
+
+//----------------------------------------------------------------------------
+//
+// $Log: w_wad.h,v $
+// Revision 1.11  1998/08/29  22:59:17  thldrmn
+// Added source field to lumpinfo_t
+//
+// Revision 1.10  1998/05/06  11:32:05  jim
+// Moved predefined lump writer info->w_wad
+//
+// Revision 1.9  1998/05/03  22:43:45  killough
+// remove unnecessary #includes
+//
+// Revision 1.8  1998/05/01  14:55:54  killough
+// beautification
+//
+// Revision 1.7  1998/04/27  02:05:30  killough
+// Program beautification
+//
+// Revision 1.6  1998/04/19  01:14:36  killough
+// Reinstate separate namespaces
+//
+// Revision 1.5  1998/04/17  16:52:21  killough
+// back out namespace changes temporarily
+//
+// Revision 1.4  1998/04/17  10:33:50  killough
+// Macroize W_CheckNumForName(), add namespace parameter to functional version
+//
+// Revision 1.3  1998/02/02  13:35:13  killough
+// Improve lump hashing, add predefine lumps
+//
+// Revision 1.2  1998/01/26  19:28:01  phares
+// First rev with no ^Ms
+//
+// Revision 1.1.1.1  1998/01/19  14:03:07  rand
+// Lee's Jan 19 sources
+//
+//
+//----------------------------------------------------------------------------

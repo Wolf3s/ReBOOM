@@ -3,24 +3,17 @@
 //
 // $Id: p_maputl.c,v 1.13 1998/05/03 22:16:48 killough Exp $
 //
-//  BOOM, a modified and improved DOOM engine
-//  Copyright (C) 1999 by
-//  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
+// Copyright (C) 1993-1996 by id Software, Inc.
 //
-//  This program is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU General Public License
-//  as published by the Free Software Foundation; either version 2
-//  of the License, or (at your option) any later version.
+// This source is available for distribution and/or modification
+// only under the terms of the DOOM Source Code License as
+// published by id Software. All rights reserved.
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+// The source is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// FITNESS FOR A PARTICULAR PURPOSE. See the DOOM Source Code License
+// for more details.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
-//  02111-1307, USA.
 //
 // DESCRIPTION:
 //      Movement/collision utility functions,
@@ -29,6 +22,9 @@
 //      and some PIT_* functions to use for iteration.
 //
 //-----------------------------------------------------------------------------
+
+static const char
+rcsid[] = "$Id: p_maputl.c,v 1.13 1998/05/03 22:16:48 killough Exp $";
 
 #include "doomstat.h"
 #include "m_bbox.h"
@@ -44,8 +40,9 @@
 
 fixed_t P_AproxDistance(fixed_t dx, fixed_t dy)
 {
-  dx = abs(dx);
-  dy = abs(dy);
+  // proff: Changed abs to D_abs (see m_fixed.h)
+  dx = D_abs(dx);
+  dy = D_abs(dy);
   if (dx < dy)
     return dx+dy-(dx>>1);
   return dx+dy-(dy>>1);
@@ -204,29 +201,29 @@ void P_UnsetThingPosition (mobj_t *thing)
 {
   if (!(thing->flags & MF_NOSECTOR))
     {
-      // invisible things don't need to be in sector list
+      // inert things don't need to be in blockmap?
       // unlink from subsector
+      if (thing->snext)
+        thing->snext->sprev = thing->sprev;
 
-      // killough 8/11/98: simpler scheme using pointers-to-pointers for prev
-      // pointers, allows head node pointers to be treated like everything else
-      mobj_t **sprev = thing->sprev;
-      mobj_t  *snext = thing->snext;
-      if ((*sprev = snext))  // unlink from sector list
-	snext->sprev = sprev;
+      if (thing->sprev)
+        thing->sprev->snext = thing->snext;
+      else
+        thing->subsector->sector->thinglist = thing->snext;
 
-      // phares 3/14/98
-      //
-      // Save the sector list pointed to by touching_sectorlist.
-      // In P_SetThingPosition, we'll keep any nodes that represent
-      // sectors the Thing still touches. We'll add new ones then, and
-      // delete any nodes for sectors the Thing has vacated. Then we'll
-      // put it back into touching_sectorlist. It's done this way to
-      // avoid a lot of deleting/creating for nodes, when most of the
-      // time you just get back what you deleted anyway.
-      //
-      // If this Thing is being removed entirely, then the calling
-      // routine will clear out the nodes in sector_list.
-      
+        // phares 3/14/98
+        //
+        // Save the sector list pointed to by touching_sectorlist.
+        // In P_SetThingPosition, we'll keep any nodes that represent
+        // sectors the Thing still touches. We'll add new ones then, and
+        // delete any nodes for sectors the Thing has vacated. Then we'll
+        // put it back into touching_sectorlist. It's done this way to
+        // avoid a lot of deleting/creating for nodes, when most of the
+        // time you just get back what you deleted anyway.
+        //
+        // If this Thing is being removed entirely, then the calling
+        // routine will clear out the nodes in sector_list.
+
       sector_list = thing->touching_sectorlist;
       thing->touching_sectorlist = NULL; //to be restored by P_SetThingPosition
     }
@@ -234,18 +231,20 @@ void P_UnsetThingPosition (mobj_t *thing)
   if (!(thing->flags & MF_NOBLOCKMAP))
     {
       // inert things don't need to be in blockmap
-      
-      // killough 8/11/98: simpler scheme using pointers-to-pointers for prev
-      // pointers, allows head node pointers to be treated like everything else
-      //
-      // Also more robust, since it doesn't depend on current position for
-      // unlinking. Old method required computing head node based on position
-      // at time of unlinking, assuming it was the same position as during
-      // linking.
 
-      mobj_t *bnext, **bprev = thing->bprev;
-      if (bprev && (*bprev = bnext = thing->bnext))  // unlink from block map
-	bnext->bprev = bprev;
+      if (thing->bnext) // unlink from block map
+        thing->bnext->bprev = thing->bprev;
+
+      if (thing->bprev)
+        thing->bprev->bnext = thing->bnext;
+      else
+        {
+          int blockx = (thing->x - bmaporgx)>>MAPBLOCKSHIFT;
+          int blocky = (thing->y - bmaporgy)>>MAPBLOCKSHIFT;
+          if (blockx>=0 && blockx < bmapwidth &&
+              blocky>=0 && blocky <bmapheight)
+            blocklinks[blocky*bmapwidth+blockx] = thing->bnext;
+        }
     }
 }
 
@@ -260,20 +259,18 @@ void P_UnsetThingPosition (mobj_t *thing)
 void P_SetThingPosition(mobj_t *thing)
 {                                                      // link into subsector
   subsector_t *ss = thing->subsector = R_PointInSubsector(thing->x, thing->y);
-
   if (!(thing->flags & MF_NOSECTOR))
     {
       // invisible things don't go into the sector links
+      sector_t *sec = ss->sector;
 
-      // killough 8/11/98: simpler scheme using pointer-to-pointer prev
-      // pointers, allows head nodes to be treated like everything else
+      thing->sprev = NULL;
+      thing->snext = sec->thinglist;
 
-      mobj_t **link = &ss->sector->thinglist;
-      mobj_t *snext = *link;
-      if ((thing->snext = snext))
-	snext->sprev = &thing->snext;
-      thing->sprev = link;
-      *link = thing;
+      if (sec->thinglist)
+        sec->thinglist->sprev = thing;
+
+      sec->thinglist = thing;
 
       // phares 3/16/98
       //
@@ -288,7 +285,7 @@ void P_SetThingPosition(mobj_t *thing)
       // at sector_t->touching_thinglist) are broken. When a node is
       // added, new sector links are created.
 
-      P_CreateSecNodeList(thing, thing->x, thing->y);
+      P_CreateSecNodeList(thing,thing->x,thing->y);
       thing->touching_sectorlist = sector_list; // Attach to Thing's mobj_t
       sector_list = NULL; // clear for next time
     }
@@ -299,21 +296,17 @@ void P_SetThingPosition(mobj_t *thing)
       // inert things don't need to be in blockmap
       int blockx = (thing->x - bmaporgx)>>MAPBLOCKSHIFT;
       int blocky = (thing->y - bmaporgy)>>MAPBLOCKSHIFT;
-
       if (blockx>=0 && blockx < bmapwidth && blocky>=0 && blocky < bmapheight)
         {
-	  // killough 8/11/98: simpler scheme using pointer-to-pointer prev
-	  // pointers, allows head nodes to be treated like everything else
-
           mobj_t **link = &blocklinks[blocky*bmapwidth+blockx];
-	  mobj_t *bnext = *link;
-          if ((thing->bnext = bnext))
-	    bnext->bprev = &thing->bnext;
-	  thing->bprev = link;
+          thing->bprev = NULL;
+          thing->bnext = *link;
+          if (*link)
+            (*link)->bprev = thing;
           *link = thing;
         }
       else        // thing is off the map
-        thing->bnext = NULL, thing->bprev = NULL;
+        thing->bnext = thing->bprev = NULL;
     }
 }
 
@@ -332,7 +325,8 @@ boolean ThingIsOnLine(mobj_t *t, line_t *l)
   // First make sure bounding boxes of linedef and thing intersect.
   // Leads to quick rejection using only shifts and adds/subs/compares.
 
-  if (abs(a*2+dx)-abs(dx) > r*2 || abs(b*2+dy)-abs(dy) > r*2)
+  // proff: Changed abs to D_abs (see m_fixed.h)
+  if (D_abs(a*2+dx)-D_abs(dx) > r*2 || D_abs(b*2+dy)-D_abs(dy) > r*2)
     return 0;
 
   // Next, make sure that at least one thing crosshair intersects linedef's
@@ -373,8 +367,8 @@ boolean ThingIsOnLine(mobj_t *t, line_t *l)
 
 boolean P_BlockLinesIterator(int x, int y, boolean func(line_t*))
 {
-  int             offset;
-  const long long *list;   // killough 3/1/98: for removal of blockmap limit
+  int        offset;
+  const long *list;   // killough 3/1/98: for removal of blockmap limit
 
   if (x<0 || y<0 || x>=bmapwidth || y>=bmapheight)
     return true;
@@ -556,7 +550,7 @@ boolean P_TraverseIntercepts(traverser_t func, fixed_t maxfrac)
   int count = intercept_p - intercepts;
   while (count--)
     {
-      fixed_t dist = D_MAXINT;
+      fixed_t dist = MAXINT;
       intercept_t *scan;
       for (scan = intercepts; scan < intercept_p; scan++)
         if (scan->frac < dist)
@@ -565,7 +559,7 @@ boolean P_TraverseIntercepts(traverser_t func, fixed_t maxfrac)
         return true;    // checked everything in range
       if (!func(in))
         return false;           // don't bother going farther
-      in->frac = D_MAXINT;
+      in->frac = MAXINT;
     }
   return true;                  // everything was traversed
 }
@@ -619,14 +613,16 @@ boolean P_PathTraverse(fixed_t x1, fixed_t y1, fixed_t x2, fixed_t y2,
     {
       mapxstep = 1;
       partial = FRACUNIT - ((x1>>MAPBTOFRAC)&(FRACUNIT-1));
-      ystep = FixedDiv (y2-y1,abs(x2-x1));
+      // proff: Changed abs to D_abs (see m_fixed.h)
+      ystep = FixedDiv (y2-y1,D_abs(x2-x1));
     }
   else
     if (xt2 < xt1)
       {
         mapxstep = -1;
         partial = (x1>>MAPBTOFRAC)&(FRACUNIT-1);
-        ystep = FixedDiv (y2-y1,abs(x2-x1));
+        // proff: Changed abs to D_abs (see m_fixed.h)
+        ystep = FixedDiv (y2-y1,D_abs(x2-x1));
       }
     else
       {
@@ -641,14 +637,16 @@ boolean P_PathTraverse(fixed_t x1, fixed_t y1, fixed_t x2, fixed_t y2,
     {
       mapystep = 1;
       partial = FRACUNIT - ((y1>>MAPBTOFRAC)&(FRACUNIT-1));
-      xstep = FixedDiv (x2-x1,abs(y2-y1));
+      // proff: Changed abs to D_abs (see m_fixed.h)
+      xstep = FixedDiv (x2-x1,D_abs(y2-y1));
     }
   else
     if (yt2 < yt1)
       {
         mapystep = -1;
         partial = (y1>>MAPBTOFRAC)&(FRACUNIT-1);
-        xstep = FixedDiv (x2-x1,abs(y2-y1));
+        // proff: Changed abs to D_abs (see m_fixed.h)
+        xstep = FixedDiv (x2-x1,D_abs(y2-y1));
       }
     else
       {
@@ -695,3 +693,47 @@ boolean P_PathTraverse(fixed_t x1, fixed_t y1, fixed_t x2, fixed_t y2,
   // go through the sorted list
   return P_TraverseIntercepts(trav, FRACUNIT);
 }
+
+//----------------------------------------------------------------------------
+//
+// $Log: p_maputl.c,v $
+// Revision 1.13  1998/05/03  22:16:48  killough
+// beautification
+//
+// Revision 1.12  1998/03/20  00:30:03  phares
+// Changed friction to linedef control
+//
+// Revision 1.11  1998/03/19  14:37:12  killough
+// Fix ThingIsOnLine()
+//
+// Revision 1.10  1998/03/19  00:40:52  killough
+// Change ThingIsOnLine() comments
+//
+// Revision 1.9  1998/03/16  12:34:45  killough
+// Add ThingIsOnLine() function
+//
+// Revision 1.8  1998/03/09  18:27:10  phares
+// Fixed bug in neighboring variable friction sectors
+//
+// Revision 1.7  1998/03/09  07:19:26  killough
+// Remove use of FP for point/line queries
+//
+// Revision 1.6  1998/03/02  12:03:43  killough
+// Change blockmap offsets to 32-bit
+//
+// Revision 1.5  1998/02/23  04:45:24  killough
+// Relax blockmap iterator to demo_compatibility
+//
+// Revision 1.4  1998/02/02  13:41:38  killough
+// Fix demo sync programs caused by last change
+//
+// Revision 1.3  1998/01/30  23:13:10  phares
+// Fixed delimiting 0 bug in P_BlockLinesIterator
+//
+// Revision 1.2  1998/01/26  19:24:11  phares
+// First rev with no ^Ms
+//
+// Revision 1.1.1.1  1998/01/19  14:03:00  rand
+// Lee's Jan 19 sources
+//
+//----------------------------------------------------------------------------

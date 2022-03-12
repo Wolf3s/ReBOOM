@@ -3,24 +3,17 @@
 //
 // $Id: lprintf.c,v 1.2 1998/09/14 18:49:49 jim Exp $
 //
-//  BOOM, a modified and improved DOOM engine
-//  Copyright (C) 1999 by
-//  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
+// Copyright (C) 1993-1996 by id Software, Inc.
 //
-//  This program is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU General Public License
-//  as published by the Free Software Foundation; either version 2
-//  of the License, or (at your option) any later version.
+// This source is available for distribution and/or modification
+// only under the terms of the DOOM Source Code License as
+// published by id Software. All rights reserved.
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+// The source is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// FITNESS FOR A PARTICULAR PURPOSE. See the DOOM Source Code License
+// for more details.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
-//  02111-1307, USA.
 //
 // DESCRIPTION:
 //  Provides a logical console output routine that allows what is
@@ -29,17 +22,19 @@
 //
 //-----------------------------------------------------------------------------
 
+static const char rcsid[] = "$Id: lprintf.c,v 1.2 1998/09/14 18:49:49 jim Exp $";
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
-
-#ifdef WINDOWS
+#ifdef _MSC_VER //proff
+#include <direct.h>
 #include <io.h>
-#endif
-
-#ifndef WINDOWS
+#else //_MSC_VER
 #include <unistd.h>
-#endif
+#endif //_MSC_VER
+#ifdef _WIN32
+#include "winstuff.h"
+#endif //_WIN32
 #include "lprintf.h"
 
 int cons_error_mask = -1-LO_INFO; // all but LO_INFO when redir'd
@@ -58,21 +53,16 @@ int lprintf(OutputLevels pri, const char *s, ...)
   vsprintf(msg,s,v);                      // print message in buffer
   va_end(v);
 
-  if (lvl & cons_output_mask)               // mask output as specified
-  {
-#ifdef WINDOWS
-      if (_fileno(stdout) != -1)
-#endif
-      r = fprintf(stdout, "%s", msg);
-  }
-#ifdef WINDOWS
-  if (!_isatty(1) && lvl & cons_error_mask)  // if stdout redirected 
-#else
-  if (!isatty(1) && lvl & cons_error_mask)  // if stdout redirected 
-#endif
-  {
-      r = fprintf(stderr, "%s", msg);           // select output at console
-  }
+  if (lvl&cons_output_mask)               // mask output as specified
+    r=fprintf(stdout,"%s",msg);
+  if (!isatty(1) && lvl&cons_error_mask)  // if stdout redirected 
+    r=fprintf(stderr,"%s",msg);           // select output at console
+
+#ifdef _WIN32
+  if (lvl&cons_output_mask)               // mask output as specified
+    I_ConPrintString(msg);
+#endif // _MSC_VER
+
   return r;
 }
 
@@ -87,3 +77,4 @@ int lprintf(OutputLevels pri, const char *s, ...)
 //
 //
 //----------------------------------------------------------------------------
+

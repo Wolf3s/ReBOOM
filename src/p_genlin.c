@@ -3,24 +3,17 @@
 //
 // $Id: p_genlin.c,v 1.19 1998/06/20 09:04:52 jim Exp $
 //
-//  BOOM, a modified and improved DOOM engine
-//  Copyright (C) 1999 by
-//  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
+// Copyright (C) 1993-1996 by id Software, Inc.
 //
-//  This program is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU General Public License
-//  as published by the Free Software Foundation; either version 2
-//  of the License, or (at your option) any later version.
+// This source is available for distribution and/or modification
+// only under the terms of the DOOM Source Code License as
+// published by id Software. All rights reserved.
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+// The source is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// FITNESS FOR A PARTICULAR PURPOSE. See the DOOM Source Code License
+// for more details.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
-//  02111-1307, USA.
 //
 // DESCRIPTION:
 //  Generalized linedef type handlers
@@ -28,7 +21,10 @@
 //
 //-----------------------------------------------------------------------------
 
-#include "doomstat.h"
+static const char
+rcsid[] = "$Id: p_genlin.c,v 1.19 1998/06/20 09:04:52 jim Exp $";
+
+#include "doomstat.h" //jff 6/19/98 for demo_compatibility
 #include "r_main.h"
 #include "p_spec.h"
 #include "p_tick.h"
@@ -107,7 +103,7 @@ manual_floor:
     floor = Z_Malloc (sizeof(*floor), PU_LEVSPEC, 0);
     P_AddThinker (&floor->thinker);
     sec->floordata = floor;
-    floor->thinker.function = T_MoveFloor;
+    floor->thinker.function.acp1 = (actionf_p1) T_MoveFloor;
     floor->crush = Crsh;
     floor->direction = Dirn? 1 : -1;
     floor->sector = sec;
@@ -310,7 +306,7 @@ manual_ceiling:
     ceiling = Z_Malloc (sizeof(*ceiling), PU_LEVSPEC, 0);
     P_AddThinker (&ceiling->thinker);
     sec->ceilingdata = ceiling; //jff 2/22/98
-    ceiling->thinker.function = T_MoveCeiling;
+    ceiling->thinker.function.acp1 = (actionf_p1) T_MoveCeiling;
     ceiling->crush = Crsh;
     ceiling->direction = Dirn? 1 : -1;
     ceiling->sector = sec;
@@ -381,13 +377,9 @@ manual_ceiling:
       default:
         break;
     }
-
-    //Dirn? ceiling->topheight : ceiling->bottomheight = targheight;
-    // haleyjd: that's GNU C syntax up there.
-    if(Dirn)
-       ceiling->topheight = targheight;
-    else
-       ceiling->bottomheight = targheight;
+    // proff 6/17/98: Visual C doesn't like the other form
+    (Dirn) ? (ceiling->topheight = targheight) : (ceiling->bottomheight = targheight);
+//    Dirn? ceiling->topheight : ceiling->bottomheight = targheight; 
 
     // set texture/type change properties
     if (ChgT)     // if a texture change is indicated
@@ -523,7 +515,7 @@ manual_lift:
               
     plat->sector = sec;
     plat->sector->floordata = plat;
-    plat->thinker.function = T_PlatRaise;
+    plat->thinker.function.acp1 = (actionf_p1) T_PlatRaise;
     plat->crush = false;
     plat->tag = line->tag;
 
@@ -681,7 +673,7 @@ manual_stair:
     floor = Z_Malloc (sizeof(*floor), PU_LEVSPEC, 0);
     P_AddThinker (&floor->thinker);
     sec->floordata = floor;
-    floor->thinker.function = T_MoveFloor;
+    floor->thinker.function.acp1 = (actionf_p1) T_MoveFloor;
     floor->direction = Dirn? 1 : -1;
     floor->sector = sec;
 
@@ -755,14 +747,14 @@ manual_stair:
 
         if (!Igno && tsec->floorpic != texture)
           continue;
-
+                                  
         if (demo_compatibility) // jff 6/19/98 prevent double stepsize
           height += floor->direction * stairsize;
 
         //jff 2/26/98 special lockout condition for retriggering
         if (P_SectorActive(floor_special,tsec) || tsec->stairlock)
           continue;
-
+        
         if (!demo_compatibility) // jff 6/19/98 increase height AFTER continue
           height += floor->direction * stairsize;
 
@@ -781,7 +773,7 @@ manual_stair:
         P_AddThinker (&floor->thinker);
 
         sec->floordata = floor;
-        floor->thinker.function = T_MoveFloor;
+        floor->thinker.function.acp1 = (actionf_p1) T_MoveFloor;
         floor->direction = Dirn? 1 : -1;
         floor->sector = sec;
         floor->speed = speed;
@@ -863,7 +855,7 @@ manual_crusher:
     ceiling = Z_Malloc (sizeof(*ceiling), PU_LEVSPEC, 0);
     P_AddThinker (&ceiling->thinker);
     sec->ceilingdata = ceiling; //jff 2/22/98
-    ceiling->thinker.function = T_MoveCeiling;
+    ceiling->thinker.function.acp1 = (actionf_p1) T_MoveCeiling;
     ceiling->crush = true;
     ceiling->direction = -1;
     ceiling->sector = sec;
@@ -959,7 +951,7 @@ manual_locked:
     P_AddThinker (&door->thinker);
     sec->ceilingdata = door; //jff 2/22/98
 
-    door->thinker.function = T_VerticalDoor;
+    door->thinker.function.acp1 = (actionf_p1) T_VerticalDoor;
     door->sector = sec;
     door->topwait = VDOORWAIT;
     door->line = line;
@@ -1063,7 +1055,7 @@ manual_door:
     P_AddThinker (&door->thinker);
     sec->ceilingdata = door; //jff 2/22/98
 
-    door->thinker.function = T_VerticalDoor;
+    door->thinker.function.acp1 = (actionf_p1) T_VerticalDoor;
     door->sector = sec;
     // setup delay for door remaining open/closed
     switch(Dely)
@@ -1143,3 +1135,63 @@ manual_door:
   }
   return rtn;
 }
+
+
+//----------------------------------------------------------------------------
+//
+// $Log: p_genlin.c,v $
+// Revision 1.19  1998/06/20  09:04:52  jim
+// Fix bug in stairs re moving steps
+//
+// Revision 1.18  1998/05/23  10:23:23  jim
+// Fix numeric changer loop corruption
+//
+// Revision 1.17  1998/05/08  03:34:56  jim
+// formatted/documented p_genlin
+//
+// Revision 1.16  1998/05/03  23:05:56  killough
+// Fix #includes at the top, nothing else
+//
+// Revision 1.15  1998/04/16  06:25:23  killough
+// Fix generalized doors' opening sounds
+//
+// Revision 1.14  1998/04/05  13:54:10  jim
+// fixed switch change on second activation
+//
+// Revision 1.13  1998/03/31  16:52:15  jim
+// Fixed uninited type field in stair builders
+//
+// Revision 1.12  1998/03/20  14:24:28  jim
+// Gen ceiling target now shortest UPPER texture
+//
+// Revision 1.11  1998/03/15  14:40:14  jim
+// added pure texture change linedefs & generalized sector types
+//
+// Revision 1.10  1998/03/13  14:05:56  jim
+// Fixed arith overflow in some linedef types
+//
+// Revision 1.9  1998/03/04  11:56:30  jim
+// Fix multiple sector stair raise
+//
+// Revision 1.8  1998/02/27  11:50:59  jim
+// Fixes for stairs
+//
+// Revision 1.7  1998/02/23  23:46:50  jim
+// Compatibility flagged multiple thinker support
+//
+// Revision 1.6  1998/02/23  00:41:46  jim
+// Implemented elevators
+//
+// Revision 1.4  1998/02/17  06:07:56  killough
+// Change RNG calling sequence
+//
+// Revision 1.3  1998/02/13  03:28:36  jim
+// Fixed W1,G1 linedefs clearing untriggered special, cosmetic changes
+//
+//
+// Revision 1.1.1.1  1998/02/04  09:19:00  jim
+// Lee's Jan 19 sources
+//
+//
+//----------------------------------------------------------------------------
+          

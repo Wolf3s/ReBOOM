@@ -3,24 +3,16 @@
 //
 // $Id: m_random.h,v 1.9 1998/05/01 14:20:31 killough Exp $
 //
-//  BOOM, a modified and improved DOOM engine
-//  Copyright (C) 1999 by
-//  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
+// Copyright (C) 1993-1996 by id Software, Inc.
 //
-//  This program is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU General Public License
-//  as published by the Free Software Foundation; either version 2
-//  of the License, or (at your option) any later version.
+// This source is available for distribution and/or modification
+// only under the terms of the DOOM Source Code License as
+// published by id Software. All rights reserved.
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
-//
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
-//  02111-1307, USA.
+// The source is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// FITNESS FOR A PARTICULAR PURPOSE. See the DOOM Source Code License
+// for more details.
 //
 // DESCRIPTION:
 //
@@ -106,6 +98,7 @@ typedef enum {
   pr_spawnfly,                // #48
   pr_misc,                    // #49
   pr_all_in_one,              // #50
+  // Start new entries -- add new entries below
 
   // End of new entries
   NUMPRCLASS               // MUST be last item in list
@@ -113,13 +106,13 @@ typedef enum {
 
 // The random number generator's state.
 typedef struct {
-  unsigned long long seed[NUMPRCLASS];      // Each block's random seed
+  unsigned long seed[NUMPRCLASS];      // Each block's random seed
   int rndindex, prndindex;             // For compatibility support
 } rng_t;
 
 extern rng_t rng;                      // The rng's state
 
-extern unsigned long long rngseed;          // The starting seed (not part of state)
+extern unsigned long rngseed;          // The starting seed (not part of state)
 
 // Returns a number from 0 to 255,
 #define M_Random() P_Random(pr_misc)
@@ -131,3 +124,36 @@ int P_Random(pr_class_t);
 void M_ClearRandom(void);
 
 #endif
+
+//----------------------------------------------------------------------------
+//
+// $Log: m_random.h,v $
+// Revision 1.9  1998/05/01  14:20:31  killough
+// beautification
+//
+// Revision 1.8  1998/03/31  10:43:07  killough
+// Fix (supposed) RNG problems, add new demo_insurance
+//
+// Revision 1.7  1998/03/28  17:56:02  killough
+// Improve RNG by adding external seed
+//
+// Revision 1.6  1998/03/09  07:16:39  killough
+// Remove unused pr_class (don't do this after 1st release)
+//
+// Revision 1.5  1998/03/02  11:37:47  killough
+// fix misspelling in comment
+//
+// Revision 1.4  1998/02/23  04:42:01  killough
+// Add pr_atracer type
+//
+// Revision 1.3  1998/02/17  05:40:12  killough
+// Make RNGs local to each calling block, for demo sync
+//
+// Revision 1.2  1998/01/26  19:27:14  phares
+// First rev with no ^Ms
+//
+// Revision 1.1.1.1  1998/01/19  14:02:58  rand
+// Lee's Jan 19 sources
+//
+//
+//----------------------------------------------------------------------------

@@ -3,29 +3,24 @@
 //
 // $Id: p_switch.c,v 1.25 1998/06/01 14:48:19 jim Exp $
 //
-//  BOOM, a modified and improved DOOM engine
-//  Copyright (C) 1999 by
-//  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
+// Copyright (C) 1993-1996 by id Software, Inc.
 //
-//  This program is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU General Public License
-//  as published by the Free Software Foundation; either version 2
-//  of the License, or (at your option) any later version.
+// This source is available for distribution and/or modification
+// only under the terms of the DOOM Source Code License as
+// published by id Software. All rights reserved.
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
-//
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
-//  02111-1307, USA.
+// The source is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// FITNESS FOR A PARTICULAR PURPOSE. See the DOOM Source Code License
+// for more details.
 //
 // DESCRIPTION:
 //  Switches, buttons. Two-state animation. Exits.
 //
 //-----------------------------------------------------------------------------
+
+static const char
+rcsid[] = "$Id: p_switch.c,v 1.25 1998/06/01 14:48:19 jim Exp $";
 
 #include "doomstat.h"
 #include "w_wad.h"
@@ -99,7 +94,7 @@ void P_InitSwitchList(void)
 // Passed the linedef the button is on, which texture on the sidedef contains
 // the button, the texture number of the button, and the time the button is
 // to remain active in gametics.
-// No return value.
+// No return.
 //
 void P_StartButton
 ( line_t*       line,
@@ -136,7 +131,7 @@ void P_StartButton
 // Passed the line which the switch is on, and whether its retriggerable.
 // If not retriggerable, this function clears the line special to insure that
 //
-// No return value
+// No return
 //
 void P_ChangeSwitchTexture
 ( line_t*       line,
@@ -214,8 +209,13 @@ void P_ChangeSwitchTexture
 // Passed the thing using the line, the line being used, and the side used
 // Returns true if a thinker was created
 //
-boolean P_UseSpecialLine(mobj_t* thing, line_t* line, int side, boolean bossaction)
+boolean
+P_UseSpecialLine
+( mobj_t*       thing,
+  line_t*       line,
+  int           side )
 {
+
   if (side) //jff 6/1/98 fix inadvertent deletion of side test
     return false;
 
@@ -229,7 +229,7 @@ boolean P_UseSpecialLine(mobj_t* thing, line_t* line, int side, boolean bossacti
     // check each range of generalized linedefs
     if ((unsigned)line->special >= GenFloorBase)
     {
-     if (!thing->player && !bossaction)
+      if (!thing->player)
         if ((line->special & FloorChange) || !(line->special & FloorModel))
           return false; // FloorModel is "Allow Monsters" if FloorChange is 0
       if (!line->tag && ((line->special&6)!=6)) //jff 2/27/98 all non-manual
@@ -238,7 +238,7 @@ boolean P_UseSpecialLine(mobj_t* thing, line_t* line, int side, boolean bossacti
     }
     else if ((unsigned)line->special >= GenCeilingBase)
     {
-    if (!thing->player && !bossaction)
+      if (!thing->player)
         if ((line->special & CeilingChange) || !(line->special & CeilingModel))
           return false;   // CeilingModel is "Allow Monsters" if CeilingChange is 0
       if (!line->tag && ((line->special&6)!=6)) //jff 2/27/98 all non-manual
@@ -247,7 +247,7 @@ boolean P_UseSpecialLine(mobj_t* thing, line_t* line, int side, boolean bossacti
     }
     else if ((unsigned)line->special >= GenDoorBase)
     {
-    if (!thing->player && !bossaction)
+      if (!thing->player)
       {
         if (!(line->special & DoorMonster))
           return false;   // monsters disallowed from this door
@@ -260,7 +260,7 @@ boolean P_UseSpecialLine(mobj_t* thing, line_t* line, int side, boolean bossacti
     }
     else if ((unsigned)line->special >= GenLockedBase)
     {
-    if (!thing->player || bossaction)
+      if (!thing->player)
         return false;   // monsters disallowed from unlocking doors
       if (!P_CanUnlockGenDoor(line,thing->player))
         return false;
@@ -271,7 +271,7 @@ boolean P_UseSpecialLine(mobj_t* thing, line_t* line, int side, boolean bossacti
     }
     else if ((unsigned)line->special >= GenLiftBase)
     {
-    if (!thing->player && !bossaction)
+      if (!thing->player)
         if (!(line->special & LiftMonster))
           return false; // monsters disallowed
       if (!line->tag && ((line->special&6)!=6)) //jff 2/27/98 all non-manual
@@ -280,7 +280,7 @@ boolean P_UseSpecialLine(mobj_t* thing, line_t* line, int side, boolean bossacti
     }
     else if ((unsigned)line->special >= GenStairsBase)
     {
-    if (!thing->player && !bossaction)
+      if (!thing->player)
         if (!(line->special & StairMonster))
           return false; // monsters disallowed
       if (!line->tag && ((line->special&6)!=6)) //jff 2/27/98 all non-manual
@@ -289,7 +289,7 @@ boolean P_UseSpecialLine(mobj_t* thing, line_t* line, int side, boolean bossacti
     }
     else if ((unsigned)line->special >= GenCrusherBase)
     {
-    if (!thing->player && !bossaction)
+      if (!thing->player)
         if (!(line->special & CrusherMonster))
           return false; // monsters disallowed
       if (!line->tag && ((line->special&6)!=6)) //jff 2/27/98 all non-manual
@@ -323,7 +323,7 @@ boolean P_UseSpecialLine(mobj_t* thing, line_t* line, int side, boolean bossacti
   }
     
   // Switches that other things can activate.
-  if (!thing->player && !bossaction)
+  if (!thing->player)
   {
     // never open secret doors
     if (line->flags & ML_SECRET)
@@ -346,35 +346,6 @@ boolean P_UseSpecialLine(mobj_t* thing, line_t* line, int side, boolean bossacti
         return false;
         break;
     }
-  }
-
-  if (bossaction)
-  {
-      switch (line->special)
-      {
-          // 0-tag specials, locked switches and teleporters need to be blocked for boss actions.
-      case 1:         // MANUAL DOOR RAISE
-      case 32:        // MANUAL BLUE
-      case 33:        // MANUAL RED
-      case 34:        // MANUAL YELLOW
-      case 117:       // Blazing door raise
-      case 118:       // Blazing door open
-      case 133:       // BlzOpenDoor BLUE
-      case 135:       // BlzOpenDoor RED
-      case 137:       // BlzOpenDoor YEL
-
-      case 99:        // BlzOpenDoor BLUE
-      case 134:       // BlzOpenDoor RED
-      case 136:       // BlzOpenDoor YELLOW
-
-        //jff 3/5/98 add ability to use teleporters for monsters
-      case 195:       // switch teleporters
-      case 174:
-      case 210:       // silent switch teleporters
-      case 209:
-          return false;
-          break;
-      }
   }
 
   if (!P_CheckTag(line))  //jff 2/27/98 disallow zero tag on some types
@@ -456,7 +427,7 @@ boolean P_UseSpecialLine(mobj_t* thing, line_t* line, int side, boolean bossacti
         
     case 29:
       // Raise Door
-      if (EV_DoDoor(line, normal))
+      if (EV_DoDoor(line,normal))
         P_ChangeSwitchTexture(line,0);
       break;
         
@@ -480,7 +451,7 @@ boolean P_UseSpecialLine(mobj_t* thing, line_t* line, int side, boolean bossacti
         
     case 50:
       // Close Door
-      if (EV_DoDoor(line,doorClose))
+      if (EV_DoDoor(line,close))
         P_ChangeSwitchTexture(line,0);
       break;
         
@@ -510,7 +481,7 @@ boolean P_UseSpecialLine(mobj_t* thing, line_t* line, int side, boolean bossacti
         
     case 103:
       // Open Door
-      if (EV_DoDoor(line, doorOpen))
+      if (EV_DoDoor(line,open))
         P_ChangeSwitchTexture(line,0);
       break;
         
@@ -999,7 +970,7 @@ boolean P_UseSpecialLine(mobj_t* thing, line_t* line, int side, boolean bossacti
     // Buttons (retriggerable switches)
     case 42:
       // Close Door
-      if (EV_DoDoor(line,doorClose))
+      if (EV_DoDoor(line,close))
         P_ChangeSwitchTexture(line,1);
       break;
         
@@ -1023,7 +994,7 @@ boolean P_UseSpecialLine(mobj_t* thing, line_t* line, int side, boolean bossacti
         
     case 61:
       // Open Door
-      if (EV_DoDoor(line, doorOpen))
+      if (EV_DoDoor(line,open))
         P_ChangeSwitchTexture(line,1);
       break;
         
@@ -1035,7 +1006,7 @@ boolean P_UseSpecialLine(mobj_t* thing, line_t* line, int side, boolean bossacti
         
     case 63:
       // Raise Door
-      if (EV_DoDoor(line, normal))
+      if (EV_DoDoor(line,normal))
         P_ChangeSwitchTexture(line,1);
       break;
         
@@ -1135,3 +1106,74 @@ boolean P_UseSpecialLine(mobj_t* thing, line_t* line, int side, boolean bossacti
   }
   return true;
 }
+
+
+
+//----------------------------------------------------------------------------
+//
+// $Log: p_switch.c,v $
+// Revision 1.25  1998/06/01  14:48:19  jim
+// Fix switch use from back side
+//
+// Revision 1.24  1998/05/11  14:04:46  jim
+// Fix endianess of speed field in SWITCH predefined lump
+//
+// Revision 1.23  1998/05/07  21:30:40  jim
+// formatted/documented p_switch
+//
+// Revision 1.22  1998/05/03  23:17:44  killough
+// Fix #includes at the top, nothing else
+//
+// Revision 1.21  1998/03/24  22:10:32  jim
+// Fixed switch won't light problem in UDOOM
+//
+// Revision 1.20  1998/03/23  18:39:45  jim
+// Switch and animation tables now lumps
+//
+// Revision 1.19  1998/03/16  15:47:18  killough
+// Merge Jim's linedef changes
+//
+// Revision 1.18  1998/03/15  14:39:58  jim
+// added pure texture change linedefs & generalized sector types
+//
+// Revision 1.17  1998/03/14  17:19:15  jim
+// Added instant toggle floor type
+//
+// Revision 1.16  1998/03/12  21:54:23  jim
+// Freed up 12 linedefs for use as vectors
+//
+// Revision 1.15  1998/03/05  16:59:22  jim
+// Fixed inability of monsters/barrels to use new teleports
+//
+// Revision 1.14  1998/03/02  15:33:10  jim
+// fixed errors in numeric model sector search and 0 tag trigger defeats
+//
+// Revision 1.13  1998/02/28  01:25:06  jim
+// Fixed error in 0 tag trigger fix
+//
+// Revision 1.11  1998/02/23  00:42:17  jim
+// Implemented elevators
+//
+// Revision 1.10  1998/02/13  03:28:49  jim
+// Fixed W1,G1 linedefs clearing untriggered special, cosmetic changes
+//
+// Revision 1.9  1998/02/09  03:11:03  killough
+// Remove limit on switches
+//
+// Revision 1.8  1998/02/08  05:35:54  jim
+// Added generalized linedef types
+//
+// Revision 1.6  1998/02/02  13:39:27  killough
+// Program beautification
+//
+// Revision 1.5  1998/01/30  14:44:20  jim
+// Added gun exits, right scrolling walls and ceiling mover specials
+//
+// Revision 1.2  1998/01/26  19:24:28  phares
+// First rev with no ^Ms
+//
+// Revision 1.1.1.1  1998/01/19  14:03:01  rand
+// Lee's Jan 19 sources
+//
+//
+//----------------------------------------------------------------------------

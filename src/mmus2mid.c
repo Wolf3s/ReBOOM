@@ -20,14 +20,23 @@
 //  Much of the code here is thanks to S. Bacquet's source for QMUS2MID.C
 //
 //-----------------------------------------------------------------------------
+//static const char rcsid[] = "$Id: mmus2mid.c,v 1.12 1998/09/07 20:09:38 jim Exp $";
+
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#ifndef UNIX
+#include <malloc.h>
+#endif
 #include "mmus2mid.h"
+
+//#define STANDALONE  /* uncomment this to make MMUS2MID.EXE */
+#ifndef STANDALONE
 #include "z_zone.h"
+#endif
 
 // some macros to decode mus event bit fields
 
@@ -282,7 +291,6 @@ static UBYTE MidiEvent(MIDI *mididata,UBYTE midicode,UBYTE MIDIchannel,
 //
 // Returns 0 if successful, otherwise an error code (see mmus2mid.h).
 //
-#define READ_INT16(b) ((b)[0] | ((b)[1] << 8))
 int mmus2mid(UBYTE *mus, MIDI *mididata, UWORD division, int nocomp)
 {
   UWORD TrackCnt = 0;
@@ -300,13 +308,7 @@ int mmus2mid(UBYTE *mus, MIDI *mididata, UWORD division, int nocomp)
 
   // copy the MUS header from the MUS buffer to the MUSh header structure
 
-  // [Woof!] fix MIDI endianess
-  memcpy(MUSh.ID, mus, 4);
-  MUSh.ScoreLength = READ_INT16(&mus[4]);
-  MUSh.ScoreStart = READ_INT16(&mus[6]);
-  MUSh.channels = READ_INT16(&mus[8]);
-  MUSh.SecChannels = READ_INT16(&mus[10]);
-  MUSh.InstrCnt = READ_INT16(&mus[12]);
+  memcpy(&MUSh,mus,sizeof(MUSheader));
 
   // check some things and set length of MUS buffer from internal data
 
@@ -464,10 +466,8 @@ int mmus2mid(UBYTE *mus, MIDI *mididata, UWORD division, int nocomp)
           goto err;
           }
           data = *musptr++;
-          // [FG] clamp MIDI controller change values into the [0..127] range
-          if (data & 0x80) data = 0x7F;
 // proff: Added typecast to avoid warning
-          if (TWriteByte(mididata, MIDItrack, (unsigned char)data))
+          if (TWriteByte(mididata, MIDItrack, (unsigned char)(data & 0x7F)))
         goto err;
           break;
 
@@ -605,15 +605,6 @@ int MidiToMIDI(UBYTE *mid,MIDI *mididata)
   return 0;
 }
 
-// [FG] disable dead static code
-#if 0
-//#ifdef STANDALONE /* this code unused by BOOM provided for future portability */
-//                  /* it also provides a MUS to MID file converter*/
-// proff: I moved this down, because I need MIDItoMidi
-
-static void FreeTracks(MIDI *mididata);
-static void TWriteLength(UBYTE **midiptr,ULONG length);
-
 //
 // FreeTracks()
 //
@@ -622,7 +613,7 @@ static void TWriteLength(UBYTE **midiptr,ULONG length);
 // Passed a pointer to an Allegro MIDI structure
 // Returns nothing
 // 
-static void FreeTracks(MIDI *mididata)
+void FreeTracks(MIDI *mididata)
 {
   int i;
 
@@ -633,7 +624,6 @@ static void FreeTracks(MIDI *mididata)
     mididata->track[i].len = 0;
   }
 }
-#endif
 
 //
 // TWriteLength()
@@ -717,3 +707,154 @@ int MIDIToMidi(MIDI *mididata,UBYTE **mid,int *midlen)
 
   return 0;
 }
+
+#ifdef STANDALONE /* this code unused by BOOM provided for future portability */
+                  /* it also provides a MUS to MID file converter*/
+// proff: I moved this down, because I need MIDItoMidi
+
+//
+// main()
+//
+// Main routine that will convert a globbed set of MUS files to the
+// correspondingly named MID files using mmus2mid(). Only compiled
+// if the STANDALONE symbol is defined.
+//
+// Passed the command line arguments, returns 0 if successful
+//
+int main(int argc,char **argv)
+{
+  FILE *musst,*midst;
+  char musfile[FILENAME_MAX],midfile[FILENAME_MAX];
+  MUSheader MUSh;
+  UBYTE *mus,*mid;
+  static MIDI mididata;
+  int err,midlen;
+  char *p,*q;
+  int i;
+
+  if (argc<2)
+  {
+    printf("Usage: MMUS2MID musfile[.MUS]\n");
+    printf("writes musfile.MID as output\n");
+    printf("musfile may contain wildcards\n");
+    exit(1);
+  }
+
+  for (i=1;i<argc;i++)
+  {
+    strcpy(musfile,argv[i]);
+    p = strrchr(musfile,'.');
+    q = strrchr(musfile,'\\');
+    if (p && (!q || q<p)) *p='\0';
+    strcpy(midfile,musfile);
+    strcat(musfile,".MUS");
+    strcat(midfile,".MID");
+
+    musst = fopen(musfile,"rb");
+    if (musst)
+    {
+      fread(&MUSh,sizeof(MUSheader),1,musst);
+      mus = malloc(MUSh.ScoreLength+MUSh.ScoreStart);
+      if (mus)
+      {
+        fseek(musst,0,SEEK_SET);
+        if (!fread(mus,MUSh.ScoreLength+MUSh.ScoreStart,1,musst))
+        {          
+          printf("Error reading MUS file\n");
+          free(mus);
+          exit(1);
+        }
+        fclose(musst);
+      }
+      else
+      {
+        printf("Out of memory\n");
+        free(mus);
+        exit(1);
+      }
+
+      err = mmus2mid(mus,&mididata,89,1);
+      if (err)
+      {
+        printf("Error converting MUS file to MIDI: %d\n",err);
+        exit(1);
+      }
+      free(mus);
+
+      MIDIToMidi(&mididata,&mid,&midlen);
+
+      midst = fopen(midfile,"wb");
+      if (midst)
+      {
+        if (!fwrite(mid,midlen,1,midst))
+        {
+          printf("Error writing MIDI file\n");
+          FreeTracks(&mididata);
+          free(mid);
+          exit(1);
+        }
+        fclose(midst);
+      }
+      else
+      {
+        printf("Can't open MIDI file for output: %s\n", midfile);
+        FreeTracks(&mididata);
+        free(mid);
+        exit(1);
+      }
+    }
+    else
+    {
+      printf("Can't open MUS file for input: %s\n", midfile);
+      exit(1);
+    }
+
+    printf("MUS file %s converted to MIDI file %s\n",musfile,midfile);
+    FreeTracks(&mididata);
+    free(mid);
+  }
+  exit(0);
+}
+
+#endif
+//----------------------------------------------------------------------------
+//
+// $Log: mmus2mid.c,v $
+// Revision 1.12  1998/09/07  20:09:38  jim
+// Logical output routine added
+//
+// Revision 1.11  1998/07/14  20:07:21  jim
+// correction of minor errors
+//
+// Revision 1.10  1998/05/10  23:00:43  jim
+// formatted/documented mmus2mid
+//
+// Revision 1.9  1998/03/14  17:16:19  jim
+// Fixed track timing problem
+//
+// Revision 1.8  1998/03/05  16:59:55  jim
+// Fixed minor error in mus to midi conversion
+//
+// Revision 1.7  1998/02/08  15:15:47  jim
+// Added native midi support
+//
+// Revision 1.6  1998/01/26  19:23:54  phares
+// First rev with no ^Ms
+//
+// Revision 1.5  1998/01/23  20:26:20  jim
+// Fix bug causing leftover tracks to persist
+//
+// Revision 1.4  1998/01/21  17:41:13  rand
+// Added rcsid string back that Jim took out.
+//
+// Revision 1.3  1998/01/21  16:56:20  jim
+// Music fixed, defaults for cards added
+//
+// Revision 1.2  1998/01/19  23:36:15  rand
+// Added rcsid and Id: strings at top of file
+//
+// Revision 1.1.1.1  1998/01/19  14:03:10  rand
+// Lee's Jan 19 sources
+//
+//
+//----------------------------------------------------------------------------

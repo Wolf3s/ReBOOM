@@ -4,7 +4,6 @@ OUTPUT= build
 OBJS=				\
 		$(OUTPUT)/am_map.o \
 		$(OUTPUT)/d_deh.o \
-		$(OUTPUT)/d_items_struct.o \
 		$(OUTPUT)/d_main.o \
 		$(OUTPUT)/d_net.o \
 		$(OUTPUT)/doomdef.o \
@@ -62,17 +61,11 @@ OBJS=				\
 		$(OUTPUT)/st_lib.o \
 		$(OUTPUT)/st_stuff.o \
 		$(OUTPUT)/tables.o \
-		$(OUTPUT)/umapinfo.o \
-		$(OUTPUT)/uscanner.o \
 		$(OUTPUT)/v_video.o \
 		$(OUTPUT)/version.o \
 		$(OUTPUT)/w_wad.o \
 		$(OUTPUT)/wi_stuff.o \
 		$(OUTPUT)/z_zone.o \
-		$(OUTPUT)/txt_sdl.o \
-		$(OUTPUT)/txt_utf8.o \
-		$(OUTPUT)/txt_widget.o \
-		$(OUTPUT)/txt_window.o \
 
 all:	 $(OUTPUT)/reboom
 

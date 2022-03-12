@@ -3,24 +3,16 @@
 //
 // $Id: r_main.h,v 1.7 1998/05/03 23:00:42 killough Exp $
 //
-//  BOOM, a modified and improved DOOM engine
-//  Copyright (C) 1999 by
-//  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
+// Copyright (C) 1993-1996 by id Software, Inc.
 //
-//  This program is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU General Public License
-//  as published by the Free Software Foundation; either version 2
-//  of the License, or (at your option) any later version.
+// This source is available for distribution and/or modification
+// only under the terms of the DOOM Source Code License as
+// published by id Software. All rights reserved.
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
-//
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
-//  02111-1307, USA.
+// The source is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// FITNESS FOR A PARTICULAR PURPOSE. See the DOOM Source Code License
+// for more details.
 //
 // DESCRIPTION:
 //      System specific interface stuff.
@@ -32,6 +24,10 @@
 
 #include "d_player.h"
 #include "r_data.h"
+
+#ifdef __GNUG__
+#pragma interface
+#endif
 
 //
 // POV related.
@@ -48,6 +44,8 @@ extern int      centery;
 extern fixed_t  centerxfrac;
 extern fixed_t  centeryfrac;
 extern fixed_t  projection;
+// proff 11/06/98: Added for high-res
+extern fixed_t  projectiony;
 extern int      validcount;
 extern int      linecount;
 extern int      loopcount;
@@ -60,17 +58,11 @@ extern int      loopcount;
 
 // Lighting constants.
 
-#if defined REMOVE_LIMITS
-#define MAXLIGHTSCALE     96
-#define MAXLIGHTZ        256
-#else
-#define MAXLIGHTSCALE     48
-#define MAXLIGHTZ        128
-#endif
-
 #define LIGHTLEVELS       16
 #define LIGHTSEGSHIFT      4
+#define MAXLIGHTSCALE     48
 #define LIGHTSCALESHIFT   12
+#define MAXLIGHTZ        128
 #define LIGHTZSHIFT       20
 
 // killough 3/20/98: Allow colormaps to be dynamic (e.g. underwater)
@@ -114,9 +106,31 @@ void R_RenderPlayerView(player_t *player);   // Called by G_Drawer.
 void R_Init(void);                           // Called by startup code.
 void R_SetViewSize(int blocks);              // Called by M_Responder.
 
-void R_InitLightTables(void);                // killough 8/9/98
-
-extern boolean setsizeneeded;
-void R_ExecuteSetViewSize(void);
-
 #endif
+
+//----------------------------------------------------------------------------
+//
+// $Log: r_main.h,v $
+// Revision 1.7  1998/05/03  23:00:42  killough
+// beautification
+//
+// Revision 1.6  1998/04/06  04:43:17  killough
+// Make colormaps fully dynamic
+//
+// Revision 1.5  1998/03/23  03:37:44  killough
+// Add support for arbitrary number of colormaps
+//
+// Revision 1.4  1998/03/09  07:27:23  killough
+// Avoid using FP for point/line queries
+//
+// Revision 1.3  1998/02/02  13:29:10  killough
+// performance tuning
+//
+// Revision 1.2  1998/01/26  19:27:41  phares
+// First rev with no ^Ms
+//
+// Revision 1.1.1.1  1998/01/19  14:03:08  rand
+// Lee's Jan 19 sources
+//
+//
+//----------------------------------------------------------------------------

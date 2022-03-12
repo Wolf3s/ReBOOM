@@ -3,24 +3,16 @@
 //
 // $Id: p_mobj.h,v 1.10 1998/05/03 23:45:09 killough Exp $
 //
-//  BOOM, a modified and improved DOOM engine
-//  Copyright (C) 1999 by
-//  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
+// Copyright (C) 1993-1996 by id Software, Inc.
 //
-//  This program is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU General Public License
-//  as published by the Free Software Foundation; either version 2
-//  of the License, or (at your option) any later version.
+// This source is available for distribution and/or modification
+// only under the terms of the DOOM Source Code License as
+// published by id Software. All rights reserved.
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
-//
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
-//  02111-1307, USA.
+// The source is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// FITNESS FOR A PARTICULAR PURPOSE. See the DOOM Source Code License
+// for more details.
 //
 // DESCRIPTION:
 //      Map Objects, MObj, definition and handling.
@@ -45,6 +37,10 @@
 //  tied to animation frames.
 // Needs precompiled tables/data structures.
 #include "info.h"
+
+#ifdef __GNUG__
+#pragma interface
+#endif
 
 //
 // NOTES: mobj_t
@@ -116,91 +112,92 @@
 typedef enum
 {
     // Call P_SpecialThing when touched.
-    MF_SPECIAL          = (uint_64_t)(0x0000000000000001),
+    MF_SPECIAL          = 1,
     // Blocks.
-    MF_SOLID            = (uint_64_t)(0x0000000000000002),
+    MF_SOLID            = 2,
     // Can be hit.
-    MF_SHOOTABLE        = (uint_64_t)(0x0000000000000004),
+    MF_SHOOTABLE        = 4,
     // Don't use the sector links (invisible but touchable).
-    MF_NOSECTOR         = (uint_64_t)(0x0000000000000008),
+    MF_NOSECTOR         = 8,
     // Don't use the blocklinks (inert but displayable)
-    MF_NOBLOCKMAP       = (uint_64_t)(0x0000000000000010),                   
+    MF_NOBLOCKMAP       = 16,                    
 
     // Not to be activated by sound, deaf monster.
-    MF_AMBUSH           = (uint_64_t)(0x0000000000000020),
+    MF_AMBUSH           = 32,
     // Will try to attack right back.
-    MF_JUSTHIT          = (uint_64_t)(0x0000000000000040),
+    MF_JUSTHIT          = 64,
     // Will take at least one step before attacking.
-    MF_JUSTATTACKED     = (uint_64_t)(0x0000000000000080),
+    MF_JUSTATTACKED     = 128,
     // On level spawning (initial position),
     //  hang from ceiling instead of stand on floor.
-    MF_SPAWNCEILING     = (uint_64_t)(0x0000000000000100),
+    MF_SPAWNCEILING     = 256,
     // Don't apply gravity (every tic),
     //  that is, object will float, keeping current height
     //  or changing it actively.
-    MF_NOGRAVITY        = (uint_64_t)(0x0000000000000200),
+    MF_NOGRAVITY        = 512,
 
     // Movement flags.
     // This allows jumps from high places.
-    MF_DROPOFF          = (uint_64_t)(0x0000000000000400),
+    MF_DROPOFF          = 0x400,
     // For players, will pick up items.
-    MF_PICKUP           = (uint_64_t)(0x0000000000000800),
+    MF_PICKUP           = 0x800,
     // Player cheat. ???
-    MF_NOCLIP           = (uint_64_t)(0x0000000000001000),
+    MF_NOCLIP           = 0x1000,
     // Player: keep info about sliding along walls.
-    MF_SLIDE            = (uint_64_t)(0x0000000000002000),
+    MF_SLIDE            = 0x2000,
     // Allow moves to any height, no gravity.
     // For active floaters, e.g. cacodemons, pain elementals.
-    MF_FLOAT            = (uint_64_t)(0x0000000000004000),
+    MF_FLOAT            = 0x4000,
     // Don't cross lines
     //   ??? or look at heights on teleport.
-    MF_TELEPORT         = (uint_64_t)(0x0000000000008000),
+    MF_TELEPORT         = 0x8000,
     // Don't hit same species, explode on block.
     // Player missiles as well as fireballs of various kinds.
-    MF_MISSILE          = (uint_64_t)(0x0000000000010000),    
+    MF_MISSILE          = 0x10000,      
     // Dropped by a demon, not level spawned.
     // E.g. ammo clips dropped by dying former humans.
-    MF_DROPPED          = (uint_64_t)(0x0000000000020000),
+    MF_DROPPED          = 0x20000,
     // Use fuzzy draw (shadow demons or spectres),
     //  temporary player invisibility powerup.
-    MF_SHADOW           = (uint_64_t)(0x0000000000040000),
+    MF_SHADOW           = 0x40000,
     // Flag: don't bleed when shot (use puff),
     //  barrels and shootable furniture shall not bleed.
-    MF_NOBLOOD          = (uint_64_t)(0x0000000000080000),
+    MF_NOBLOOD          = 0x80000,
     // Don't stop moving halfway off a step,
     //  that is, have dead bodies slide down all the way.
-    MF_CORPSE           = (uint_64_t)(0x0000000000100000),
+    MF_CORPSE           = 0x100000,
     // Floating to a height for a move, ???
     //  don't auto float to target's height.
-    MF_INFLOAT          = (uint_64_t)(0x0000000000200000),
+    MF_INFLOAT          = 0x200000,
 
     // On kill, count this enemy object
     //  towards intermission kill total.
     // Happy gathering.
-    MF_COUNTKILL        = (uint_64_t)(0x0000000000400000),
+    MF_COUNTKILL        = 0x400000,
     
     // On picking up, count this item object
     //  towards intermission item total.
-    MF_COUNTITEM        = (uint_64_t)(0x0000000000800000),
+    MF_COUNTITEM        = 0x800000,
 
     // Special handling: skull in flight.
     // Neither a cacodemon nor a missile.
-    MF_SKULLFLY         = (uint_64_t)(0x0000000001000000),
+    MF_SKULLFLY         = 0x1000000,
 
     // Don't spawn this object
     //  in death match mode (e.g. key cards).
-    MF_NOTDMATCH        = (uint_64_t)(0x0000000002000000),
+    MF_NOTDMATCH        = 0x2000000,
 
     // Player sprites in multiplayer modes are modified
     //  using an internal color lookup table for re-indexing.
     // If 0x4 0x8 or 0xc,
     //  use a translation table for player colormaps
-    MF_TRANSLATION      = (uint_64_t)(0x000000000c000000),
+    MF_TRANSLATION      = 0xc000000,
     // Hmm ???.
     MF_TRANSSHIFT       = 26,
 
     // Translucent sprite?                                          // phares
-    MF_TRANSLUCENT  = (uint_64_t)(0x0000000040000000),
+    MF_TRANSLUCENT      = 0x80000000                                // phares
+
 } mobjflag_t;
 
 
@@ -217,9 +214,6 @@ typedef enum
 // and the whole reason behind loadgames crashing on savegames of AV attacks.
 // 
 
-// killough 9/8/98: changed some fields to shorts,
-// for better memory usage (if only for cache).
-
 typedef struct mobj_s
 {
     // List: thinker links.
@@ -232,7 +226,7 @@ typedef struct mobj_s
 
     // More list: links in sector (if needed)
     struct mobj_s*      snext;
-    struct mobj_s**     sprev; // killough 8/10/98: change to ptr-to-ptr
+    struct mobj_s*      sprev;
 
     //More drawing info: to determine current sprite.
     angle_t             angle;  // orientation
@@ -242,7 +236,7 @@ typedef struct mobj_s
     // Interaction info, by BLOCKMAP.
     // Links in blocks (if needed).
     struct mobj_s*      bnext;
-    struct mobj_s**     bprev; // killough 8/11/98: change to ptr-to-ptr
+    struct mobj_s*      bprev;
     
     struct subsector_s* subsector;
 
@@ -271,8 +265,8 @@ typedef struct mobj_s
     int                 health;
 
     // Movement direction, movement generation (zig-zagging).
-    short               movedir;        // 0-7
-    short               movecount;      // when 0, select a new dir
+    int                 movedir;        // 0-7
+    int                 movecount;      // when 0, select a new dir
 
     // Thing being chased/attacked (or NULL),
     // also the originator for missiles.
@@ -280,18 +274,18 @@ typedef struct mobj_s
 
     // Reaction time: if non 0, don't attack yet.
     // Used by player to freeze a bit after teleporting.
-    short               reactiontime;   
+    int                 reactiontime;   
 
-    // If >0, the current target will be chased no
-    // matter what (even if shot by another object)
-    short               threshold;
+    // If >0, the target will be chased
+    // no matter what (even if shot)
+    int                 threshold;
 
     // Additional info record for player avatars only.
     // Only valid if type == MT_PLAYER
     struct player_s*    player;
 
     // Player number last looked for.
-    short               lastlook;       
+    int                 lastlook;       
 
     // For nightmare respawn.
     mapthing_t          spawnpoint;     
@@ -312,14 +306,15 @@ typedef struct mobj_s
                                                                     //   ^
     struct mobj_s* below_thing;                                     //   |
                                                                     // phares
-
-    // killough 8/2/98: friction properties part of sectors,
-    // not objects -- removed friction properties from here
+    // Friction values for the sector the object is in
+    int friction;                                           // phares 3/17/98
+    int movefactor;
 
     // a linked list of sectors where this object appears
     struct msecnode_s* touching_sectorlist;                 // phares 3/14/98
 
     // SEE WARNING ABOVE ABOUT POINTER FIELDS!!!
+
 } mobj_t;
 
 // External declarations (fomerly in p_local.h) -- killough 5/2/98
@@ -330,8 +325,8 @@ typedef struct mobj_s
 #define GRAVITY         FRACUNIT
 #define MAXMOVE         (30*FRACUNIT)
 
-#define ONFLOORZ        D_MININT
-#define ONCEILINGZ      D_MAXINT
+#define ONFLOORZ        MININT
+#define ONCEILINGZ      MAXINT
 
 // Time interval for item respawning.
 #define ITEMQUESIZE     128
@@ -356,3 +351,39 @@ void    P_SpawnPlayerMissile(mobj_t *source, mobjtype_t type);
 void    P_SpawnMapThing (mapthing_t*  mthing);
 
 #endif
+
+//----------------------------------------------------------------------------
+//
+// $Log: p_mobj.h,v $
+// Revision 1.10  1998/05/03  23:45:09  killough
+// beautification, fix headers, declarations
+//
+// Revision 1.9  1998/03/23  15:24:33  phares
+// Changed pushers to linedef control
+//
+// Revision 1.8  1998/03/20  00:30:09  phares
+// Changed friction to linedef control
+//
+// Revision 1.7  1998/03/09  18:27:13  phares
+// Fixed bug in neighboring variable friction sectors
+//
+// Revision 1.6  1998/02/24  08:46:24  phares
+// Pushers, recoil, new friction, and over/under work
+//
+// Revision 1.5  1998/02/20  21:56:34  phares
+// Preliminarey sprite translucency
+//
+// Revision 1.4  1998/02/20  09:51:14  killough
+// Add savegame warning
+//
+// Revision 1.3  1998/02/17  05:48:16  killough
+// Add new last enemy field to prevent monster sleepiness
+//
+// Revision 1.2  1998/01/26  19:27:23  phares
+// First rev with no ^Ms
+//
+// Revision 1.1.1.1  1998/01/19  14:03:08  rand
+// Lee's Jan 19 sources
+//
+//
+//----------------------------------------------------------------------------

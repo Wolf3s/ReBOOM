@@ -3,29 +3,25 @@
 //
 // $Id: p_ceilng.c,v 1.14 1998/05/09 10:58:10 jim Exp $
 //
-//  BOOM, a modified and improved DOOM engine
-//  Copyright (C) 1999 by
-//  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
+// Copyright (C) 1993-1996 by id Software, Inc.
 //
-//  This program is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU General Public License
-//  as published by the Free Software Foundation; either version 2
-//  of the License, or (at your option) any later version.
+// This source is available for distribution and/or modification
+// only under the terms of the DOOM Source Code License as
+// published by id Software. All rights reserved.
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+// The source is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// FITNESS FOR A PARTICULAR PURPOSE. See the DOOM Source Code License
+// for more details.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
-//  02111-1307, USA.
 //
 // DESCRIPTION:  
 //   Ceiling aninmation (lowering, crushing, raising)
 //
 //-----------------------------------------------------------------------------
+
+static const char
+rcsid[] = "$Id: p_ceilng.c,v 1.14 1998/05/09 10:58:10 jim Exp $";
 
 #include "doomstat.h"
 #include "r_main.h"
@@ -49,7 +45,7 @@ ceilinglist_t *activeceilings;
 // Action routine that moves ceilings. Called once per tick.
 //
 // Passed a ceiling_t structure that contains all the info about the move.
-// see P_SPEC.H for fields. No return value.
+// see P_SPEC.H for fields. No return.
 //
 // jff 02/08/98 all cases with labels beginning with gen added to support 
 // generalized line type behaviors.
@@ -278,7 +274,7 @@ int EV_DoCeiling
     ceiling = Z_Malloc (sizeof(*ceiling), PU_LEVSPEC, 0);
     P_AddThinker (&ceiling->thinker);
     sec->ceilingdata = ceiling;               //jff 2/22/98
-    ceiling->thinker.function = T_MoveCeiling;
+    ceiling->thinker.function.acp1 = (actionf_p1)T_MoveCeiling;
     ceiling->sector = sec;
     ceiling->crush = false;
   
@@ -372,7 +368,7 @@ int P_ActivateInStasisCeiling(line_t *line)
     if (ceiling->tag == line->tag && ceiling->direction == 0)
     {
       ceiling->direction = ceiling->olddirection;
-      ceiling->thinker.function = T_MoveCeiling;
+      ceiling->thinker.function.acp1 = (actionf_p1) T_MoveCeiling;
       //jff 4/5/98 return if activated
       rtn=1;
     }
@@ -400,7 +396,7 @@ int EV_CeilingCrushStop(line_t* line)
     {
       ceiling->olddirection = ceiling->direction;
       ceiling->direction = 0;
-      ceiling->thinker.function = NULL;
+      ceiling->thinker.function.acv = (actionf_v)NULL;
       rtn=1;
     }
   }
@@ -460,3 +456,42 @@ void P_RemoveAllActiveCeilings(void)
     activeceilings = next;
   }
 }
+
+//----------------------------------------------------------------------------
+//
+// $Log: p_ceilng.c,v $
+// Revision 1.14  1998/05/09  10:58:10  jim
+// formatted/documented p_ceilng
+//
+// Revision 1.13  1998/05/03  23:07:43  killough
+// Fix #includes at the top, nothing else
+//
+// Revision 1.12  1998/04/05  13:54:17  jim
+// fixed switch change on second activation
+//
+// Revision 1.11  1998/03/15  14:40:26  jim
+// added pure texture change linedefs & generalized sector types
+//
+// Revision 1.10  1998/02/23  23:46:35  jim
+// Compatibility flagged multiple thinker support
+//
+// Revision 1.9  1998/02/23  00:41:31  jim
+// Implemented elevators
+//
+// Revision 1.7  1998/02/13  03:28:22  jim
+// Fixed W1,G1 linedefs clearing untriggered special, cosmetic changes
+//
+// Revision 1.5  1998/02/08  05:35:18  jim
+// Added generalized linedef types
+//
+// Revision 1.4  1998/01/30  14:44:12  jim
+// Added gun exits, right scrolling walls and ceiling mover specials
+//
+// Revision 1.2  1998/01/26  19:23:56  phares
+// First rev with no ^Ms
+//
+// Revision 1.1.1.1  1998/01/19  14:02:58  rand
+// Lee's Jan 19 sources
+//
+//
+//----------------------------------------------------------------------------
