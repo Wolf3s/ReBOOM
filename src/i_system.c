@@ -19,9 +19,6 @@
 //
 //-----------------------------------------------------------------------------
 
-static const char
-rcsid[] = "$Id: i_system.c,v 1.15 1998/09/07 20:06:44 jim Exp $";
-
 #include <stdio.h>
 
 #ifdef _WIN32 // proff: Includes for Windows
@@ -49,25 +46,58 @@ rcsid[] = "$Id: i_system.c,v 1.15 1998/09/07 20:06:44 jim Exp $";
 
 #include "i_system.h"
 
+int mousepresent;
+int joystickpresent;                                         // phares 4/3/98
+
 ticcmd_t *I_BaseTiccmd(void)
 {
   static ticcmd_t emptycmd; // killough
   return &emptycmd;
 }
 
+#ifndef _WIN32
+//
+// I_SetJoystickDevice
+//
+// haleyjd
+//
+// haleyjd: SDL joystick support
+
+// current device number -- saved in config file
+int i_SDLJoystickNum = -1;
+ 
+// pointer to current joystick device information
+SDL_Joystick *sdlJoystick = NULL;
+
+boolean I_SetJoystickDevice(int deviceNum)
+{
+   if(deviceNum >= SDL_NumJoysticks())
+      return false;
+   else
+   {
+      sdlJoystick = SDL_JoystickOpen(deviceNum);
+
+      if(!sdlJoystick)
+     return false;
+
+      // check that the device has at least 2 axes and
+      // 4 buttons
+      if(SDL_JoystickNumAxes(sdlJoystick) < 2 ||
+     SDL_JoystickNumButtons(sdlJoystick) < 4)
+     return false;
+
+      return true;
+   }
+}
+#endif
+
 void I_WaitVBL(int count)
 {
 #ifdef _WIN32 // proff: Added Sleep-function
     // proff: Changed time-calculation
     Sleep((count*500)/TICRATE);
-#elif DJGPP
-    rest((count*500)/TICRATE);
-#elif SGI // proff: Added functions from original Doom-source
-    sginap(1);                                           
-#elif SUN
-    sleep(0);
 #else
-    usleep (count * (1000000/70) );                                
+    SDL_Delay((count*500)/TICRATE);
 #endif
 }
 
@@ -149,10 +179,22 @@ int  I_GetTrueTime (void)
 }
 #endif
 
+/* set_leds:
+ *  Overrides the state of the keyboard LED indicators.
+ *  Set to -1 to return to default behavior.
+ */
+static void set_leds(int leds)
+{
+    //Gibbon - stub, for historical purposes
+}
+
 //
 // I_GetTime
 // returns time in 1/70th second tics
 //
+
+static Uint32 basetime=0;
+
 int  I_GetTime_RealTime (void)
 {
 #ifdef _WIN32 // proff: Added function for Windows
@@ -160,15 +202,13 @@ int  I_GetTime_RealTime (void)
   realtic = (I_GetTrueTime()*TICRATE)/1000;
   return realtic;
 #else //_WIN32
-  struct      timeval  tp;
-  struct      timezone  tzp;
-  static int  basetime=0;
-   
-  gettimeofday(&tp, &tzp);
-  if (!basetime)
-  basetime = tp.tv_sec;
-  realtic = (tp.tv_sec-basetime)*TICRATE + tp.tv_usec*TICRATE/1000000;
-  return realtic;
+  // haleyjd
+  Uint32        ticks;
+    
+  // milliseconds since SDL initialization
+  ticks = SDL_GetTicks();
+    
+  return ((ticks - basetime)*TICRATE)/1000;
 #endif //_WIN32
 }
 #endif //DJGPP
@@ -210,20 +250,14 @@ int (*I_GetTime)() = I_GetTime_Error;                           // killough
 // killough 3/21/98: Add keyboard queue
 
 #ifndef _WIN32 // proff: This is provided by Windows, so we don't need it
-struct keyboard_queue_s keyboard_queue;
-
-static void keyboard_handler(int scancode)
-{
-  keyboard_queue.queue[keyboard_queue.head++] = scancode;
-  keyboard_queue.head &= KQSIZE-1;
-}
-static END_OF_FUNCTION(keyboard_handler);
-
 int mousepresent;
 int joystickpresent;                                         // phares 4/3/98
 
 static int orig_key_shifts;  // killough 3/6/98: original keyboard shift state
+int key_shifts;
 extern int autorun;          // Autorun state
+
+static SDL_Keymod oldmod; // haleyjd: save old modifier key state
 #endif //_WIN32
 
 int leds_always_off;         // Tells it not to update LEDs
@@ -231,28 +265,27 @@ int leds_always_off;         // Tells it not to update LEDs
 void I_Shutdown(void)
 {
 #ifndef _WIN32 // proff: Not needed in Windows
-  if (mousepresent!=-1)
-    remove_mouse();
-   
-  // killough 3/6/98: restore keyboard shift state
-  key_shifts = orig_key_shifts;
-      
-  remove_keyboard();
-
-  remove_timer();
+    SDL_SetModState(oldmod);
+    
+    // haleyjd 04/15/02: shutdown joystick
+    if(joystickpresent && sdlJoystick && i_SDLJoystickNum >= 0)
+    {
+       if(SDL_JoystickGetAttached(sdlJoystick))
+          SDL_JoystickClose(sdlJoystick);
+       
+       joystickpresent = false;
+    }
+    SDL_Quit();
 #endif //_WIN32
 }
 
 void I_Init(void)
 {
 #ifndef _WIN32 // proff: Not needed in Windows
-  extern int key_autorun;
-
-  //init timer
-  LOCK_VARIABLE(realtic);
-  LOCK_FUNCTION(I_timer);
-  install_timer();
-  install_int_ex(I_timer,BPS_TO_TIMER(TICRATE));
+    extern int key_autorun;
+    
+    // init timer
+    basetime = SDL_GetTicks();
 #endif //_WIN32
 
   // killough 4/14/98: Adjustable speedup based on realtic_clock_rate
@@ -272,12 +305,6 @@ void I_Init(void)
       I_GetTime = I_GetTime_RealTime;
 
 #ifndef _WIN32 // proff: Not needed in Windows
-  // killough 3/21/98: Install handler to handle interrupt-driven keyboard IO
-  LOCK_VARIABLE(keyboard_queue);
-  LOCK_FUNCTION(keyboard_handler);
-  keyboard_lowlevel_callback = keyboard_handler;
-
-  install_keyboard();
 
   // killough 3/6/98: save keyboard state, initialize shift state and LEDs:
 
@@ -285,39 +312,48 @@ void I_Init(void)
 
   key_shifts = 0;        // turn off all shifts by default
       
-  if (autorun)  // if autorun is on initially, turn on any corresponding shifts
-    switch (key_autorun)
-   {
-   case KEYD_CAPSLOCK:
-        key_shifts = KB_CAPSLOCK_FLAG;
-      break;
-   case KEYD_NUMLOCK:
-        key_shifts = KB_NUMLOCK_FLAG;
-      break;
-   case KEYD_SCROLLLOCK:
-        key_shifts = KB_SCROLOCK_FLAG;
-      break;
-   }
+    SDL_Keymod   mod;
+       
+    oldmod = SDL_GetModState();
+    switch(key_autorun)
+    {
+    case KEYD_CAPSLOCK:
+       mod = KMOD_CAPS;
+       break;
+    case KEYD_NUMLOCK:
+       mod = KMOD_NUM;
+       break;
+    case KEYD_SCROLLLOCK:
+       mod = KMOD_MODE;
+       break;
+    default:
+       mod = KMOD_NONE;
+    }
+    
+    if(autorun)
+       SDL_SetModState(mod);
+    else
+       SDL_SetModState(KMOD_NONE);
    
   // Either keep the keyboard LEDs off all the time, or update them
   // right now, and in the future, with respect to key_shifts flag.
   set_leds(leds_always_off ? 0 : -1);
   // killough 3/6/98: end of keyboard / autorun state changes
 
-  //init the mouse
-  mousepresent=install_mouse();
-  if (mousepresent!=-1)
-    show_mouse(NULL);
-
   // phares 4/3/98:
   // Init the joystick
   // For now, we'll require that joystick data is present in allegro.cfg.
   // The ASETUP program can be used to obtain the joystick data.
    
-  if (load_joystick_data(NULL) == 0)
-    joystickpresent = true;
-   else
-      joystickpresent = false;
+  // haleyjd
+  if(i_SDLJoystickNum != -1)
+  {
+     joystickpresent = I_SetJoystickDevice(i_SDLJoystickNum);
+  }
+  else
+  {
+     joystickpresent = false;
+  }
 
 #endif //_WIN32
    atexit(I_Shutdown);
@@ -347,7 +383,7 @@ void I_Quit (void)
     //proff 9/17/98 use logical output routine
     lprintf (LO_ERROR, "%s\n", errmsg);
 // proff 07/29/98: Changed MessageBox-Title to "PrBoom"
-    MessageBox(NULL,errmsg,"PrBoom",0);
+    MessageBox(NULL,errmsg,"BOOM",0);
   }
   else
     {
@@ -392,6 +428,7 @@ void I_Error(const char *error, ...) // killough 3/20/98: add const
    }
 }
 
+
 // killough 2/22/98: Add support for ENDBOOM, which is PC-specific
 #ifdef _WIN32 // proff: Functions to access the console
 extern HWND con_hWnd;
@@ -419,8 +456,6 @@ void textattr(byte a)
   ReleaseDC(con_hWnd,conDC);
 }
 
-#endif //_WIN32
-
 void I_EndDoom(void)
 {
   int lump = W_CheckNumForName("ENDBOOM"); //jff 4/1/98 sign our work
@@ -431,19 +466,11 @@ void I_EndDoom(void)
       for (i=0; i<l; i++)
         {
           textattr(endoom[i][1]);
-#ifdef _WIN32
           lprintf(LO_ALWAYS,"%c",endoom[i][0]);
         }
-//      lprintf(LO_ALWAYS,"\b");   // hack workaround for extra newline at bottom of screen
-//      lprintf(LO_ALWAYS,"\r");
-#else
-          putch(endoom[i][0]);
-        }
-      putch('\b');   // hack workaround for extra newline at bottom of screen
-      putch('\r');
-#endif
     }
 }
+#endif
 
 //----------------------------------------------------------------------------
 //
