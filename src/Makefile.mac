@@ -1,5 +1,7 @@
-CFLAGS= -I/Users/ats/Development/Includes -std=c2x -pedantic -Wall -DUNIX -g 
-LDFLAGS= -L/Users/ats/Docs/ -lSDL2-2.0.0 -lSDL2_mixer-2.0.0 -lSDL2_net-2.0.0 -lSDL2_image-2.0.0 -lm
+# You will want to change these paths to your own.
+# I don't install them system-wide for my own usage on a mac.
+CFLAGS= -I/Users/ats/Development/Includes -std=c11 -pedantic -Wall -DUNIX -g 
+LDFLAGS= -L/Users/ats/Development/Libs/ -lSDL2-2.0.0 -lSDL2_mixer-2.0.0 -lSDL2_net-2.0.0 -lSDL2_image-2.0.0 -lm
 OUTPUT= build
 OBJS=				\
 		$(OUTPUT)/am_map.o \

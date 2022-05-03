@@ -1233,7 +1233,7 @@ static void D_ProcessDehCommandLine(void)
         else
           if (deh)
             {
-              char file[PATH_MAX+1];      // killough
+              char file[REBOOM_PATH_MAX+1];      // killough
               AddDefaultExtension(strcpy(file, myargv[p]), ".bex");
               if (access(file, F_OK))  // nope
                 {
