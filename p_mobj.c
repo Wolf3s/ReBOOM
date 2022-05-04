@@ -29,6 +29,7 @@
 
 #include "doomdef.h"
 #include "doomstat.h"
+#include "doomtype.h"
 #include "m_random.h"
 #include "r_main.h"
 #include "p_maputl.h"
