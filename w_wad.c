@@ -133,12 +133,7 @@ static void W_AddFile(const char *filename,int source) // killough 1/31/98: stat
   filelump_t  singleinfo;
 
   // open the file and add to directory
-
-#ifdef WINDOWS
-  if ((handle = _open(filename,O_RDONLY | O_BINARY)) == -1)
-#else
   if ((handle = open(filename,O_RDONLY | 0)) == -1)
-#endif
     {
       if (strlen(filename)<=4 ||      // add error check -- killough
           strcasecmp(filename+strlen(filename)-4 , ".lmp" ) )
@@ -162,11 +157,7 @@ static void W_AddFile(const char *filename,int source) // killough 1/31/98: stat
     }
   else
     {
-#ifdef WINDOWS
-      if (!_read(handle, &header, sizeof(header)))
-#else
       if (!read(handle, &header, sizeof(header)))
-#endif
       if (strncmp(header.identification,"IWAD",4) &&
           strncmp(header.identification,"PWAD",4))
         I_Error ("Wad file %s doesn't have IWAD or PWAD id\n", filename);
@@ -174,13 +165,8 @@ static void W_AddFile(const char *filename,int source) // killough 1/31/98: stat
       header.infotableofs = LONG(header.infotableofs);
       length = header.numlumps*sizeof(filelump_t);
       fileinfo2free = fileinfo = malloc(length);    // killough
-#ifdef WINDOWS
-      _lseek(handle, header.infotableofs, SEEK_SET);
-      _read(handle, fileinfo, length);
-#else
       lseek(handle, header.infotableofs, SEEK_SET);
       read(handle, fileinfo, length);
-#endif
       numlumps += header.numlumps;
     }
 
@@ -461,13 +447,9 @@ void W_ReadLump(int lump, void *dest)
 
       // killough 1/31/98: Reload hack (-wart) removed
 
-#ifdef WINDOWS
-      _lseek(l->handle, l->position, SEEK_SET);
-      c = _read(l->handle, dest, l->size);
-#else
       lseek(l->handle, l->position, SEEK_SET);
       c = read(l->handle, dest, l->size);
-#endif
+
       if (c < l->size)
         I_Error("W_ReadLump: only read %i of %i on lump %i", c, l->size, lump);
     }
@@ -516,11 +498,7 @@ void WritePredefinedLumpWad(const char *filename)
 
   // The following code writes a PWAD from the predefined lumps array
   // How to write a PWAD will not be explained here.
-#ifdef WINDOWS // proff: In Visual C open is defined a bit different
-  if ( (handle = _open (filenam, O_RDWR | O_CREAT | O_BINARY, _S_IWRITE|_S_IREAD)) != -1)
-#else
   if ( (handle = open (filenam, O_RDWR | O_CREAT | 0, S_IWUSR|S_IRUSR)) != -1)
-#endif
   {
     wadinfo_t header = {"PWAD"};
     size_t filepos = sizeof(wadinfo_t) + num_predefined_lumps * sizeof(filelump_t);
@@ -530,11 +508,7 @@ void WritePredefinedLumpWad(const char *filename)
     header.infotableofs = LONG(sizeof(header));
 
     // write header
-#ifdef WINDOWS
-    _write(handle, &header, sizeof(header));
-#else
     write(handle, &header, sizeof(header));
-#endif
 
     // write directory
     for (i=0;i<num_predefined_lumps;i++)
@@ -543,23 +517,14 @@ void WritePredefinedLumpWad(const char *filename)
       fileinfo.filepos = LONG(filepos);
       fileinfo.size = LONG(predefined_lumps[i].size);
       strncpy(fileinfo.name, predefined_lumps[i].name, 8);
-#ifdef WINDOWS
-      _write(handle, &fileinfo, sizeof(fileinfo));
-#else
       write(handle, &fileinfo, sizeof(fileinfo));
-#endif
       filepos += predefined_lumps[i].size;
     }
 
     // write lumps
     for (i=0;i<num_predefined_lumps;i++)
-#ifdef WINDOWS
-      _write(handle, predefined_lumps[i].data, predefined_lumps[i].size);
-      _close(handle);
-#else
       write(handle, predefined_lumps[i].data, predefined_lumps[i].size);
       close(handle);
-#endif
     I_Error("Predefined lumps wad, %s written, exiting\n", filename);
   }
  I_Error("Cannot open predefined lumps wad %s for output\n", filename);
