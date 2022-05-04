@@ -29,3 +29,15 @@ jobs:
         install: make gcc mingw-w64-x86_64-toolchain mingw64/mingw-w64-x86_64-SDL2 mingw64/mingw-w64-x86_64-SDL2_mixer mingw64/mingw-w64-x86_64-SDL2_image mingw64/mingw-w64-x86_64-SDL2_net
     - run: make -f Makefile.msys
     - run: file ./build/reboom.exe
+    
+    - name: Create Binary Package
+      shell: bash
+      run: |
+        cd build
+        mkdir binary_package_msys2
+        cp reboom.exe binary_package_msys2
+    - name: Upload Binary Package
+      uses: actions/upload-artifact@v1
+      with:
+        path: build/binary_package_msys2
+        name: ${{ matrix.config.package_name }}
