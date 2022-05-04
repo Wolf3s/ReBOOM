@@ -38,10 +38,8 @@
 #include <fcntl.h>
 #ifdef WINDOWS
 #include <io.h>
-#include <direct.h> // _getcwd
-#else
-#include <unistd.h> // getcwd
 #endif
+#include <unistd.h> // getcwd
 #include "doomtype.h"
 #include "doomdef.h"
 #include "doomstat.h"
