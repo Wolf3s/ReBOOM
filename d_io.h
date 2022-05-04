@@ -28,7 +28,7 @@
   #define FALSE false
 #endif
 
-#ifdef _MSC_VER
+#ifdef WINDOWS
   #include <direct.h>
   #include <io.h>
   #define F_OK 0
