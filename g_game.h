@@ -66,7 +66,7 @@ byte *G_WriteOptions(byte *demo_p);        // killough 3/1/98
 void G_PlayerReborn(int player);
 void G_InitNew(skill_t skill, int episode, int map);
 void G_DoVictory(void);
-uint_64_t G_Signature(void);      // killough 12/98
+uint64_t G_Signature(void);      // killough 12/98
 // killough 1/18/98: Doom-style printf;   killough 4/25/98: add gcc attributes
 void doom_printf(const char *, ...) __attribute__((format(printf,1,2)));
 

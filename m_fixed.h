@@ -55,7 +55,7 @@ typedef int fixed_t;
 
 static inline fixed_t FixedMul(fixed_t a, fixed_t b)
 {
-  return (fixed_t)((int_64_t) a*b >> FRACBITS);
+  return (fixed_t)((int64_t) a*b >> FRACBITS);
 }
 
 //
@@ -65,7 +65,7 @@ static inline fixed_t FixedMul(fixed_t a, fixed_t b)
 static inline fixed_t FixedDiv(fixed_t a, fixed_t b)
 {
   return (abs(a)>>14) >= abs(b) ? ((a^b)>>31) ^ D_MAXINT :
-    (fixed_t)(((int_64_t) a << FRACBITS) / b);
+    (fixed_t)(((int64_t) a << FRACBITS) / b);
 }
 
 #endif

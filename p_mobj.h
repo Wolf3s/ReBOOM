@@ -117,91 +117,91 @@
 typedef enum
 {
     // Call P_SpecialThing when touched.
-    MF_SPECIAL          = (uint_64_t)(0x0000000000000001),
+    MF_SPECIAL          = (uint64_t)(0x0000000000000001),
     // Blocks.
-    MF_SOLID            = (uint_64_t)(0x0000000000000002),
+    MF_SOLID            = (uint64_t)(0x0000000000000002),
     // Can be hit.
-    MF_SHOOTABLE        = (uint_64_t)(0x0000000000000004),
+    MF_SHOOTABLE        = (uint64_t)(0x0000000000000004),
     // Don't use the sector links (invisible but touchable).
-    MF_NOSECTOR         = (uint_64_t)(0x0000000000000008),
+    MF_NOSECTOR         = (uint64_t)(0x0000000000000008),
     // Don't use the blocklinks (inert but displayable)
-    MF_NOBLOCKMAP       = (uint_64_t)(0x0000000000000010),                   
+    MF_NOBLOCKMAP       = (uint64_t)(0x0000000000000010),                   
 
     // Not to be activated by sound, deaf monster.
-    MF_AMBUSH           = (uint_64_t)(0x0000000000000020),
+    MF_AMBUSH           = (uint64_t)(0x0000000000000020),
     // Will try to attack right back.
-    MF_JUSTHIT          = (uint_64_t)(0x0000000000000040),
+    MF_JUSTHIT          = (uint64_t)(0x0000000000000040),
     // Will take at least one step before attacking.
-    MF_JUSTATTACKED     = (uint_64_t)(0x0000000000000080),
+    MF_JUSTATTACKED     = (uint64_t)(0x0000000000000080),
     // On level spawning (initial position),
     //  hang from ceiling instead of stand on floor.
-    MF_SPAWNCEILING     = (uint_64_t)(0x0000000000000100),
+    MF_SPAWNCEILING     = (uint64_t)(0x0000000000000100),
     // Don't apply gravity (every tic),
     //  that is, object will float, keeping current height
     //  or changing it actively.
-    MF_NOGRAVITY        = (uint_64_t)(0x0000000000000200),
+    MF_NOGRAVITY        = (uint64_t)(0x0000000000000200),
 
     // Movement flags.
     // This allows jumps from high places.
-    MF_DROPOFF          = (uint_64_t)(0x0000000000000400),
+    MF_DROPOFF          = (uint64_t)(0x0000000000000400),
     // For players, will pick up items.
-    MF_PICKUP           = (uint_64_t)(0x0000000000000800),
+    MF_PICKUP           = (uint64_t)(0x0000000000000800),
     // Player cheat. ???
-    MF_NOCLIP           = (uint_64_t)(0x0000000000001000),
+    MF_NOCLIP           = (uint64_t)(0x0000000000001000),
     // Player: keep info about sliding along walls.
-    MF_SLIDE            = (uint_64_t)(0x0000000000002000),
+    MF_SLIDE            = (uint64_t)(0x0000000000002000),
     // Allow moves to any height, no gravity.
     // For active floaters, e.g. cacodemons, pain elementals.
-    MF_FLOAT            = (uint_64_t)(0x0000000000004000),
+    MF_FLOAT            = (uint64_t)(0x0000000000004000),
     // Don't cross lines
     //   ??? or look at heights on teleport.
-    MF_TELEPORT         = (uint_64_t)(0x0000000000008000),
+    MF_TELEPORT         = (uint64_t)(0x0000000000008000),
     // Don't hit same species, explode on block.
     // Player missiles as well as fireballs of various kinds.
-    MF_MISSILE          = (uint_64_t)(0x0000000000010000),    
+    MF_MISSILE          = (uint64_t)(0x0000000000010000),    
     // Dropped by a demon, not level spawned.
     // E.g. ammo clips dropped by dying former humans.
-    MF_DROPPED          = (uint_64_t)(0x0000000000020000),
+    MF_DROPPED          = (uint64_t)(0x0000000000020000),
     // Use fuzzy draw (shadow demons or spectres),
     //  temporary player invisibility powerup.
-    MF_SHADOW           = (uint_64_t)(0x0000000000040000),
+    MF_SHADOW           = (uint64_t)(0x0000000000040000),
     // Flag: don't bleed when shot (use puff),
     //  barrels and shootable furniture shall not bleed.
-    MF_NOBLOOD          = (uint_64_t)(0x0000000000080000),
+    MF_NOBLOOD          = (uint64_t)(0x0000000000080000),
     // Don't stop moving halfway off a step,
     //  that is, have dead bodies slide down all the way.
-    MF_CORPSE           = (uint_64_t)(0x0000000000100000),
+    MF_CORPSE           = (uint64_t)(0x0000000000100000),
     // Floating to a height for a move, ???
     //  don't auto float to target's height.
-    MF_INFLOAT          = (uint_64_t)(0x0000000000200000),
+    MF_INFLOAT          = (uint64_t)(0x0000000000200000),
 
     // On kill, count this enemy object
     //  towards intermission kill total.
     // Happy gathering.
-    MF_COUNTKILL        = (uint_64_t)(0x0000000000400000),
+    MF_COUNTKILL        = (uint64_t)(0x0000000000400000),
     
     // On picking up, count this item object
     //  towards intermission item total.
-    MF_COUNTITEM        = (uint_64_t)(0x0000000000800000),
+    MF_COUNTITEM        = (uint64_t)(0x0000000000800000),
 
     // Special handling: skull in flight.
     // Neither a cacodemon nor a missile.
-    MF_SKULLFLY         = (uint_64_t)(0x0000000001000000),
+    MF_SKULLFLY         = (uint64_t)(0x0000000001000000),
 
     // Don't spawn this object
     //  in death match mode (e.g. key cards).
-    MF_NOTDMATCH        = (uint_64_t)(0x0000000002000000),
+    MF_NOTDMATCH        = (uint64_t)(0x0000000002000000),
 
     // Player sprites in multiplayer modes are modified
     //  using an internal color lookup table for re-indexing.
     // If 0x4 0x8 or 0xc,
     //  use a translation table for player colormaps
-    MF_TRANSLATION      = (uint_64_t)(0x000000000c000000),
+    MF_TRANSLATION      = (uint64_t)(0x000000000c000000),
     // Hmm ???.
     MF_TRANSSHIFT       = 26,
 
     // Translucent sprite?                                          // phares
-    MF_TRANSLUCENT  = (uint_64_t)(0x0000000040000000),
+    MF_TRANSLUCENT  = (uint64_t)(0x0000000040000000),
 } mobjflag_t;
 
 

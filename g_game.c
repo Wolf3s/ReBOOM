@@ -1343,9 +1343,9 @@ void G_SaveGameName(char *name, int slot)
 //
 // killough 12/98: use faster algorithm which has less IO
 
-uint_64_t G_Signature(void)
+uint64_t G_Signature(void)
 {
-  uint_64_t s = 0;
+  uint64_t s = 0;
   int lump, i;
   char name[9];
   
@@ -1396,7 +1396,7 @@ static void G_DoSaveGame(void)
   *save_p++ = gamemap;
 
   {  // killough 3/16/98, 12/98: store lump name checksum
-    uint_64_t checksum = G_Signature();
+    uint64_t checksum = G_Signature();
     memcpy(save_p, &checksum, sizeof checksum);
     save_p += sizeof checksum;
   }
@@ -1459,7 +1459,7 @@ static void G_DoLoadGame(void)
 {
   int  length, i;
   char vcheck[VERSIONSIZE];
-  uint_64_t checksum;
+  uint64_t checksum;
 
   gameaction = ga_nothing;
 

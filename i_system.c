@@ -70,8 +70,8 @@ ticcmd_t *I_BaseTiccmd(void)
 void I_EndDoom(void)
 {
     unsigned char* screendata;
-    int_64_t y;
-    int_64_t indent;
+    int64_t y;
+    int64_t indent;
     unsigned char* endoom_data;
 
     endoom_data = W_CacheLumpName("ENDBOOM", PU_STATIC);
@@ -140,11 +140,11 @@ int I_GetTime_RealTime(void)
 
 // killough 4/13/98: Make clock rate adjustable by scale factor
 int realtic_clock_rate = 100;
-static int_64_t I_GetTime_Scale = 1<<24;
+static int64_t I_GetTime_Scale = 1<<24;
 int I_GetTime_Scaled(void)
 {
    // haleyjd:
-   return (int)((int_64_t) I_GetTime_RealTime() * I_GetTime_Scale >> 24);
+   return (int)((int64_t) I_GetTime_RealTime() * I_GetTime_Scale >> 24);
 }
 
 static int  I_GetTime_FastDemo(void)
@@ -270,9 +270,9 @@ void I_InitKeyboard(void)
 void I_Init(void)
 {
    extern int key_autorun;
-   int_64_t clock_rate = realtic_clock_rate, p;
+   int64_t clock_rate = realtic_clock_rate, p;
    
-   if((p = M_CheckParm("-speed")) && p < (int_64_t)myargc -1 &&
+   if((p = M_CheckParm("-speed")) && p < (int64_t)myargc -1 &&
       (p = atoll(myargv[p+1])) >= 10 && p <= 1000)
       clock_rate = p;
    
@@ -285,7 +285,7 @@ void I_Init(void)
    else
       if(clock_rate != 100)
       {
-         I_GetTime_Scale = ((int_64_t) clock_rate << 24) / 100;
+         I_GetTime_Scale = ((int64_t) clock_rate << 24) / 100;
          I_GetTime = I_GetTime_Scaled;
       }
       else

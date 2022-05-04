@@ -83,19 +83,6 @@ static inline int ReBOOMMathMax(int a, int b) {
 	return a > b ? a : b;
 }
 
-/* cph - Wrapper for the long long type, as Win32 used a different name.
- * Except I don't know what to test as it's compiler specific
- * Proff - I fixed it */
-#ifndef WINDOWS
-typedef signed long long int_64_t;
-typedef unsigned long long uint_64_t;
-// define compiled-specific long-long contstant notation here
-#define LONGLONG(num)   (uint_64_t)num ## ll
-#else
-typedef __int64 int_64_t;
-typedef unsigned __int64 uint_64_t;
-#endif
-
 #ifdef WINDOWS
 #define strcasecmp _stricmp
 #define strncasecmp _strnicmp

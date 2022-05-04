@@ -635,7 +635,7 @@ void ST_Ticker(void)
   st_oldhealth = plyr->health;
 }
 
-int_64_t st_palette = 0;
+int64_t st_palette = 0;
 
 void ST_doPaletteStuff(void)
 {
@@ -669,7 +669,7 @@ void ST_doPaletteStuff(void)
     if (palette != st_palette)
     {
         // Adam - casting a 4 byte int (palette) to a long long to avoid an overflow
-        byte * lump = (byte*)W_CacheLumpNum(lu_palette, PU_CACHE) + (int_64_t)palette * 768;
+        byte * lump = (byte*)W_CacheLumpNum(lu_palette, PU_CACHE) + (int64_t)palette * 768;
         I_SetPalette(lump);
         st_palette = palette;
     }

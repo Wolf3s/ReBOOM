@@ -457,7 +457,7 @@ static void cheat_pitch(void)
 
 boolean M_FindCheats(int key)
 {
-  static uint_64_t sr;
+  static uint64_t sr;
   static char argbuf[CHEAT_ARGS_MAX+1], *arg;
   static int init, argsleft, cht;
   int i, ret, matchedbefore;
@@ -485,7 +485,7 @@ boolean M_FindCheats(int key)
       init = 1;
       for (i=0;cheat[i].cheat;i++)
         {
-          uint_64_t c=0, m=0;
+          uint64_t c=0, m=0;
           const unsigned char *p;
           for (p=cheat[i].cheat; *p; p++)
             {
