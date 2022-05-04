@@ -29,7 +29,7 @@
 #ifdef UNIX
 #include "SDL2/SDL_net.h" //Gibbon
 #else
-#include "SDL_net.h"
+#include <SDL_net.h>
 #endif
 
 #include "z_zone.h"  /* memory allocation wrappers -- killough */
