@@ -1,3 +1,5 @@
+[![ReBOOM](https://github.com/atsb/ReBOOM/actions/workflows/main.yml/badge.svg)](https://github.com/atsb/ReBOOM/actions/workflows/main.yml)
+
 # ReBOOM
 [![ReBOOM Icon](https://github.com/atsb/ReBOOM/blob/main/docs/Reboom.png)](https://github.com/atsb/ReBOOM)
 
