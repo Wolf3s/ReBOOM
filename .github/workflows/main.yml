@@ -28,6 +28,6 @@ jobs:
       with:
         install: make gcc mingw64/mingw-w64-x86_64-SDL2 mingw64/mingw-w64-x86_64-SDL2_mixer mingw64/mingw-w64-x86_64-SDL2_image mingw64/mingw-w64-x86_64-SDL2_net
     - run: pacman --noconfirm -S gcc
-    - run: make -f Makefile.gnu
+    - run: make -f Makefile.msys
     - run: file ./build/reboom.exe
     - run: ./build/reboom
