@@ -40,4 +40,4 @@ jobs:
       uses: actions/upload-artifact@v1
       with:
         path: build/binary_package_msys2
-        name: ${{ matrix.config.package_name }}
+        name: binary_package_msys2
