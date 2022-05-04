@@ -1,5 +1,5 @@
-CFLAGS= -std=c11 -pedantic -Wall -DUNIX -g 
-LDFLAGS= `sdl2-config --cflags --libs` -lm
+CFLAGS= -std=c11 -pedantic -Wall -DUNIX -g `sdl2-config --cflags --libs`
+LDFLAGS= -lSDL2 -lSDL2_image -lSDL2_mixer -lSDL2_net -lm
 OUTPUT= build
 OBJS=				\
 		$(OUTPUT)/am_map.o \
