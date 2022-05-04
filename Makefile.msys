@@ -1,4 +1,4 @@
-CFLAGS= -std=c11 -pedantic -Wall -DWINDOWS -g `sdl2-config --cflags --libs`
+CFLAGS= -std=c11 -pedantic -Wall -DWINDOWS -g
 LDFLAGS= -lSDL2 -lSDL2_image -lSDL2_mixer -lSDL2_net -lm
 OUTPUT= build
 OBJS=				\
