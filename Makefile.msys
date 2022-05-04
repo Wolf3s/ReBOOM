@@ -1,5 +1,5 @@
-CFLAGS= -std=c11 -pedantic -Wall -DWINDOWS -g
-LDFLAGS= -lSDL2 -lSDL2_image -lSDL2_mixer -lSDL2_net -lm
+CFLAGS= -std=c11 -pedantic -Wall -DWINDOWS -g `sdl2-config --cflags --libs`
+LDFLAGS= -lSDL2 -lSDL2_image -lSDL2_mixer -lSDL2_net -lmingw32 -lm
 OUTPUT= build
 OBJS=				\
 		$(OUTPUT)/am_map.o \
