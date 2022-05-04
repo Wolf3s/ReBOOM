@@ -29,7 +29,6 @@
 #endif
 
 #ifdef WINDOWS
-  #include <direct.h>
   #include <io.h>
   #define F_OK 0
   #define W_OK 2
