@@ -31,6 +31,7 @@
 #define __P_MOBJ__
 
 // Basics.
+#include <stdint.h>
 #include "tables.h"
 #include "m_fixed.h"
 
