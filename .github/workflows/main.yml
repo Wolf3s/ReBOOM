@@ -36,10 +36,7 @@ jobs:
         cd build
         mkdir binary_package_msys2
         cp C:/msys64/usr/bin/msys-2.0.dll binary_package_msys2
-        cp C:/msys64/bin/SDL2.dll binary_package_msys2
-        cp C:/msys64/bin/SDL2_image.dll binary_package_msys2
-        cp C:/msys64/bin/SDL2_mixer.dll binary_package_msys2
-        cp C:/msys64/bin/SDL2_net.dll binary_package_msys2
+        ldd binary_package_msys2/*|grep -iv system32|grep -vi windows|grep -v :$  | cut -f2 -d\> | cut -f1 -d\( | tr \\ / |while read a; do ! [ -e "binary_package_msys2/`basename $a`" ] && cp -v "$a" binary_package_msys2/; done
         cp reboom.exe binary_package_msys2
     - name: Upload Binary Package
       uses: actions/upload-artifact@v1
