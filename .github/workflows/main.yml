@@ -35,8 +35,8 @@ jobs:
       run: |
         cd build
         mkdir binary_package_msys2
-        cp C:/msys64/bin/msys2.dll binary_package_msys2
-        cp C:/msys64/bin/sdl2* binary_package_msys2
+        cp C:/msys64/usr/bin/msys-2.0.dll binary_package_msys2
+        cp C:/msys64/usr/bin/sdl2* binary_package_msys2
         cp reboom.exe binary_package_msys2
     - name: Upload Binary Package
       uses: actions/upload-artifact@v1
