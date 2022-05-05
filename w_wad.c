@@ -108,6 +108,14 @@ char *AddDefaultExtension(char *path, const char *ext)
 // LUMP BASED ROUTINES.
 //
 
+static int filelength(int handle)
+{
+  struct stat   fileinfo;
+  if (fstat(handle,&fileinfo) == -1)
+    I_Error("Error fstating");
+  return fileinfo.st_size;
+}
+
 //
 // W_AddFile
 // All files are optional, but at least one file must be
@@ -133,6 +141,7 @@ static void W_AddFile(const char *filename,int source) // killough 1/31/98: stat
   filelump_t  singleinfo;
 
   // open the file and add to directory
+
   if ((handle = open(filename,O_RDONLY | 0)) == -1)
     {
       if (strlen(filename)<=4 ||      // add error check -- killough
@@ -151,13 +160,14 @@ static void W_AddFile(const char *filename,int source) // killough 1/31/98: stat
       // single lump file
       fileinfo = &singleinfo;
       singleinfo.filepos = 0;
-      singleinfo.size = LONG(file_length(handle));
+      singleinfo.size = LONG(filelength(handle));
       ExtractFileBase(filename, singleinfo.name);
       numlumps++;
     }
   else
     {
-      if (!read(handle, &header, sizeof(header)))
+      // WAD file
+      read(handle, &header, sizeof(header));
       if (strncmp(header.identification,"IWAD",4) &&
           strncmp(header.identification,"PWAD",4))
         I_Error ("Wad file %s doesn't have IWAD or PWAD id\n", filename);
