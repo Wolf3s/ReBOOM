@@ -2,7 +2,7 @@ SRC = $(wildcard *.c)
 OBJ = $(SRC:.c=.o)
 DEP = $(OBJ:.o=.d)
 CC = gcc
-CFLAGS = -std=c2x -pedantic -Wall -DWINDOWS
+CFLAGS = -std=c11 -pedantic -Wall -DWINDOWS
 LDFLAGS = -lmingw32 -lgdi32 -lkernel32 -luser32 -mwindows -lSDL2main -lSDL2 -lSDL2_mixer -lSDL2_net -lSDL2_image
 
 reboom: $(OBJ)
