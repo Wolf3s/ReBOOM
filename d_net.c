@@ -36,7 +36,6 @@
 #include "i_video.h"
 #include "i_net.h"
 #include "g_game.h"
-#include "lprintf.h"
 
 #define NCMD_EXIT               0x80000000
 #define NCMD_RETRANSMIT         0x40000000
@@ -606,7 +605,8 @@ void D_CheckNetGame (void)
   if (netgame)
     D_ArbitrateNetStart ();
 
-  lprintf(LO_INFO, "\nstartskill %i  deathmatch: %i  startmap: %i  startepisode: %i\n", startskill, deathmatch, startmap, startepisode);
+  printf ("startskill %i  deathmatch: %i  startmap: %i  startepisode: %i\n",
+           startskill, deathmatch, startmap, startepisode);
 
   // read values out of doomcom
   ticdup = doomcom->ticdup;
@@ -619,7 +619,8 @@ void D_CheckNetGame (void)
   for (i=0 ; i<doomcom->numnodes ; i++)
     nodeingame[i] = true;
       
-  lprintf(LO_INFO, "\nplayer %i of %i (%i nodes)\n", consoleplayer+1, doomcom->numplayers, doomcom->numnodes);
+  printf ("player %i of %i (%i nodes)\n",
+           consoleplayer+1, doomcom->numplayers, doomcom->numnodes);
 }
 
 
@@ -756,9 +757,8 @@ void TryRunTics (void)
     {
       M_Ticker ();
       return;
-    }
+    } 
   }
-
   
   // run the count * ticdup dics
   while (counts--)

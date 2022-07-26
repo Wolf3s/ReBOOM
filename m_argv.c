@@ -29,7 +29,6 @@
 #include <stdio.h>
 #include <string.h>
 #include "m_argv.h"
-#include "doomtype.h"
 
 int  myargc;
 const char** myargv;
@@ -48,7 +47,11 @@ int M_CheckParm(const char* check)
 {
 	for (signed i = 1; i < myargc; ++i) // fixed a signed/unsigned comparison mismatch, for args signed is fine
 	{
-		if (!strcasecmp(check, myargv[i]))
+#ifdef WINDOWS
+		if (NULL == _stricmp(check, myargv[i]))
+#else
+		if (NULL == strcasecmp(check, myargv[i]))
+#endif
 		{
 			return i;
 		}

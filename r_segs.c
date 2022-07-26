@@ -179,10 +179,10 @@ void R_RenderMaskedSegRange(drawseg_t *ds, int x1, int x2)
         // mapping to screen coordinates is totally out of range:
 
         {
-          int64_t t = ((int64_t) centeryfrac << FRACBITS) -
-            (int64_t) dc_texturemid * spryscale;
-          if (t + (int64_t) textureheight[texnum] * spryscale < 0 ||
-              t > (int64_t) MAX_SCREENHEIGHT << FRACBITS*2)
+          Long64 t = ((Long64) centeryfrac << FRACBITS) -
+            (Long64) dc_texturemid * spryscale;
+          if (t + (Long64) textureheight[texnum] * spryscale < 0 ||
+              t > (Long64) MAX_SCREENHEIGHT << FRACBITS*2)
             continue;        // skip if the texture is out of screen's range
           sprtopscreen = (long)(t >> FRACBITS);
         }
@@ -707,20 +707,16 @@ void R_StoreWallRange(const int start, const int stop)
 
   // render it
   if (markceiling)
-  {
     if (ceilingplane)   // killough 4/11/98: add NULL ptr checks
       ceilingplane = R_CheckPlane (ceilingplane, rw_x, rw_stopx-1);
     else
       markceiling = 0;
-  }
 
   if (markfloor)
-  {
     if (floorplane)     // killough 4/11/98: add NULL ptr checks
       floorplane = R_CheckPlane (floorplane, rw_x, rw_stopx-1);
     else
       markfloor = 0;
-  }
 
   R_RenderSegLoop();
 

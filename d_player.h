@@ -34,7 +34,7 @@
 // of other structs: items (internal inventory),
 // animation states (closely tied to the sprites
 // used to represent them, unfortunately).
-#include "d_items_struct.h"
+#include "d_items.h"
 #include "p_pspr.h"
 
 // In addition, the player is just a special
@@ -45,7 +45,6 @@
 // is buffered within the player data struct,
 // as commands per game tick.
 #include "d_ticcmd.h"
-#include "umapinfo.h"
 
 //
 // Player states.
@@ -199,13 +198,8 @@ typedef struct
     
   // previous and next levels, origin 0
   int         last;
-  int         next;
-
-  //UMAPINFO
-  int         nextep;	// for when MAPINFO progression crosses into another episode.
-  mapentry_t* lastmapinfo;
-  mapentry_t* nextmapinfo;
-
+  int         next;   
+    
   int         maxkills;
   int         maxitems;
   int         maxsecret;

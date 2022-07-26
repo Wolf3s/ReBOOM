@@ -49,7 +49,6 @@ int hud_nosecrets;    //jff 2/18/98 allows secrets line to be disabled in HUD
 int hud_distributed;  //jff 3/4/98 display HUD in different places on screen
 int hud_graph_keys = 1; //jff 3/7/98 display HUD keys as graphics
 int boom_hud_stats_always_on;    //Adam - always show hud stats
-int boom_show_level_name;
 
 //
 // Locally used constants, shortcuts.
@@ -63,7 +62,7 @@ int boom_show_level_name;
 #define HU_TITLEHEIGHT  1
 #define HU_TITLEX 0
 //jff 2/16/98 change 167 to ST_Y-1
-#define HU_TITLEY (ST_Y - 9 - SHORT(hu_font[0]->height))
+#define HU_TITLEY (ST_Y - 1 - SHORT(hu_font[0]->height)) 
 
 //jff 2/16/98 add coord text widget coordinates
 #define HU_COORDX (SCREENWIDTH - 13*SHORT(hu_font2['A'-HU_FONTSTART]->width))
@@ -71,10 +70,6 @@ int boom_show_level_name;
 #define HU_COORDX_Y (1 + 0*SHORT(hu_font['A'-HU_FONTSTART]->height))
 #define HU_COORDY_Y (2 + 1*SHORT(hu_font['A'-HU_FONTSTART]->height))
 #define HU_COORDZ_Y (3 + 2*SHORT(hu_font['A'-HU_FONTSTART]->height))
-// [FG] level stats and level time widgets
-#define HU_LSTATK_Y (2 + 1*SHORT(hu_font['A'-HU_FONTSTART]->height))
-#define HU_LSTATI_Y (3 + 2*SHORT(hu_font['A'-HU_FONTSTART]->height))
-#define HU_LSTATS_Y (4 + 3*SHORT(hu_font['A'-HU_FONTSTART]->height))
 
 //jff 2/16/98 add ammo, health, armor widgets, 2/22/98 less gap
 #define HU_GAPY 8
@@ -182,10 +177,6 @@ static hu_textline_t  w_keys;   //jff 2/16/98 new keys widget for hud
 static hu_textline_t  w_gkeys;  //jff 3/7/98 graphic keys widget for hud
 static hu_textline_t  w_monsec; //jff 2/16/98 new kill/secret widget for hud
 static hu_mtext_t     w_rtext;  //jff 2/26/98 text message refresh widget
-static hu_textline_t  w_lstatk; // [FG] level stats (kills) widget
-static hu_textline_t  w_lstati; // [FG] level stats (items) widget
-static hu_textline_t  w_lstats; // [FG] level stats (secrets) widget
-static hu_stext_t     w_secret; // [crispy] secret message widget
 
 static boolean    always_off = false;
 static char       chat_dest[MAXPLAYERS];
@@ -221,22 +212,16 @@ static char hud_weapstr[80];
 static char hud_keysstr[80];
 static char hud_gkeysstr[80]; //jff 3/7/98 add support for graphic key display
 static char hud_monsecstr[80];
-static char hud_lstatk[32]; // [FG] level stats (kills) widget
-static char hud_lstati[32]; // [FG] level stats (items) widget
-static char hud_lstats[32]; // [FG] level stats (secrets) widget
 
 //jff 2/16/98 declaration of color switch points
 extern int ammo_red;
 extern int ammo_yellow;
-extern int ammo_gray;
 extern int health_red;
 extern int health_yellow;
 extern int health_green;
-extern int health_gray;
 extern int armor_red;
 extern int armor_yellow;
 extern int armor_green;
-extern int armor_gray;
 
 //
 // Builtin map names.
@@ -321,14 +306,14 @@ void HU_Init(void)
         {
             sprintf(buffer, "DIG%.1d", j - 48);
             hu_font2[i] = (patch_t*)W_CacheLumpName(buffer, PU_STATIC);
-			sprintf(buffer, "STCFN%.3d", j);
+            sprintf(buffer, "STCFN%.3d", j);
             hu_font[i] = (patch_t*)W_CacheLumpName(buffer, PU_STATIC);
         }
         else if ('A' <= j && j <= 'Z')
         {
             sprintf(buffer, "DIG%c", j);
             hu_font2[i] = (patch_t*)W_CacheLumpName(buffer, PU_STATIC);
-			sprintf(buffer, "STCFN%.3d", j);
+            sprintf(buffer, "STCFN%.3d", j);
             hu_font[i] = (patch_t*)W_CacheLumpName(buffer, PU_STATIC);
         }
         else if (j == '-')
@@ -453,10 +438,10 @@ void HU_Start(void)
     // create the hud health widget
     // bargraph and number for amount of health, 
     // lower left or upper right of screen
-	HUlib_initTextLine(&w_health, hud_distributed ? HU_HEALTHX_D : HU_HEALTHX,
+    HUlib_initTextLine(&w_health, hud_distributed ? HU_HEALTHX_D : HU_HEALTHX,
         hud_distributed ? HU_HEALTHY_D : HU_HEALTHY, hu_font2,
         HU_FONTSTART, colrngs[CR_GREEN]);
-		
+
     // create the hud armor widget
     // bargraph and number for amount of armor, 
     // lower left or upper right of screen
@@ -507,32 +492,14 @@ void HU_Start(void)
 
     // initialize the automap's level title widget
 
-    if (gamemapinfo && gamemapinfo->levelname)
+    // Gibbon - taken from Woof - [FG] fixes crash when gamemap is not initialized
+    if (gamestate == GS_LEVEL && gamemap > 0)
     {
-        if (gamemapinfo->label)
-            s = gamemapinfo->label;
-        else
-            s = gamemapinfo->mapname;
-
-        if (s == gamemapinfo->mapname || strcmp(s, "-") != 0)
-        {
-            while (*s)
-                HUlib_addCharToTextLine(&w_title, *(s++));
-
-            HUlib_addCharToTextLine(&w_title, ':');
-            HUlib_addCharToTextLine(&w_title, ' ');
-        }
-        s = gamemapinfo->levelname;
+        s = gamemode != commercial ? HU_TITLE : gamemission == pack_tnt ?
+            HU_TITLET : gamemission == pack_plut ? HU_TITLEP : HU_TITLE2;
     }
     else
-        // [FG] fix crash when gamemap is not initialized
-        if (gamestate == GS_LEVEL && gamemap > 0)
-        {
-            s = gamemode != commercial ? HU_TITLE : gamemission == pack_tnt ?
-                HU_TITLET : gamemission == pack_plut ? HU_TITLEP : HU_TITLE2;
-        }
-        else
-            s = "";
+        s = "";
 
     while (*s && *s != '\n') // [FG] cap at line break
         HUlib_addCharToTextLine(&w_title, *s++);
@@ -561,19 +528,6 @@ void HU_Start(void)
     s = hud_coordstrz;
     while (*s)
         HUlib_addCharToTextLine(&w_coordz, *s++);
-    
-    sprintf(hud_lstatk, "K: %d/%d", 0, 0);
-    s = hud_lstatk;
-    while (*s)
-      HUlib_addCharToTextLine(&w_lstatk, *s++);
-    sprintf(hud_lstati, "I: %d/%d", 0, 0);
-    s = hud_lstati;
-    while (*s)
-      HUlib_addCharToTextLine(&w_lstati, *s++);
-    sprintf(hud_lstats, "S: %d/%d", 0, 0);
-    s = hud_lstats;
-    while (*s)
-      HUlib_addCharToTextLine(&w_lstats, *s++);
 
     //jff 2/16/98 initialize ammo widget
     sprintf(hud_ammostr, "AMM ");
@@ -676,12 +630,6 @@ void HU_MoveHud(void)
     ohud_distributed = hud_distributed;
 }
 
-static void HU_ResetHud(void)
- {
-    w_monsec.x = HU_TITLEX;
-    w_monsec.y = ST_Y - HU_GAPY;
- }
-
 //
 // HU_Drawer()
 //
@@ -700,42 +648,23 @@ void HU_Drawer(void)
 
     plr = &players[displayplayer];         // killough 3/7/98
 
-    if (boom_hud_stats_always_on && viewheight != SCREENHEIGHT)
+    if (!hud_nosecrets && boom_hud_stats_always_on && viewheight != SCREENHEIGHT)
     {
-        HU_ResetHud();
-        hud_nosecrets = 0;
-        
-        if (boom_show_level_name)
-        {
-            // map title
-            HUlib_drawTextLine(&w_title, false);
-        }
-        
+        // map title
+        HUlib_drawTextLine(&w_title, false);
+
         // clear the internal widget text buffer
         HUlib_clearTextLine(&w_monsec);
         //jff 3/26/98 use ESC not '\' for paths
         // build the init string with fixed colors
-        if (!accessibility_colours)
-        {
-        	sprintf
-        	(
-            		hud_monsecstr,
-            		"STS \x1b\x36K \x1b\x35%d/%d \x1b\x36I \x1b\x35%d/%d \x1b\x36S \x1b\x35%d/%d",
-            		plr->killcount, totalkills,
-            		plr->itemcount, totalitems,
-            		plr->secretcount, totalsecret
-        	);
-        } else {
-                sprintf
-        	(
-            		hud_monsecstr,
-            		"STS K %d/%d I %d/%d S %d/%d",
-            		plr->killcount, totalkills,
-            		plr->itemcount, totalitems,
-            		plr->secretcount, totalsecret
-        	);
-        }
-        
+        sprintf
+        (
+            hud_monsecstr,
+            "STS: \x1b\x36K: \x1b\x33%d/%d \x1b\x37I: \x1b\x33%d/%d \x1b\x35S: \x1b\x33%d/%d",
+            plr->killcount, totalkills,
+            plr->itemcount, totalitems,
+            plr->secretcount, totalsecret
+        );
         // transfer the init string to the widget
         s = hud_monsecstr;
         while (*s)
@@ -790,9 +719,9 @@ void HU_Drawer(void)
             hud_displayed &&                 // hud on from fullscreen key
             viewheight == SCREENHEIGHT &&      // fullscreen mode is active
             !automapactive                   // automap is not active
+            && !boom_hud_stats_always_on     // Adam - new Boom hud stats are not always visible
             )
     {
-        boom_hud_stats_always_on = 0;
         doit = !(gametic & 1); //jff 3/4/98 speed update up for slow systems
         if (doit)            //jff 8/7/98 update every time, avoid lag in update
         {
@@ -842,23 +771,12 @@ void HU_Drawer(void)
                 strcat(hud_ammostr, ammostr);
 
                 // set the display color from the percentage of total ammo held
-                if (!accessibility_colours)
-                {
-                	if (ammopct < ammo_red)
-                    	w_ammo.cr = colrngs[CR_RED];
-                	else if (ammopct < ammo_yellow)
-                    	w_ammo.cr = colrngs[CR_GOLD];
-                	else
-                    	w_ammo.cr = colrngs[CR_GREEN];
-                } else {
-                        if (ammopct < ammo_red)
-                    	w_ammo.cr = colrngs[CR_GRAY];
-                	else if (ammopct < ammo_yellow)
-                    	w_ammo.cr = colrngs[CR_GRAY];
-                	else
-                    	w_ammo.cr = colrngs[CR_GRAY];
-                }
-                
+                if (ammopct < ammo_red)
+                    w_ammo.cr = colrngs[CR_RED];
+                else if (ammopct < ammo_yellow)
+                    w_ammo.cr = colrngs[CR_GOLD];
+                else
+                    w_ammo.cr = colrngs[CR_GREEN];
             }
             // transfer the init string to the widget
             s = hud_ammostr;
@@ -903,8 +821,7 @@ void HU_Drawer(void)
                 hud_healthstr[i++] = 127;
             hud_healthstr[i] = '\0';
             strcat(hud_healthstr, healthstr);
-if (!sts_always_gray)
-{
+
             // set the display color from the amount of health posessed
             if (health < health_red)
                 w_health.cr = colrngs[CR_RED];
@@ -914,16 +831,7 @@ if (!sts_always_gray)
                 w_health.cr = colrngs[CR_GREEN];
             else
                 w_health.cr = colrngs[CR_BLUE];
-} else {
-            if (health < health_gray)
-                w_health.cr = colrngs[CR_GRAY];
-            else if (health < health_gray)
-                w_health.cr = colrngs[CR_GRAY];
-            else if (health <= health_gray)
-                w_health.cr = colrngs[CR_GRAY];
-            else
-                w_health.cr = colrngs[CR_GRAY];
-}
+
             // transfer the init string to the widget
             s = hud_healthstr;
             while (*s)
@@ -966,8 +874,7 @@ if (!sts_always_gray)
                 hud_armorstr[i++] = 127;
             hud_armorstr[i] = '\0';
             strcat(hud_armorstr, armorstr);
-if (!sts_always_gray)
-{
+
             // set the display color from the amount of armor posessed
             if (armor < armor_red)
                 w_armor.cr = colrngs[CR_RED];
@@ -977,16 +884,7 @@ if (!sts_always_gray)
                 w_armor.cr = colrngs[CR_GREEN];
             else
                 w_armor.cr = colrngs[CR_BLUE];
-} else {
-            if (armor < armor_gray)
-                w_armor.cr = colrngs[CR_GRAY];
-            else if (armor < armor_gray)
-                w_armor.cr = colrngs[CR_GRAY];
-            else if (armor <= armor_gray)
-                w_armor.cr = colrngs[CR_GRAY];
-            else
-                w_armor.cr = colrngs[CR_GRAY];
-}
+
             // transfer the init string to the widget
             s = hud_armorstr;
             while (*s)
@@ -1262,35 +1160,20 @@ if (!sts_always_gray)
         // display the hud kills/items/secret display if optioned
         if (!hud_nosecrets && !boom_hud_stats_always_on)
         {
-            hud_nosecrets = 0;
-            boom_hud_stats_always_on = 0;
-            
             if (hud_active > 1 && doit)
             {
                 // clear the internal widget text buffer
                 HUlib_clearTextLine(&w_monsec);
                 //jff 3/26/98 use ESC not '\' for paths
                 // build the init string with fixed colors
-                if (!accessibility_colours)
-                {
-                	sprintf
-                	(
-                    		hud_monsecstr,
-                    		"STS \x1b\x36K \x1b\x33%d/%d \x1b\x37I \x1b\x33%d/%d \x1b\x35S \x1b\x33%d/%d",
-                    		plr->killcount, totalkills,
-                    		plr->itemcount, totalitems,
-                    		plr->secretcount, totalsecret
-                	);
-                } else {
-                        sprintf
-                	(
-                    		hud_monsecstr,
-                    		"STS K %d/%d I %d/%d S %d/%d",
-                    		plr->killcount, totalkills,
-                    		plr->itemcount, totalitems,
-                    		plr->secretcount, totalsecret
-                	);
-                }
+                sprintf
+                (
+                    hud_monsecstr,
+                    "STS \x1b\x36K \x1b\x33%d/%d \x1b\x37I \x1b\x33%d/%d \x1b\x35S \x1b\x33%d/%d",
+                    plr->killcount, totalkills,
+                    plr->itemcount, totalitems,
+                    plr->secretcount, totalsecret
+                );
                 // transfer the init string to the widget
                 s = hud_monsecstr;
                 while (*s)

@@ -32,14 +32,10 @@
 
 #include "d_event.h"
 
-#if defined REMOVE_LIMITS
-#define MAXWADFILES 2048        /* not large enough Lee :P */
-#else
 #define MAXWADFILES 256        /* make it ridiculously large -- killough */
-#endif
+extern char *wadfiles[MAXWADFILES];
+extern int wadfilesource[MAXWADFILES];  // Ty 08/29/98 - added source of lumps info
 
-extern char *wad_files[MAXWADFILES];
-extern int wad_file_source[MAXWADFILES];  // Ty 08/29/98 - added source of lumps info
 
 // jff make startskill globally visible
 extern skill_t startskill;
@@ -59,8 +55,8 @@ extern boolean clfastparm; // checkparm of -fast
 
 extern boolean nosfxparm;
 extern boolean nomusicparm;
-extern boolean umapinfo_loaded;
 
+extern int fullscreen;
 // Called by IO functions when input is detected.
 void D_PostEvent(event_t* ev);
 

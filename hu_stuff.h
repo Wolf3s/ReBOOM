@@ -81,5 +81,4 @@ extern int hud_active;      // hud mode 0=off, 1=small, 2=full
 extern int hud_nosecrets;   // status does not list secrets/items/kills
 
 extern int boom_hud_stats_always_on;    //Adam - always show hud stats
-extern int boom_show_level_name;        //Adam - disable the showing of the level name
 #endif

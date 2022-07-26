@@ -42,6 +42,9 @@
 #define NORM_SEP 128
 #define S_STEREO_SWING (96<<FRACBITS)
 
+// [FG] precache all sound SFX
+extern boolean precache_sounds;
+
 // Init at program start...
 void I_InitSound(void);
 
@@ -91,8 +94,8 @@ void I_ShutdownMusic(void);
 void I_SetMusicVolume(int volume);
 
 // PAUSE game handling.
-void I_PauseSong(void* handle);
-void I_ResumeSong(void* handle);
+void I_PauseSong(int handle);
+void I_ResumeSong(int handle);
 
 // Registers a song handle to song data.
 int I_RegisterSong(void *data, int size);
@@ -101,7 +104,7 @@ int I_RegisterSong(void *data, int size);
 //  plays a song, and when the song is done,
 //  starts playing it again in an endless loop.
 // Horrible thing to do, considering.
-void I_PlaySong(void* handle, int looping);
+void I_PlaySong(int handle, int looping);
 
 // Stops a song over 3 seconds.
 void I_StopSong(int handle);

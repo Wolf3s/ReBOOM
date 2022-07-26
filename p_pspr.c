@@ -442,11 +442,8 @@ void A_Raise(player_t *player, pspdef_t *psp)
 
 static void A_FireSomething(player_t* player,int adder)
 {
-if(!accessibility_effects)
-{
   P_SetPsprite(player, ps_flash,
                weaponinfo[player->readyweapon].flashstate+adder);
-}
 
   // killough 3/27/98: prevent recoil in no-clipping mode
   if (!(player->mo->flags & MF_NOCLIP))
@@ -674,8 +671,6 @@ void A_FireShotgun2(player_t *player, pspdef_t *psp)
   for (i=0; i<20; i++)
     {
       int damage = 5*(P_Random(pr_shotgun)%3+1);
-	  if (player->powers[pw_strength] && hyper_berserk_shotgun)
-		  damage *= 5;
       angle_t angle = player->mo->angle;
       // killough 5/5/98: remove dependence on order of evaluation:
       int t = P_Random(pr_shotgun);
@@ -797,9 +792,7 @@ void P_MovePsprites(player_t *player)
   for (i=0; i<NUMPSPRITES; i++, psp++)
     if (psp->state && psp->tics != -1 && !--psp->tics)
       P_SetPsprite(player, i, psp->state->nextstate);
-if (!accessibility_effects)
-{
+
   player->psprites[ps_flash].sx = player->psprites[ps_weapon].sx;
   player->psprites[ps_flash].sy = player->psprites[ps_weapon].sy;
-}
 }

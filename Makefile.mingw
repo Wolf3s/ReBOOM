@@ -2,14 +2,11 @@ SRC = $(wildcard *.c)
 OBJ = $(SRC:.c=.o)
 DEP = $(OBJ:.o=.d)
 CC = gcc
-CFLAGS = -std=c11 -pedantic -Wall -DWINDOWS
-LDFLAGS = -lmingw32 -lgdi32 -lkernel32 -luser32 -mwindows -lSDL2main -lSDL2 -lSDL2_mixer -lSDL2_net -lSDL2_image
+CFLAGS = -std=c2x -pedantic -Wall -DWINDOWS -g -DINSTRUMENTED -DRANGECHECK
+LDFLAGS = -lmingw32 -lgdi32 -lkernel32 -luser32 -mwindows -lSDL2main -lSDL2 -lSDL2_mixer -lSDL2_net
 
 reboom: $(OBJ)
-	$(CC) -o $@ $^ $(LDFLAGS) win32/reboom.res
-
-icon:
-	windres win32/reboom.rc -O coff -o win32/reboom.res
+	$(CC) -o $@ $^ $(LDFLAGS)
 
 -include $(DEP)
 

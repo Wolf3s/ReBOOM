@@ -78,7 +78,7 @@ int main(int argc, char **argv)
      left in an unstable state.
   */
 
-   atexit(I_Quit);
+   atexit(D_Endoom);
    
    // 2/2/98 Stan
    // Must call this here.  It's required by both netgames and i_video.c.

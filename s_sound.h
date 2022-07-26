@@ -3,6 +3,7 @@
 //
 // $Id: s_sound.h,v 1.4 1998/05/03 22:57:36 killough Exp $
 //
+//  BOOM, a modified and improved DOOM engine
 //  Copyright (C) 1999 by
 //  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
 //
@@ -29,8 +30,6 @@
 #ifndef __S_SOUND__
 #define __S_SOUND__
 
-#include "p_mobj.h"
-
 //
 // Initializes sound stuff, including volume
 // Sets channels, SFX and music volume,
@@ -49,22 +48,16 @@ void S_Start(void);
 // Start sound for thing at <origin>
 //  using <sound_id> from sounds.h
 //
-void S_StartSound(const mobj_t* origin, int sound_id);
+void S_StartSound(const mobj_t *origin, int sound_id);
 
 // Stop sound for thing at <origin>
-void S_StopSound(const mobj_t* origin);
-
-// [FG] play sounds in full length
-extern boolean full_sounds;
-// [FG] removed map objects may finish their sounds
-void S_UnlinkSound(mobj_t* origin);
+void S_StopSound(const mobj_t *origin);
 
 // Start music using <music_id> from sounds.h
 void S_StartMusic(int music_id);
 
 // Start music using <music_id> from sounds.h, and set whether looping
 void S_ChangeMusic(int music_id, int looping);
-void S_ChangeMusInfoMusic(int lumpnum, int looping);
 
 // Stops the music fer sure.
 void S_StopMusic(void);
@@ -76,7 +69,7 @@ void S_ResumeSound(void);
 //
 // Updates music & sounds
 //
-void S_UpdateSounds(const mobj_t* listener);
+void S_UpdateSounds(const mobj_t *listener);
 void S_SetMusicVolume(int volume);
 void S_SetSfxVolume(int volume);
 

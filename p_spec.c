@@ -983,12 +983,12 @@ boolean P_WasSecret(sector_t *sec)
 //
 // killough 11/98: change linenum parameter to a line_t pointer
 
-void P_CrossSpecialLine(line_t *line, int side, mobj_t *thing, boolean bossaction)
+void P_CrossSpecialLine(line_t *line, int side, mobj_t *thing)
 {
   int ok;
 
   //  Things that should never trigger lines
-  if (!thing->player && !bossaction)
+  if (!thing->player)
     switch(thing->type)    // Things that should NOT trigger specials...
       {
       case MT_ROCKET:
@@ -1013,7 +1013,7 @@ void P_CrossSpecialLine(line_t *line, int side, mobj_t *thing, boolean bossactio
       // check each range of generalized linedefs
       if ((unsigned)line->special >= GenFloorBase)
         {
-          if (!thing->player && !bossaction)
+          if (!thing->player)
             if ((line->special & FloorChange) || !(line->special & FloorModel))
               return;     // FloorModel is "Allow Monsters" if FloorChange is 0
           if (!line->tag) //jff 2/27/98 all walk generalized types require tag
@@ -1023,7 +1023,7 @@ void P_CrossSpecialLine(line_t *line, int side, mobj_t *thing, boolean bossactio
       else
         if ((unsigned)line->special >= GenCeilingBase)
           {
-            if (!thing->player && !bossaction)
+            if (!thing->player)
               if ((line->special & CeilingChange) || !(line->special & CeilingModel))
                 return;     // CeilingModel is "Allow Monsters" if CeilingChange is 0
             if (!line->tag) //jff 2/27/98 all walk generalized types require tag
@@ -1033,7 +1033,7 @@ void P_CrossSpecialLine(line_t *line, int side, mobj_t *thing, boolean bossactio
         else
           if ((unsigned)line->special >= GenDoorBase)
             {
-              if (!thing->player && !bossaction)
+              if (!thing->player)
                 {
                   if (!(line->special & DoorMonster))
                     return;                    // monsters disallowed from this door
@@ -1047,7 +1047,7 @@ void P_CrossSpecialLine(line_t *line, int side, mobj_t *thing, boolean bossactio
           else
             if ((unsigned)line->special >= GenLockedBase)
               {
-                if (!thing->player || bossaction)
+                if (!thing->player)
                   return;                     // monsters disallowed from unlocking doors
                 if (((line->special&TriggerType)==WalkOnce) || ((line->special&TriggerType)==WalkMany))
                   { //jff 4/1/98 check for being a walk type before reporting door type
@@ -1061,7 +1061,7 @@ void P_CrossSpecialLine(line_t *line, int side, mobj_t *thing, boolean bossactio
             else
               if ((unsigned)line->special >= GenLiftBase)
                 {
-                  if (!thing->player && !bossaction)
+                  if (!thing->player)
                     if (!(line->special & LiftMonster))
                       return; // monsters disallowed
                   if (!line->tag) //jff 2/27/98 all walk generalized types require tag
@@ -1071,7 +1071,7 @@ void P_CrossSpecialLine(line_t *line, int side, mobj_t *thing, boolean bossactio
               else
                 if ((unsigned)line->special >= GenStairsBase)
                   {
-                    if (!thing->player && !bossaction)
+                    if (!thing->player)
                       if (!(line->special & StairMonster))
                         return; // monsters disallowed
                     if (!line->tag) //jff 2/27/98 all walk generalized types require tag
@@ -1094,7 +1094,7 @@ void P_CrossSpecialLine(line_t *line, int side, mobj_t *thing, boolean bossactio
           }
     }
 
-  if (!thing->player || bossaction)
+  if (!thing->player)
     {
       ok = 0;
       switch(line->special)
@@ -1103,6 +1103,9 @@ void P_CrossSpecialLine(line_t *line, int side, mobj_t *thing, boolean bossactio
         case 97:      // teleport retrigger
         case 125:     // teleport monsteronly trigger
         case 126:     // teleport monsteronly retrigger
+        case 4:       // raise door
+        case 10:      // plat down-wait-up-stay trigger
+        case 88:      // plat down-wait-up-stay retrigger
           //jff 3/5/98 add ability of monsters etc. to use teleporters
         case 208:     //silent thing teleporters
         case 207:
@@ -1116,11 +1119,6 @@ void P_CrossSpecialLine(line_t *line, int side, mobj_t *thing, boolean bossactio
         case 267:
         case 268:
         case 269:
-            if (bossaction)
-                return;
-        case 4:       // raise door
-        case 10:      // plat down-wait-up-stay trigger
-        case 88:      // plat down-wait-up-stay retrigger
           ok = 1;
           break;
         }
@@ -2065,8 +2063,6 @@ void P_PlayerInSpecialSector (player_t *player)
       if (sector->special==9)     // killough 12/98
 	{
           // Tally player in secret sector, clear secret special
-          player->message = FOUNDASECRET;
-          S_StartSound(player->mo,sfx_radio);
           player->secretcount++;
           sector->special = 0;
 	}
@@ -2146,8 +2142,6 @@ void P_PlayerInSpecialSector (player_t *player)
 
       if (sector->special&SECRET_MASK)
         {
-          player->message = FOUNDASECRET;
-          S_StartSound(player,sfx_radio);
           player->secretcount++;
           sector->special &= ~SECRET_MASK;
           if (sector->special<32) // if all extended bits clear,
@@ -2568,7 +2562,7 @@ static void Add_Scroller(int type, fixed_t dx, fixed_t dy,
 // killough 10/98:
 // fix scrolling aliasing problems, caused by long linedefs causing overflowing
 
-static void Add_WallScroller(int64_t dx, int64_t dy, const line_t *l,
+static void Add_WallScroller(Long64 dx, Long64 dy, const line_t *l,
                              int control, int accel)
 {
   fixed_t x = abs(l->dx), y = abs(l->dy), d;
@@ -2893,7 +2887,7 @@ boolean PIT_PushThing(mobj_t* thing)
         {
           int x = (thing->x-sx) >> FRACBITS;
           int y = (thing->y-sy) >> FRACBITS;
-          speed = (fixed_t)(((int64_t) tmpusher->magnitude << 23) / (x*x+y*y+1));
+          speed = (fixed_t)(((Long64) tmpusher->magnitude << 23) / (x*x+y*y+1));
         }
 
       // If speed <= 0, you're outside the effective radius. You also have

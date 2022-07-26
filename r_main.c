@@ -38,7 +38,6 @@
 #include "m_bbox.h"
 #include "r_sky.h"
 #include "v_video.h"
-#include "lprintf.h"
 
 // Fineangles in the SCREENWIDTH wide window.
 #define FIELDOFVIEW 2048    
@@ -342,19 +341,10 @@ void R_ExecuteSetViewSize (void)
       scaledviewwidth = SCREENWIDTH;
       viewheight = SCREENHEIGHT;
     }
-// proff 09/24/98: Added for high-res
-  else if (setblocks == 10)
-    {
-      scaledviewwidth = SCREENWIDTH;
-      viewheight = SCREENHEIGHT-32;
-    }
   else
     {
-// proff 08/17/98: Changed for high-res
-      scaledviewwidth = setblocks*SCREENWIDTH/10;
-      viewheight = (setblocks*(SCREENHEIGHT-32)/10) & ~7;
-//      scaledviewwidth = setblocks*32;
-//      viewheight = (setblocks*168/10) & ~7;
+      scaledviewwidth = setblocks*32;
+      viewheight = (setblocks*168/10) & ~7;
     }
     
   viewwidth = scaledviewwidth;
@@ -423,16 +413,16 @@ extern int screenblocks;
 void R_Init (void)
 {
   R_InitData();
-  lprintf(LO_INFO, "\nR_InitData");
+  puts("\nR_InitData");
   R_SetViewSize(screenblocks);
   R_InitPlanes();
-  lprintf(LO_INFO, "\nR_InitPlanes");
+  puts("R_InitPlanes");
   R_InitLightTables();
-  lprintf(LO_INFO, "\nR_InitLightTables");
+  puts("R_InitLightTables");
   R_InitSkyMap();
-  lprintf(LO_INFO, "\nR_InitSkyMap");
+  puts("R_InitSkyMap");
   R_InitTranslationTables();
-  lprintf(LO_INFO, "\nR_InitTranslationsTables");
+  puts("R_InitTranslationsTables");
 }
 
 //

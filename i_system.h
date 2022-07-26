@@ -36,8 +36,6 @@
 
 #include "d_ticcmd.h"
 
-extern int endboomlump;
-
 // Called by DoomMain.
 void I_Init(void);
 
@@ -48,7 +46,6 @@ extern int (*I_GetTime)();           // killough
 int I_GetTime_RealTime();     // killough
 int I_GetTime_Adaptive(void); // killough 4/10/98
 extern int GetTime_Scale;
-void I_EndDoom(void);         // killough 2/22/98: endgame screen
 
 //
 // Called by D_DoomLoop,
@@ -94,6 +91,8 @@ void I_Quit (void);
 void I_Error(const char *error, ...) __attribute__((format(printf,1,2)));
 
 extern int mousepresent;                // killough
+
+void I_EndDoom(byte *data);
 
 // killough 3/21/98: keyboard queue
 

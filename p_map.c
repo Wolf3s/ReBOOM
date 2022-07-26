@@ -674,7 +674,7 @@ boolean P_TryMove(mobj_t *thing, fixed_t x, fixed_t y, boolean dropoff)
 	  int oldside;
 	  if ((oldside = P_PointOnLineSide(oldx, oldy, spechit[numspechit])) !=
 	      P_PointOnLineSide(thing->x, thing->y, spechit[numspechit]))
-          P_CrossSpecialLine(spechit[numspechit], oldside, thing, false);
+	    P_CrossSpecialLine(spechit[numspechit], oldside, thing);
 	}
 
   return true;
@@ -1283,7 +1283,7 @@ static boolean PTR_UseTraverse(intercept_t *in)
 {
   return in->d.line->special ?
     P_UseSpecialLine(usething, in->d.line, 
-		     P_PointOnLineSide(usething->x,usething->y,in->d.line)==1, false),
+		     P_PointOnLineSide(usething->x,usething->y,in->d.line)==1),
 
     //WAS can't use for than one special line in a row
     //jff 3/21/98 NOW multiple use allowed with enabling line flag

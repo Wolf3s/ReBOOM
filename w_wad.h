@@ -34,6 +34,11 @@
 // TYPES
 //
 
+// haleyjd 01/21/05: these structs must be packed
+#ifdef WINDOWS
+#pragma pack(push, 1)
+#endif
+
 typedef struct
 {
   char identification[4];                  // Should be "IWAD" or "PWAD".
@@ -47,6 +52,10 @@ typedef struct
   int  size;
   char name[8];
 } filelump_t;
+
+#ifdef WINDOWS
+#pragma pack(pop)
+#endif
 
 //
 // WADFILE I/O related stuff.
@@ -73,7 +82,6 @@ typedef struct
 
   int handle;
   int position;
-  const char* wad_file;
   // Ty 08/29/98 - add source field to identify where this lump came from
   enum {
     source_iwad=0, // iwad file load 
@@ -105,14 +113,12 @@ void*   W_CacheLumpNum (int lump, int tag);
 
 #define W_CacheLumpName(name,tag) W_CacheLumpNum (W_GetNumForName(name),(tag))
 
-
+void NormalizeSlashes(char *);                    // killough 11/98
 char *AddDefaultExtension(char *, const char *);  // killough 1/18/98
 void ExtractFileBase(const char *, char *);       // killough
 unsigned W_LumpNameHash(const char *s);           // killough 1/31/98
 
 // Function to write all predefined lumps to a PWAD if requested
 extern void WritePredefinedLumpWad(const char *filename); // jff 5/6/98
-const char* W_WadNameForLump(const int lump);
-boolean W_IsIWADLump(const int lump);
 
 #endif

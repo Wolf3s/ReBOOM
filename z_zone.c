@@ -43,12 +43,15 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "z_zone_structs.h"
 #include "z_zone.h"
 #include "doomstat.h"
 #include "m_argv.h"
 #include "v_video.h"
 #include "g_game.h"
+
+#ifdef WINDOWS
+#include "win_fopen.h"
+#endif
 
 // Tunables
 
@@ -74,6 +77,24 @@
 #define ZONE_HISTORY 4
 
 // End Tunables
+
+typedef struct memblock {
+
+#ifdef ZONEIDCHECK
+  unsigned id;
+#endif
+
+  struct memblock *next,*prev;
+  size_t size;
+  void **user;
+  unsigned char tag;
+
+#ifdef INSTRUMENTED
+  const char *file;
+  int line;
+#endif
+
+} memblock_t;
 
 /* size of block header
  * cph - base on sizeof(memblock_t), which can be larger than CHUNK_SIZE on

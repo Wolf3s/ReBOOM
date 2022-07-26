@@ -29,10 +29,8 @@
 
 #ifdef UNIX
 #include "SDL2/SDL.h"
-#include "SDL2/SDL_image.h"
 #else
 #include "SDL.h" // haleyjd
-#include "SDL_image.h"
 #endif
 
 #include "z_zone.h"  /* memory allocation wrappers -- killough */
@@ -83,7 +81,6 @@ void I_JoystickEvents(void)
 
    event_t event;
    int joy_b1, joy_b2, joy_b3, joy_b4;
-   int joy_b5, joy_b6, joy_b7, joy_b8;
    Sint16 joy_x, joy_y;
    
    if(!joystickpresent || !usejoystick || !sdlJoystick)
@@ -102,14 +99,6 @@ void I_JoystickEvents(void)
       event.data1 |= 4;
    if((joy_b4 = SDL_JoystickGetButton(sdlJoystick, 3)))
       event.data1 |= 8;
-   if((joy_b5 = SDL_JoystickGetButton(sdlJoystick, 4)))
-      event.data1 |= 16;
-   if((joy_b6 = SDL_JoystickGetButton(sdlJoystick, 5)))
-      event.data1 |= 32;
-   if((joy_b7 = SDL_JoystickGetButton(sdlJoystick, 6)))
-      event.data1 |= 64;
-   if((joy_b8 = SDL_JoystickGetButton(sdlJoystick, 7)))
-      event.data1 |= 128;
    
    // Read the x,y settings. Convert to -1 or 0 or +1.
    joy_x = SDL_JoystickGetAxis(sdlJoystick, 0);
@@ -167,7 +156,7 @@ int grabmouse = 1;
 // when the screen isnt visible, don't render the screen
 boolean screenvisible;
 static boolean window_focused;
-boolean fullscreen;
+int fullscreen;
 int page_flip;     // killough 8/15/98: enables page flipping
 static int in_page_flip;
 
@@ -184,7 +173,7 @@ static boolean MouseShouldBeGrabbed(void)
    
    // always grab the mouse when full screen (dont want to 
    // see the mouse pointer)
-   if(fullscreen)
+   if(fullscreen == 1)
       return true;
    
    // if we specify not to grab the mouse, never grab
@@ -254,8 +243,6 @@ static void UpdateGrab(void)
 
 extern void I_InitKeyboard();      // i_system.c
 
-static const int scancode_translate_table[] = SCANCODE_TO_KEYS_ARRAY;
-
 /////////////////////////////////////////////////////////////////////////////////
 // Keyboard handling
 
@@ -265,34 +252,68 @@ static const int scancode_translate_table[] = SCANCODE_TO_KEYS_ARRAY;
 
 static int I_TranslateKey(SDL_Keysym* key)
 {
-   int scancode = key->scancode;
+  int rc = 0;
 
-   switch (scancode)
-    {
-        case SDL_SCANCODE_LCTRL:
-        case SDL_SCANCODE_RCTRL:
-            return KEYD_RCTRL;
+  switch (key->sym) {
+  case SDLK_LEFT: rc = KEYD_LEFTARROW;  break;
+  case SDLK_RIGHT:  rc = KEYD_RIGHTARROW; break;
+  case SDLK_DOWN: rc = KEYD_DOWNARROW;  break;
+  case SDLK_UP:   rc = KEYD_UPARROW;  break;
+  case SDLK_ESCAPE: rc = KEYD_ESCAPE; break;
+  case SDLK_RETURN: rc = KEYD_ENTER;  break;
+  case SDLK_TAB:  rc = KEYD_TAB;    break;
+  case SDLK_F1:   rc = KEYD_F1;   break;
+  case SDLK_F2:   rc = KEYD_F2;   break;
+  case SDLK_F3:   rc = KEYD_F3;   break;
+  case SDLK_F4:   rc = KEYD_F4;   break;
+  case SDLK_F5:   rc = KEYD_F5;   break;
+  case SDLK_F6:   rc = KEYD_F6;   break;
+  case SDLK_F7:   rc = KEYD_F7;   break;
+  case SDLK_F8:   rc = KEYD_F8;   break;
+  case SDLK_F9:   rc = KEYD_F9;   break;
+  case SDLK_F10:  rc = KEYD_F10;    break;
+  case SDLK_F11:  rc = KEYD_F11;    break;
+  case SDLK_F12:  rc = KEYD_F12;    break;
+  case SDLK_BACKSPACE:  rc = KEYD_BACKSPACE;  break;
+  case SDLK_DELETE: rc = KEYD_DEL;  break;
+  case SDLK_INSERT: rc = KEYD_INSERT; break;
+  case SDLK_PAGEUP: rc = KEYD_PAGEUP; break;
+  case SDLK_PAGEDOWN: rc = KEYD_PAGEDOWN; break;
+  case SDLK_HOME: rc = KEYD_HOME; break;
+  case SDLK_END:  rc = KEYD_END;  break;
+  case SDLK_PAUSE:  rc = KEYD_PAUSE;  break;
+  case SDLK_EQUALS: rc = KEYD_EQUALS; break;
+  case SDLK_MINUS:  rc = KEYD_MINUS;  break;
+  case SDLK_KP_0:  rc = KEYD_KEYPAD0;  break;
+  case SDLK_KP_1:  rc = KEYD_KEYPAD1;  break;
+  case SDLK_KP_2:  rc = KEYD_KEYPAD2;  break;
+  case SDLK_KP_3:  rc = KEYD_KEYPAD3;  break;
+  case SDLK_KP_4:  rc = KEYD_KEYPAD4;  break;
+  case SDLK_KP_5:  rc = KEYD_KEYPAD5;  break;
+  case SDLK_KP_6:  rc = KEYD_KEYPAD6;  break;
+  case SDLK_KP_7:  rc = KEYD_KEYPAD7;  break;
+  case SDLK_KP_8:  rc = KEYD_KEYPAD8;  break;
+  case SDLK_KP_9:  rc = KEYD_KEYPAD9;  break;
+  case SDLK_KP_PLUS:  rc = KEYD_KEYPADPLUS; break;
+  case SDLK_KP_MINUS: rc = KEYD_KEYPADMINUS;  break;
+  case SDLK_KP_DIVIDE:  rc = KEYD_KEYPADDIVIDE; break;
+  case SDLK_KP_MULTIPLY: rc = KEYD_KEYPADMULTIPLY; break;
+  case SDLK_KP_ENTER: rc = KEYD_KEYPADENTER;  break;
+  case SDLK_KP_PERIOD:  rc = KEYD_KEYPADPERIOD; break;
+  case SDLK_LSHIFT:
+  case SDLK_RSHIFT: rc = KEYD_RSHIFT; break;
+  case SDLK_LCTRL:
+  case SDLK_RCTRL:  rc = KEYD_RCTRL;  break;
+  case SDLK_LALT:
+  case SDLK_LGUI:
+  case SDLK_RALT:
+  case SDLK_RGUI:  rc = KEYD_RALT;   break;
+  case SDLK_CAPSLOCK: rc = KEYD_CAPSLOCK; break;
+  case SDLK_PRINTSCREEN: rc = KEYD_PRINTSC; break;
+  default:    rc = key->sym;    break;
+  }
 
-        case SDL_SCANCODE_LSHIFT:
-        case SDL_SCANCODE_RSHIFT:
-            return KEYD_RSHIFT;
-
-        case SDL_SCANCODE_LALT:
-            return KEYD_LALT;
-
-        case SDL_SCANCODE_RALT:
-            return KEYD_RALT;
-
-        default:
-            if (scancode >= 0 && scancode < arrlen(scancode_translate_table))
-            {
-                return scancode_translate_table[scancode];
-            }
-            else
-            {
-                return 0;
-            }
-    }
+  return rc;
 
 }
 
@@ -309,159 +330,6 @@ int I_DoomCode2ScanCode (int a)
 {
    // haleyjd
    return a;
-}
-
-// Bit mask of mouse button state.
-static unsigned int mouse_button_state = 0;
-
-static void UpdateMouseButtonState(unsigned int button, boolean on)
-{
-    static event_t event;
-
-    if (button < SDL_BUTTON_LEFT || button > 5)
-    {
-        return;
-    }
-
-    // Note: button "0" is left, button "1" is right,
-    // button "2" is middle for Doom.  This is different
-    // to how SDL sees things.
-
-    switch (button)
-    {
-        case SDL_BUTTON_LEFT:
-            button = 0;
-            break;
-
-        case SDL_BUTTON_RIGHT:
-            button = 1;
-            break;
-
-        case SDL_BUTTON_MIDDLE:
-            button = 2;
-            break;
-
-        default:
-            // SDL buttons are indexed from 1.
-            --button;
-            break;
-    }
-
-    // Turn bit representing this button on or off.
-
-    if (on)
-    {
-        mouse_button_state |= (1 << button);
-    }
-    else
-    {
-        mouse_button_state &= ~(1 << button);
-    }
-
-    // Post an event with the new button state.
-
-    event.type = ev_mouse;
-    event.data1 = mouse_button_state;
-    event.data2 = event.data3 = 0;
-    D_PostEvent(&event);
-}
-
-static void MapMouseWheelToButtons(SDL_MouseWheelEvent *wheel)
-{
-    // SDL2 distinguishes button events from mouse wheel events.
-    // We want to treat the mouse wheel as two buttons, as per
-    // SDL1
-    static event_t up, down;
-    int button;
-
-    if (wheel->y <= 0)
-    {   // scroll down
-        button = 4;
-    }
-    else
-    {   // scroll up
-        button = 3;
-    }
-
-    // post a button down event
-    mouse_button_state |= (1 << button);
-    down.type = ev_mouse;
-    down.data1 = mouse_button_state;
-    down.data2 = down.data3 = 0;
-    D_PostEvent(&down);
-
-    // post a button up event
-    mouse_button_state &= ~(1 << button);
-    up.type = ev_mouse;
-    up.data1 = mouse_button_state;
-    up.data2 = up.data3 = 0;
-    D_PostEvent(&up);
-}
-
-static void I_HandleMouseEvent(SDL_Event *sdlevent)
-{
-    switch (sdlevent->type)
-    {
-        case SDL_MOUSEBUTTONDOWN:
-            UpdateMouseButtonState(sdlevent->button.button, true);
-            break;
-
-        case SDL_MOUSEBUTTONUP:
-            UpdateMouseButtonState(sdlevent->button.button, false);
-            break;
-
-        case SDL_MOUSEWHEEL:
-            MapMouseWheelToButtons(&(sdlevent->wheel));
-            break;
-
-        default:
-            break;
-    }
-}
-
-static void I_HandleKeyboardEvent(SDL_Event *sdlevent)
-{
-    // XXX: passing pointers to event for access after this function
-    // has terminated is undefined behaviour
-    event_t event;
-
-    switch (sdlevent->type)
-    {
-        case SDL_KEYDOWN:
-            event.type = ev_keydown;
-            event.data1 = I_TranslateKey(&sdlevent->key.keysym);
-/*
-            event.data2 = GetLocalizedKey(&sdlevent->key.keysym);
-            event.data3 = GetTypedChar(&sdlevent->key.keysym);
-*/
-            if (event.data1 != 0)
-            {
-                D_PostEvent(&event);
-            }
-            break;
-
-        case SDL_KEYUP:
-            event.type = ev_keyup;
-            event.data1 = I_TranslateKey(&sdlevent->key.keysym);
-
-            // data2/data3 are initialized to zero for ev_keyup.
-            // For ev_keydown it's the shifted Unicode character
-            // that was typed, but if something wants to detect
-            // key releases it should do so based on data1
-            // (key ID), not the printable char.
-
-            event.data2 = 0;
-            event.data3 = 0;
-
-            if (event.data1 != 0)
-            {
-                D_PostEvent(&event);
-            }
-            break;
-
-        default:
-            break;
-    }
 }
 
 // [FG] window event handling from Chocolate Doom 3.0
@@ -520,7 +388,7 @@ static void I_ToggleFullScreen(void)
 
     fullscreen = !fullscreen;
 
-    if (fullscreen)
+    if (fullscreen == 1)
     {
         SDL_GetWindowSize(screen, &window_width, &window_height);
         flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
@@ -528,7 +396,7 @@ static void I_ToggleFullScreen(void)
 
     SDL_SetWindowFullscreen(screen, flags);
 
-    if (!fullscreen)
+    if (fullscreen == 0)
     {
         SDL_SetWindowSize(screen, window_width, window_height);
     }
@@ -538,96 +406,125 @@ static void I_ToggleFullScreen(void)
 
 extern int usemouse;
 
-void I_GetEvent(void)
+void I_GetEvent()
 {
-   SDL_Event sdlevent;
+   SDL_Event event;
+   event_t   d_event;
+   
+   event_t mouseevent = { ev_mouse, 0, 0, 0 };
+   static int buttons = 0;
+   int sendmouseevent = 0;
+   
+   while(SDL_PollEvent(&event))
+   {
+      // haleyjd 10/08/05: from Chocolate DOOM
+      if(!window_focused && 
+         (event.type == SDL_MOUSEMOTION || 
+          event.type == SDL_MOUSEBUTTONDOWN || 
+          event.type == SDL_MOUSEBUTTONUP))
+      {
+         continue;
+      }
 
-   SDL_PumpEvents();
+      switch(event.type)
+      {
+      case SDL_KEYDOWN:
+         if (ToggleFullScreenKeyShortcut(&event.key.keysym))
+         {
+            I_ToggleFullScreen();
+            break;
+         }
+         d_event.type = ev_keydown;
+         d_event.data1 = I_TranslateKey(&event.key.keysym);
+         // haleyjd 08/29/03: don't post out-of-range keys
+         if(d_event.data1 > 0 && d_event.data1 < 256)
+            D_PostEvent(&d_event);
+         break;
+      case SDL_KEYUP:
+         d_event.type = ev_keyup;
+         d_event.data1 = I_TranslateKey(&event.key.keysym);
+         // haleyjd 08/29/03: don't post out-of-range keys
+         if(d_event.data1 > 0 && d_event.data1 < 256)
+            D_PostEvent(&d_event);
+         break;
+      case SDL_MOUSEMOTION:       
+         if(!usemouse)
+            continue;
 
-    while (SDL_PollEvent(&sdlevent))
-    {
-        switch (sdlevent.type)
-        {
-            case SDL_KEYDOWN:
-                if (ToggleFullScreenKeyShortcut(&sdlevent.key.keysym))
-                {
-                    I_ToggleFullScreen();
-                    break;
-                }
-                // deliberate fall-though
+         // SoM 1-20-04 Ok, use xrel/yrel for mouse movement because most people like it the most.
+         mouseevent.data3 -= event.motion.yrel;
+         mouseevent.data2 += event.motion.xrel;
+         sendmouseevent = 1;
+         break;
+      case SDL_MOUSEBUTTONUP:
+         if(!usemouse)
+            continue;
+         sendmouseevent = 1;
+         d_event.type = ev_keyup;
+         if(event.button.button == SDL_BUTTON_LEFT)
+         {
+            buttons &= ~1;
+            d_event.data1 = buttons;
+         }
+         else if(event.button.button == SDL_BUTTON_MIDDLE)
+         {
+            buttons &= ~4;
+            d_event.data1 = buttons;
+         }
+         else
+         {
+            buttons &= ~2;
+            d_event.data1 = buttons;
+         }
+         D_PostEvent(&d_event);
+         break;
+      case SDL_MOUSEBUTTONDOWN:
+         if(!usemouse)
+            continue;
+         sendmouseevent = 1;
+         d_event.type = ev_keydown;
+         if(event.button.button == SDL_BUTTON_LEFT)
+         {
+            buttons |= 1;
+            d_event.data1 = buttons;
+         }
+         else if(event.button.button == SDL_BUTTON_MIDDLE)
+         {
+            buttons |= 4;
+            d_event.data1 = buttons;
+         }
+         else
+         {
+            buttons |= 2;
+            d_event.data1 = buttons;
+         }
+         D_PostEvent(&d_event);
+         break;
+        
+      case SDL_QUIT:
+         exit(0);
+         break;
 
-            case SDL_KEYUP:
-                I_HandleKeyboardEvent(&sdlevent);
-                break;
+      case SDL_WINDOWEVENT:
+         if (event.window.windowID == SDL_GetWindowID(screen))
+         {
+            HandleWindowEvent(&event.window);
+         }
+         break;
 
-            case SDL_MOUSEBUTTONDOWN:
-            case SDL_MOUSEBUTTONUP:
-            case SDL_MOUSEWHEEL:
-                if (usemouse && window_focused)
-                {
-                    I_HandleMouseEvent(&sdlevent);
-                }
-                break;
+      default:
+         break;
+      }
+   }
 
-            case SDL_QUIT:
-                exit(0);
-                break;
+   if(sendmouseevent)
+   {
+      mouseevent.data1 = buttons;
+      D_PostEvent(&mouseevent);
+   }
 
-            case SDL_WINDOWEVENT:
-                if (sdlevent.window.windowID == SDL_GetWindowID(screen))
-                {
-                    HandleWindowEvent(&sdlevent.window);
-                }
-                break;
-
-            default:
-                break;
-        }
-    }
-}
-
-//
-// Read the change in mouse state to generate mouse motion events
-//
-// This is to combine all mouse movement for a tic into one mouse
-// motion event.
-
-static const float mouse_acceleration = 2.0;
-static const int mouse_threshold = 10;
-
-int AccelerateMouse(int val)
-{
-    if (val < 0)
-        return -AccelerateMouse(-val);
-
-    if (val > mouse_threshold)
-    {
-        return (int)((val - mouse_threshold) * mouse_acceleration + mouse_threshold);
-    }
-    else
-    {
-        return val;
-    }
-}
-
-static void I_ReadMouse(void)
-{
-    int x, y;
-    event_t ev;
-
-    SDL_GetRelativeMouseState(&x, &y);
-
-    if (x != 0 || y != 0)
-    {
-        ev.type = ev_mouse;
-        ev.data1 = mouse_button_state;
-        ev.data2 = AccelerateMouse(x);
-        ev.data3 = -AccelerateMouse(y);
-
-        // XXX: undefined behaviour since event is scoped to
-        // this function
-        D_PostEvent(&ev);
-    }
+   if(paused || !window_focused)
+      SDL_Delay(1);
 }
 
 //
@@ -636,12 +533,7 @@ static void I_ReadMouse(void)
 
 void I_StartTic()
 {
-    I_GetEvent();
-
-    if (usemouse && window_focused)
-    {
-        I_ReadMouse();
-    }
+  I_GetEvent();
 }
 
 //
@@ -652,10 +544,9 @@ void I_UpdateNoBlit (void)
 {
 }
 
+
 int use_vsync;     // killough 2/8/98: controls whether vsync is called
 static int in_graphics_mode;
-static int useaspect, actualheight; // [FG] aspect ratio correction
-int integer_scaling; // [FG] force integer scales
 
 void I_FinishUpdate(void)
 {
@@ -760,68 +651,6 @@ void I_ShutdownGraphics(void)
    }
 }
 
-boolean I_WritePNGfile(char* filename)
-{
-  SDL_Rect rect = {0};
-  SDL_PixelFormat *format;
-  SDL_Surface *png_surface;
-  int pitch;
-  byte *pixels;
-  boolean ret;
-
-  // [FG] native PNG pixel format
-  const uint32_t png_format = SDL_PIXELFORMAT_RGB24;
-  format = SDL_AllocFormat(png_format);
-
-  // [FG] adjust cropping rectangle if necessary
-  SDL_GetRendererOutputSize(renderer, &rect.w, &rect.h);
-  if (useaspect || integer_scaling)
-  {
-    int temp;
-    if (integer_scaling)
-    {
-      int temp1, temp2, scale;
-      temp1 = rect.w;
-      temp2 = rect.h;
-      scale = ReBOOMMathMin(rect.w / SCREENWIDTH, rect.h / actualheight);
-
-      rect.w = SCREENWIDTH * scale;
-      rect.h = actualheight * scale;
-
-      rect.x = (temp1 - rect.w) / 2;
-      rect.y = (temp2 - rect.h) / 2;
-    }
-    else
-    if (rect.w * actualheight > rect.h * SCREENWIDTH)
-    {
-      temp = rect.w;
-      rect.w = rect.h * SCREENWIDTH / actualheight;
-      rect.x = (temp - rect.w) / 2;
-    }
-    else
-    if (rect.h * SCREENWIDTH > rect.w * actualheight)
-    {
-      temp = rect.h;
-      rect.h = rect.w * actualheight / SCREENWIDTH;
-      rect.y = (temp - rect.h) / 2;
-    }
-  }
-
-  // [FG] allocate memory for screenshot image
-  pitch = rect.w * format->BytesPerPixel;
-  pixels = malloc(rect.h * pitch);
-  SDL_RenderReadPixels(renderer, &rect, format->format, pixels, pitch);
-  png_surface = SDL_CreateRGBSurfaceWithFormatFrom(pixels, rect.w, rect.h, format->BitsPerPixel, pitch, png_format);
-
-  ret = (IMG_SavePNG(png_surface, filename) == 0);
-
-  SDL_FreeSurface(png_surface);
-  SDL_FreeFormat(format);
-  free(pixels);
-
-  return ret;
-}
-
 extern boolean setsizeneeded;
 
 extern void I_InitKeyboard();
@@ -841,8 +670,10 @@ static void I_InitGraphicsMode(void)
    int v_h = SCREENHEIGHT;
    int flags = 0;
    int scalefactor = cfg_scalefactor;
+   int useaspect = cfg_aspectratio;
 
    // [FG] SDL2
+   int actualheight;
    uint32_t pixel_format;
    int video_display;
    SDL_DisplayMode mode;
@@ -865,17 +696,12 @@ static void I_InitGraphicsMode(void)
    flags |= SDL_WINDOW_ALLOW_HIGHDPI;
 
    // haleyjd: fullscreen support
-   if (M_CheckParm("-window"))
+   if(M_CheckParm("-fullscreen"))
    {
-       fullscreen = false;
-   }
-   if (M_CheckParm("-fullscreen") || fullscreen)
-   {
-      fullscreen = true; // 5/11/09: forgotten O_O
+      fullscreen = 1; // 5/11/09: forgotten O_O
       flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
    }
 
-   useaspect = cfg_aspectratio;
    if(M_CheckParm("-aspect"))
       useaspect = true;
 
@@ -890,6 +716,8 @@ static void I_InitGraphicsMode(void)
                                 SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                                 v_w, v_h, flags);
 
+      SDL_SetWindowMinimumSize(screen, v_w, actualheight);
+
       if (screen == NULL)
       {
          I_Error("Error creating window for video startup: %s",
@@ -897,16 +725,13 @@ static void I_InitGraphicsMode(void)
       }
    }
 
-   SDL_SetWindowMinimumSize(screen, v_w, actualheight);
-
    // [FG] window size when returning from fullscreen mode
    window_width = scalefactor * v_w;
    window_height = scalefactor * actualheight;
 
    if (!(flags & SDL_WINDOW_FULLSCREEN_DESKTOP))
    {
-      SDL_SetWindowSize(screen, SUPERMAX_SCREENWIDTH, SUPERMAX_SCREENHEIGHT);
-      SDL_SetWindowPosition(screen, 200, 80);
+      SDL_SetWindowSize(screen, window_width, window_height);
    }
 
    pixel_format = SDL_GetWindowPixelFormat(screen);
@@ -962,8 +787,6 @@ static void I_InitGraphicsMode(void)
    }
 
    SDL_RenderSetLogicalSize(renderer, v_w, actualheight);
-
-   SDL_RenderSetIntegerScale(renderer, integer_scaling);
 
    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
    SDL_RenderClear(renderer);

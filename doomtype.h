@@ -48,45 +48,17 @@ typedef enum {false, true} boolean;
 typedef unsigned char byte;
 #endif
 
-#define REBOOM_PATH_MAX 4096
-
-#ifdef WINDOWS
-  #define DIR_SEPARATOR '\\'
-  #define DIR_SEPARATOR_S "\\"
-  #define PATH_SEPARATOR ';'
+// haleyjd: 64-bit integer type
+#if defined(_MSC_VER)   // MSVC
+  #define __LONG64_TYPE__ __int64
+#elif defined(__GNUC__) // GNU C
+  #define __LONG64_TYPE__ long long
 #else
-  #define DIR_SEPARATOR '/'
-  #define DIR_SEPARATOR_S "/"
-  #define PATH_SEPARATOR ':'
+  #error Need a 64-bit integer type for this platform!
 #endif
 
-/* Adam - These new inline functions were translated
-* from C++ templates that I wrote previously in another project
-*
-template<typename T>
-T TMathMin(const T& a, const T& b) {
-	return a < b ? a : b;
-}
-template<typename T>
-T TMathMax(const T& a, const T& b) {
-	return a > b ? a : b;
-}
-   inline's are safer than macros for mathematics as macros
-   can lead to unsafe calculations
-*/
-
-static inline int ReBOOMMathMin(int a, int b) {
-	return a < b ? a : b;
-}
-
-static inline int ReBOOMMathMax(int a, int b) {
-	return a > b ? a : b;
-}
-
-#ifdef WINDOWS
-#define strcasecmp _stricmp
-#define strncasecmp _strnicmp
-#endif
+typedef unsigned __LONG64_TYPE__ ULong64;
+typedef __LONG64_TYPE__ Long64;
 
 // haleyjd: resolve platform-specific range symbol issues
 
@@ -95,33 +67,9 @@ static inline int ReBOOMMathMax(int a, int b) {
 #define D_MININT INT_MIN
 #define D_MAXSHORT  SHRT_MAX
 
-#ifndef WINDOWS
-#define MAXCHAR 0x7f
-#define MINCHAR 0x80
-#endif
+#define MAXCHAR         ((char)0x7f)
+#define MINCHAR         ((char)0x80)
 
 #define arrlen(array) (sizeof(array) / sizeof(*array))
-
-#ifdef __GNUC__
-#if defined(_WIN32) && !defined(__clang__)
-#define PACKEDATTR __attribute__((packed,gcc_struct))
-#else
-#define PACKEDATTR __attribute__((packed))
-#endif
-
-#define PRINTF_ATTR(fmt, first) __attribute__((format(printf, fmt, first)))
-#define PRINTF_ARG_ATTR(x) __attribute__((format_arg(x)))
-#define NORETURN __attribute__((noreturn))
-#else
-#if defined(_MSC_VER)
-#define PACKEDATTR __pragma(pack(pop))
-#else
-#define PACKEDATTR
-#endif
-
-#define PRINTF_ATTR(fmt, first)
-#define PRINTF_ARG_ATTR(x)
-#define NORETURN
-#endif
 
 #endif

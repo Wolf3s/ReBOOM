@@ -54,7 +54,6 @@ int finalecount;
 
 char*   finaletext;
 char*   finaleflat;
-static char* finaletext_rw = NULL;
 
 void    F_StartCast (void);
 void    F_CastTicker (void);
@@ -64,163 +63,115 @@ void    F_CastDrawer (void);
 void WI_checkForAccelerate(void);    // killough 3/28/98: used to
 extern int acceleratestage;          // accelerate intermission screens
 static int midstage;                 // whether we're in "mid-stage"
-extern boolean secretexit;           // whether we've entered a secret map
-boolean using_FMI;
 
 //
 // F_StartFinale
 //
-void F_StartFinale(void)
+void F_StartFinale (void)
 {
-    boolean mus_changed = false;
+  gameaction = ga_nothing;
+  gamestate = GS_FINALE;
+  viewactive = false;
+  automapactive = false;
 
-    gameaction = ga_nothing;
-    gamestate = GS_FINALE;
-    viewactive = false;
-    automapactive = false;
+  // killough 3/28/98: clear accelerative text flags
+  acceleratestage = midstage = 0;
 
-    // killough 3/28/98: clear accelerative text flags
-    acceleratestage = midstage = 0;
-
-    finaletext = NULL;
-    finaleflat = NULL;
-
-    if (gamemapinfo && gamemapinfo->intermusic[0])
-    {
-        int l = W_CheckNumForName(gamemapinfo->intermusic);
-        if (l >= 0)
-        {
-            S_ChangeMusInfoMusic(l, true);
-            mus_changed = true;
-        }
-    }
-
-    // Okay - IWAD dependend stuff.
-    // This has been changed severly, and
-    //  some stuff might have changed in the process.
-    switch (gamemode)
-    {
-        // DOOM 1 - E1, E3 or E4, but each nine missions
+  // Okay - IWAD dependend stuff.
+  // This has been changed severly, and
+  //  some stuff might have changed in the process.
+  switch ( gamemode )
+  {
+    // DOOM 1 - E1, E3 or E4, but each nine missions
     case shareware:
     case registered:
     case retail:
     {
-        if (!mus_changed) S_ChangeMusic(mus_victor, true);
-
-        switch (gameepisode)
-        {
+      S_ChangeMusic(mus_victor, true);
+      
+      switch (gameepisode)
+      {
         case 1:
-            finaleflat = bgflatE1; // Ty 03/30/98 - new externalized bg flats
-            finaletext = s_E1TEXT; // Ty 03/23/98 - Was e1text variable.
-            break;
+             finaleflat = bgflatE1; // Ty 03/30/98 - new externalized bg flats
+             finaletext = s_E1TEXT; // Ty 03/23/98 - Was e1text variable.
+             break;
         case 2:
-            finaleflat = bgflatE2;
-            finaletext = s_E2TEXT; // Ty 03/23/98 - Same stuff for each 
-            break;
+             finaleflat = bgflatE2;
+             finaletext = s_E2TEXT; // Ty 03/23/98 - Same stuff for each 
+             break;
         case 3:
-            finaleflat = bgflatE3;
-            finaletext = s_E3TEXT;
-            break;
+             finaleflat = bgflatE3;
+             finaletext = s_E3TEXT;
+             break;
         case 4:
-            finaleflat = bgflatE4;
-            finaletext = s_E4TEXT;
-            break;
+             finaleflat = bgflatE4;
+             finaletext = s_E4TEXT;
+             break;
         default:
-            // Ouch.
-            break;
-        }
-        break;
+             // Ouch.
+             break;
+      }
+      break;
     }
-
+    
     // DOOM II and missions packs with E1, M34
     case commercial:
     {
-        if (!mus_changed) S_ChangeMusic(mus_read_m, true);
+      S_ChangeMusic(mus_read_m, true);
 
-        // Ty 08/27/98 - added the gamemission logic
+      // Ty 08/27/98 - added the gamemission logic
 
-        switch (gamemap)      /* This is regular Doom II */
-        {
+      switch (gamemap)      /* This is regular Doom II */
+      {
         case 6:
-            finaleflat = bgflat06;
-            finaletext = gamemission == pack_tnt ? s_T1TEXT :
-                gamemission == pack_plut ? s_P1TEXT : s_C1TEXT;
-            break;
+             finaleflat = bgflat06;
+             finaletext = gamemission == pack_tnt  ? s_T1TEXT :
+	                  gamemission == pack_plut ? s_P1TEXT : s_C1TEXT;
+             break;
         case 11:
-            finaleflat = bgflat11;
-            finaletext = gamemission == pack_tnt ? s_T2TEXT :
-                gamemission == pack_plut ? s_P2TEXT : s_C2TEXT;
-            break;
+             finaleflat = bgflat11;
+             finaletext = gamemission == pack_tnt  ? s_T2TEXT :
+	                  gamemission == pack_plut ? s_P2TEXT : s_C2TEXT;
+             break;
         case 20:
-            finaleflat = bgflat20;
-            finaletext = gamemission == pack_tnt ? s_T3TEXT :
-                gamemission == pack_plut ? s_P3TEXT : s_C3TEXT;
-            break;
+             finaleflat = bgflat20;
+             finaletext = gamemission == pack_tnt  ? s_T3TEXT :
+	                  gamemission == pack_plut ? s_P3TEXT : s_C3TEXT;
+             break;
         case 30:
-            finaleflat = bgflat30;
-            finaletext = gamemission == pack_tnt ? s_T4TEXT :
-                gamemission == pack_plut ? s_P4TEXT : s_C4TEXT;
-            break;
+             finaleflat = bgflat30;
+             finaletext = gamemission == pack_tnt  ? s_T4TEXT :
+	                  gamemission == pack_plut ? s_P4TEXT : s_C4TEXT;
+             break;
         case 15:
-            finaleflat = bgflat15;
-            finaletext = gamemission == pack_tnt ? s_T5TEXT :
-                gamemission == pack_plut ? s_P5TEXT : s_C5TEXT;
-            break;
+             finaleflat = bgflat15;
+             finaletext = gamemission == pack_tnt  ? s_T5TEXT :
+	                  gamemission == pack_plut ? s_P5TEXT : s_C5TEXT;
+             break;
         case 31:
-            finaleflat = bgflat31;
-            finaletext = gamemission == pack_tnt ? s_T6TEXT :
-                gamemission == pack_plut ? s_P6TEXT : s_C6TEXT;
-            break;
+             finaleflat = bgflat31;
+             finaletext = gamemission == pack_tnt  ? s_T6TEXT :
+	                  gamemission == pack_plut ? s_P6TEXT : s_C6TEXT;
+             break;
         default:
-            // Ouch.
-            break;
-        }
-        // Ty 08/27/98 - end gamemission logic
+             // Ouch.
+             break;
+      }
+      // Ty 08/27/98 - end gamemission logic
 
-        break;
-    }
+      break;
+    } 
 
     // Indeterminate.
     default:  // Ty 03/30/98 - not externalized
-        if (!mus_changed) S_ChangeMusic(mus_read_m, true);
-        finaleflat = "F_SKY1"; // Not used anywhere else.
-        finaletext = s_C1TEXT;  // FIXME - other text, music?
-        break;
-    }
-
-    if (gamemapinfo)
-    {
-        if (gamemapinfo->intertextsecret && secretexit && gamemapinfo->intertextsecret[0] != '-') // '-' means that any default intermission was cleared.
-        {
-            finaletext = gamemapinfo->intertextsecret;
-        }
-        else if (gamemapinfo->intertext && !secretexit && gamemapinfo->intertext[0] != '-') // '-' means that any default intermission was cleared.
-        {
-            finaletext = gamemapinfo->intertext;
-        }
-
-        if (!finaletext) finaletext = "The End";	// this is to avoid a crash on a missing text in the last map.
-
-        if (gamemapinfo->interbackdrop[0])
-        {
-            finaleflat = gamemapinfo->interbackdrop;
-        }
-
-        if (!finaleflat) finaleflat = "FLOOR4_8";	// use a single fallback for all maps.
-
-        using_FMI = true;
-    }
-
-    finalestage = 0;
-    finalecount = 0;
-
-    // [FG] do the "char* vs. const char*" dance
-    if (finaletext_rw)
-    {
-        (free)(finaletext_rw);
-        finaletext_rw = NULL;
-    }
-    finaletext_rw = M_StringDuplicate(finaletext);
+         S_ChangeMusic(mus_read_m, true);
+         finaleflat = "F_SKY1"; // Not used anywhere else.
+         finaletext = s_C1TEXT;  // FIXME - other text, music?
+         break;
+  }
+  
+  finalestage = 0;
+  finalecount = 0;
 }
 
 
@@ -242,33 +193,6 @@ static float Get_TextSpeed(void)
     acceleratestage=0, NEWTEXTSPEED : TEXTSPEED;
 }
 
-static void FMI_Ticker()
-{
-    if (gamemapinfo->endpic[0] && (strcmp(gamemapinfo->endpic, "-") != 0))
-    {
-		if (!strcasecmp(gamemapinfo->endpic, "$CAST"))
-        {
-            F_StartCast();
-            using_FMI = false;
-        }
-        else
-        {
-            finalecount = 0;
-            finalestage = 1;
-            wipegamestate = -1;         // force a wipe
-			if (!strcasecmp(gamemapinfo->endpic, "$BUNNY"))
-            {
-                S_StartMusic(mus_bunny);
-            }
-            else if (!strcasecmp(gamemapinfo->endpic, "!"))
-            {
-                using_FMI = false;
-            }
-        }
-    }
-    else
-        gameaction = ga_worlddone;  // next level, e.g. MAP07
-}
 
 //
 // F_Ticker
@@ -306,11 +230,7 @@ void F_Ticker(void)
       if (finalecount > strlen(finaletext)*speed +  // phares
           (midstage ? NEWTEXTWAIT : TEXTWAIT) ||  // killough 2/28/98:
           (midstage && acceleratestage))       // changed to allow acceleration
-          if (using_FMI)
-          {
-              FMI_Ticker();
-          }
-          else if (gamemode != commercial)       // Doom 1 / Ultimate Doom episode end
+        if (gamemode != commercial)       // Doom 1 / Ultimate Doom episode end
           {                               // with enough time, it's automatic
             finalecount = 0;
             finalestage = 1;
@@ -322,11 +242,7 @@ void F_Ticker(void)
           if (!demo_compatibility && midstage)
             {
             next_level:
-              if (using_FMI)
-              {
-                  FMI_Ticker();
-              }
-              else if (gamemap == 30)
+              if (gamemap == 30)
                 F_StartCast();              // cast of Doom 2 characters
               else
                 gameaction = ga_worlddone;  // next level, e.g. MAP07
@@ -357,8 +273,9 @@ void F_TextWrite (void)
   int         c;
   int         cx;
   int         cy;
-
+  
   // erase the entire screen to a tiled background
+
   // killough 11/98: the background-filling code was already in m_menu.c
   M_DrawBackground(finaleflat);
 
@@ -760,19 +677,6 @@ void F_BunnyScroll (void)
 //
 void F_Drawer (void)
 {
-    if (using_FMI)
-  {
-      if (!finalestage || !gamemapinfo->endpic[0] || (strcmp(gamemapinfo->endpic, "-") == 0))
-      {
-          F_TextWrite();
-      }
-      else if (strcmp(gamemapinfo->endpic, "$BUNNY") == 0)
-      {
-          F_BunnyScroll();
-      }
-      return;
-  }
-
   if (finalestage == 2)
   {
     F_CastDrawer ();

@@ -40,6 +40,7 @@
 #endif
 
 #include <math.h>
+
 #include "z_zone.h"
 #include "doomstat.h"
 #include "mmus2mid.h"   //jff 1/16/98 declarations for MUS->MIDI converter
@@ -47,13 +48,17 @@
 #include "w_wad.h"
 #include "g_game.h"     //jff 1/21/98 added to use dprintf in I_RegisterSong
 #include "d_main.h"
-#include "lprintf.h"
 
 // Needed for calling the actual sound output.
 int SAMPLECOUNT = 512;
 
 // haleyjd
 #define MAX_CHANNELS 32
+
+extern int fullscreen;
+
+// [FG] precache all sound effects
+boolean precache_sounds;
 
 int snd_card;   // default.cfg variables for digi and midi drives
 int mus_card;   // jff 1/18/98
@@ -126,14 +131,19 @@ static void stopchan(int handle)
                channelinfo[cnum].id->data == channelinfo[handle].id->data)
                return; // still being used by some channel
          }
+         
+         // set sample to PU_CACHE level
+         if (!precache_sounds)
+         {
          Z_ChangeTag(channelinfo[handle].id->data, PU_CACHE);
+         }
       }
    }
 
    channelinfo[handle].id = NULL;
 }
 
-static int SOUNDHDRSIZE = 8;
+#define SOUNDHDRSIZE 8
 
 //
 // addsfx
@@ -153,7 +163,6 @@ static boolean addsfx(sfxinfo_t *sfx, int channel, int pitch)
    int lump;
    // [FG] do not connect pitch-shifted samples to a sound SFX
    unsigned int sfx_alen;
-   unsigned int bits;
    void *sfx_data;
 
 #ifdef RANGECHECK
@@ -187,77 +196,21 @@ static boolean addsfx(sfxinfo_t *sfx, int channel, int pitch)
    if(sfx->data == NULL || pitch != NORM_PITCH)
    {   
       byte *data;
-      Uint32 samplerate, samplelen, samplecount;
+      Uint32 samplerate, samplelen;
 
       // haleyjd: this should always be called (if lump is already loaded,
       // W_CacheLumpNum handles that for us).
       data = (byte *)W_CacheLumpNum(lump, PU_STATIC);
 
-      // [crispy] Check if this is a valid RIFF wav file
-      if (lumplen > 44 && memcmp(data, "RIFF", 4) == 0 && memcmp(data + 8, "WAVEfmt ", 8) == 0)
-      {
-         // Valid RIFF wav file
-         int check;
-
-         // Make sure this is a PCM format file
-         // "fmt " chunk size must == 16
-         check = data[16] | (data[17] << 8) | (data[18] << 16) | (data[19] << 24);
-         if (check != 16)
-         {
-            Z_ChangeTag(data, PU_CACHE);
-            return false;
-         }
-
-         // Format must == 1 (PCM)
-         check = data[20] | (data[21] << 8);
-         if (check != 1)
-         {
-            Z_ChangeTag(data, PU_CACHE);
-            return false;
-         }
-
-         // FIXME: can't handle stereo wavs
-         // Number of channels must == 1
-         check = data[22] | (data[23] << 8);
-         if (check != 1)
-         {
-            Z_ChangeTag(data, PU_CACHE);
-            return false;
-         }
-
-         samplerate = data[24] | (data[25] << 8) | (data[26] << 16) | (data[27] << 24);
-         samplelen = data[40] | (data[41] << 8) | (data[42] << 16) | (data[43] << 24);
-
-         if (samplelen > lumplen - 44)
-            samplelen = lumplen - 44;
-
-         bits = data[34] | (data[35] << 8);
-
-         // Reject non 8 or 16 bit
-         if (bits != 16 && bits != 8)
-         {
-            Z_ChangeTag(data, PU_CACHE);
-            return false;
-         }
-
-         SOUNDHDRSIZE = 44;
-      }
       // Check the header, and ensure this is a valid sound
-      else if(data[0] == 0x03 && data[1] == 0x00)
-      {
-         samplerate = (data[3] << 8) | data[2];
-         samplelen  = (data[7] << 24) | (data[6] << 16) | (data[5] << 8) | data[4];
-
-         // All Doom sounds are 8-bit
-         bits = 8;
-
-         SOUNDHDRSIZE = 8;
-      }
-      else
+      if(data[0] != 0x03 || data[1] != 0x00)
       {
          Z_ChangeTag(data, PU_CACHE);
          return false;
       }
+
+      samplerate = (data[3] << 8) | data[2];
+      samplelen  = (data[7] << 24) | (data[6] << 16) | (data[5] << 8) | data[4];
 
       // don't play sounds that think they're longer than they really are
       if(samplelen > lumplen - SOUNDHDRSIZE)
@@ -266,22 +219,20 @@ static boolean addsfx(sfxinfo_t *sfx, int channel, int pitch)
          return false;
       }
 
-      samplecount = samplelen / (bits / 8);
-
       // [FG] do not connect pitch-shifted samples to a sound SFX
       if (pitch == NORM_PITCH)
       {
-         sfx_alen = (Uint32)(((uint64_t)samplecount * snd_samplerate) / samplerate);
+         sfx_alen = (Uint32)(((ULong64)samplelen * snd_samplerate) / samplerate);
          // [FG] double up twice: 8 -> 16 bit and mono -> stereo
          sfx->alen = 4 * sfx_alen;
-         sfx->data = Z_Malloc(sfx->alen, PU_STATIC, &sfx->data);
+         sfx->data = precache_sounds ? (malloc)(sfx->alen) : Z_Malloc(sfx->alen, PU_STATIC, &sfx->data);
          sfx_data = sfx->data;
       }
       else
       {
          // [FG] spoof sound samplerate if using randomly pitched sounds
-         samplerate = (Uint32)(((uint64_t)samplerate * steptable[pitch]) >> 16);
-         sfx_alen = (Uint32)(((uint64_t)samplecount * snd_samplerate) / samplerate);
+         samplerate = (Uint32)(((ULong64)samplerate * steptable[pitch]) >> 16);
+         sfx_alen = (Uint32)(((ULong64)samplelen * snd_samplerate) / samplerate);
          // [FG] double up twice: 8 -> 16 bit and mono -> stereo
          channelinfo[channel].data = Z_Malloc(4 * sfx_alen, PU_STATIC, (void **)&channelinfo[channel].data);
          sfx_data = channelinfo[channel].data;
@@ -300,31 +251,20 @@ static boolean addsfx(sfxinfo_t *sfx, int channel, int pitch)
          // do linear filtering operation
          for(i = 0; i < sfx_alen && j < samplelen - 1; ++i)
          {
-            int d;
+            int d = (((unsigned int)src[j  ] * (0x10000 - stepremainder)) +
+                     ((unsigned int)src[j+1] * stepremainder)) >> 16;
 
-            if (bits == 16)
-            {
-               d = ((Sint16)(src[j  ] | (src[j+1] << 8)) * (0x10000 - stepremainder) +
-                    (Sint16)(src[j+2] | (src[j+3] << 8)) * stepremainder) >> 16;
+            if(d > 255)
+               d = 255;
+            else if(d < 0)
+               d = 0;
 
-               sample = d;
-            }
-            else
-            {
-               d = (((unsigned int)src[j  ] * (0x10000 - stepremainder)) +
-                    ((unsigned int)src[j+1] * stepremainder)) >> 8;
-
-               // [FG] interpolate sfx in a 16-bit int domain, convert to signed
-               sample = d - (1<<15);
-            }
-
+            // [FG] expand 8->16 bits, mono->stereo
+            sample = (d-128)*256;
             dest[2*i] = dest[2*i+1] = sample;
 
             stepremainder += step;
-            if (bits == 16)
-               j += (stepremainder >> 16) * 2;
-            else
-               j += (stepremainder >> 16);
+            j += (stepremainder >> 16);
 
             stepremainder &= 0xffff;
          }
@@ -339,6 +279,7 @@ static boolean addsfx(sfxinfo_t *sfx, int channel, int pitch)
       Z_ChangeTag(data, PU_CACHE);
    }
    else
+   if (!precache_sounds)
       Z_ChangeTag(sfx->data, PU_STATIC); // reset to static cache level
 
    // [FG] let SDL_Mixer do the actual sound mixing
@@ -657,7 +598,7 @@ void I_InitSound(void)
    {
       int audio_buffers;
 
-      lprintf(LO_INFO, "\nI_InitSound: ");
+      printf("I_InitSound: ");
 
       /* Initialize variables */
       audio_buffers = SAMPLECOUNT * snd_samplerate / 11025;
@@ -665,7 +606,7 @@ void I_InitSound(void)
       // haleyjd: the docs say we should do this
       if(SDL_InitSubSystem(SDL_INIT_AUDIO))
       {
-         lprintf(LO_ERROR, "\nCouldn't initialize SDL audio.\n");
+         printf("Couldn't initialize SDL audio.\n");
          snd_card = 0;
          mus_card = 0;
          return;
@@ -687,6 +628,20 @@ void I_InitSound(void)
       atexit(I_ShutdownSound);
 
       snd_init = true;
+
+      // [FG] precache all sound effects
+      if (precache_sounds)
+      {
+         int i;
+
+         printf("Precaching all sound effects...");
+         for (i = 1; i < NUMSFX; i++)
+         {
+            addsfx(&S_sfx[i], 0, NORM_PITCH);
+         }
+         stopchan(0);
+         printf("done.\n");
+      }
 
       // haleyjd 04/11/03: don't use music if sfx aren't init'd
       // (may be dependent, docs are unclear)
@@ -750,7 +705,7 @@ void I_InitMusic(void)
 
 // jff 1/18/98 changed interface to make mididata destroyable
 
-void I_PlaySong(void* handle, int looping)
+void I_PlaySong(int handle, int looping)
 {
    if(!mus_init)
       return;
@@ -779,7 +734,7 @@ static int paused_midi_volume;
 //
 // I_PauseSong
 //
-void I_PauseSong(void *handle)
+void I_PauseSong(int handle)
 {
    if(CHECK_MUSIC(handle))
    {
@@ -798,7 +753,7 @@ void I_PauseSong(void *handle)
 //
 // I_ResumeSong
 //
-void I_ResumeSong(void* handle)
+void I_ResumeSong(int handle)
 {
    if(CHECK_MUSIC(handle))
    {

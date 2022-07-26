@@ -36,7 +36,6 @@
 #include "m_random.h"
 #include "am_map.h"
 #include "p_enemy.h"
-#include "am_map_structs.h"
 
 byte *save_p;
 

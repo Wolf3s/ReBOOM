@@ -37,8 +37,7 @@
 #include "r_main.h"
 
 int sts_always_red;      //jff 2/18/98 control to disable status color changes
-int sts_pct_always_yellow; // killough 2/21/98: always yellow %'s? bug or feature?
-int sts_always_gray;      //Gibbon - control to disable status color changes
+int sts_pct_always_gray; // killough 2/21/98: always gray %'s? bug or feature?
 
 patch_t*    sttminus;
 
@@ -137,15 +136,10 @@ void STlib_drawNum
   //jff 2/16/98 add color translation to digit output
   // in the special case of 0, you draw 0
   if (!num)
-  {
-    if (outrng && !sts_always_red && !sts_always_gray)
-    {
+    if (outrng && !sts_always_red)
       V_DrawPatchTranslated(x - w, n->y, FG, n->p[ 0 ],outrng,0);
-      //jff 2/18/98 allow use of faster draw routine from config
-    } else {
+    else //jff 2/18/98 allow use of faster draw routine from config
       V_DrawPatch(x - w, n->y, FG, n->p[ 0 ]);
-    }
-  }
 
   // draw the new number
   //jff 2/16/98 add color translation to digit output
@@ -162,15 +156,10 @@ void STlib_drawNum
   // draw a minus sign if necessary
   //jff 2/16/98 add color translation to digit output
   if (neg)
-  {
-    if (outrng && !sts_always_red && !sts_always_gray)
-    {
+    if (outrng && !sts_always_red)
       V_DrawPatchTranslated(x - 8, n->y, FG, sttminus,outrng,0);
-      //jff 2/18/98 allow use of faster draw routine from config
-    } else {
+    else //jff 2/18/98 allow use of faster draw routine from config
       V_DrawPatch(x - 8, n->y, FG, sttminus);
-    }
-  }
 }
 
 //
@@ -226,34 +215,19 @@ void STlib_updatePercent
   int refresh )
 {
   if (refresh || *per->n.on) // killough 2/21/98: fix percents not updated;
-  {
-    if (!sts_always_red && !sts_always_gray)     // also support gray-only percents
-    {
+    if (!sts_always_red)     // also support gray-only percents
       V_DrawPatchTranslated
       (
         per->n.x,
         per->n.y,
         FG,
         per->p,
-        sts_pct_always_yellow ? cr_gold : outrng,
+        sts_pct_always_gray ? cr_gray : outrng,
         0
       );
-    } else {  //jff 2/18/98 allow use of faster draw routine from config
+    else   //jff 2/18/98 allow use of faster draw routine from config
       V_DrawPatch(per->n.x, per->n.y, FG, per->p);
-    }
-	if (sts_always_gray && !sts_always_red)
-	{
-      V_DrawPatchTranslated
-      (
-        per->n.x,
-        per->n.y,
-        FG,
-        per->p,
-        sts_always_gray ? cr_gray : outrng,
-        0
-      );
-	}
-  }
+  
   STlib_updateNum(&per->n, outrng, refresh);
 }
 

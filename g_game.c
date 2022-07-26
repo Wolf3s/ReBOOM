@@ -1,26 +1,37 @@
-/*  BOOM, a modified and improved DOOM engine
-    Copyright (C) 1999 by id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
-    Copyright (C) 2021 by atsb
+// Emacs style mode select   -*- C++ -*-
+//-----------------------------------------------------------------------------
+//
+// $Id: g_game.c,v 1.59 1998/06/03 20:23:10 killough Exp $
+//
+//  BOOM, a modified and improved DOOM engine
+//  Copyright (C) 1999 by
+//  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; either version 2
+//  of the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
+//  02111-1307, USA.
+//
+// DESCRIPTION:  none
+//
+//-----------------------------------------------------------------------------
 
-    This program is free software : you can redistribute it and /or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.If not, see < https://www.gnu.org/licenses/>.
-*/
+//static const char rcsid[] = "$Id: g_game.c,v 1.59 1998/06/03 20:23:10 killough Exp $";
 
 #include <time.h>
 #include <stdarg.h>
 #include <errno.h>
 
-#include "doomtype.h"
 #include "doomstat.h"
 #include "f_finale.h"
 #include "m_argv.h"
@@ -47,20 +58,17 @@
 #include "d_deh.h"              // Ty 3/27/98 deh declarations
 #include "p_inter.h"
 #include "g_game.h"
-#include "umapinfo.h"
-#include "s_musinfo.h"
 
 #define SAVEGAMESIZE  0x20000
 #define SAVESTRINGSIZE  24
 
 static size_t   savegamesize = SAVEGAMESIZE; // killough
-static char     demoname[REBOOM_PATH_MAX];
+static char     demoname[PATH_MAX];
 static boolean  netdemo;
 static byte     *demobuffer;   // made some static -- killough
 static size_t   maxdemosize;
 static byte     *demo_p;
 static short    consistancy[MAXPLAYERS][BACKUPTICS];
-mapentry_t* G_LookupMapinfo(int episode, int map);
 
 gameaction_t    gameaction;
 gamestate_t     gamestate;
@@ -68,7 +76,6 @@ skill_t         gameskill;
 boolean         respawnmonsters;
 int             gameepisode;
 int             gamemap;
-mapentry_t*     gamemapinfo;
 boolean         paused;
 boolean         sendpause;     // send a pause event next tic
 boolean         sendsave;      // send a save event next tic
@@ -114,7 +121,6 @@ int     key_menu_down;
 int     key_menu_backspace;                                  //     ^
 int     key_menu_escape;                                     //     |
 int     key_menu_enter;                                      // phares 3/7/98
-int     key_menu_clear;
 int     key_strafeleft;
 int     key_straferight;
 int     key_fire;
@@ -165,8 +171,6 @@ int     key_weapon6;
 int     key_weapon7;                                                //    ^
 int     key_weapon8;                                                //    |
 int     key_weapon9;                                                // phares
-int     key_prevweapon;
-int     key_nextweapon;
 
 int     key_screenshot;             // killough 2/22/98: screenshot key
 int     key_setup;                  // killough 10/98: shortcut to setup menu
@@ -174,13 +178,8 @@ int     key_setup;                  // killough 10/98: shortcut to setup menu
 int     mousebfire;
 int     mousebstrafe;
 int     mousebforward;
-int     mousebprevweapon;
-int     mousebnextweapon;
-
 int     joybfire;
 int     joybstrafe;
-int     joybstrafeleft;
-int     joybstraferight;
 int     joybuse;
 int     joybspeed;
 
@@ -197,7 +196,7 @@ fixed_t angleturn[3]   = {640, 1280, 320};  // + slow turn
 boolean gamekeydown[NUMKEYS];
 int     turnheld;       // for accelerative turning
 
-boolean mousearray[6];
+boolean mousearray[4];
 boolean *mousebuttons = &mousearray[1];    // allow [-1]
 
 // mouse values are used once
@@ -213,7 +212,7 @@ int   dclicks2;
 // joystick values are repeated
 int   joyxmove;
 int   joyymove;
-boolean joyarray[9];
+boolean joyarray[5];
 boolean *joybuttons = &joyarray[1];    // allow [-1]
 
 int   savegameslot;
@@ -227,100 +226,6 @@ int defaultskill;               //note 1-based
 int    bodyqueslot, bodyquesize, default_bodyquesize; // killough 2/8/98, 10/98
 
 void   *statcopy;       // for statistics driver
-
-// Set to -1 or +1 to switch to the previous or next weapon.
-
-static int next_weapon = 0;
-
-// Used for prev/next weapon keys.
-
-static const struct
-{
-    weapontype_t weapon;
-    weapontype_t weapon_num;
-} weapon_order_table[] = {
-    { wp_fist,            wp_fist },
-    { wp_chainsaw,        wp_fist },
-    { wp_pistol,          wp_pistol },
-    { wp_shotgun,         wp_shotgun },
-    { wp_supershotgun,    wp_shotgun },
-    { wp_chaingun,        wp_chaingun },
-    { wp_missile,         wp_missile },
-    { wp_plasma,          wp_plasma },
-    { wp_bfg,             wp_bfg }
-};
-
-static boolean WeaponSelectable(weapontype_t weapon)
-{
-    // Can't select the super shotgun in Doom 1.
-
-    if (weapon == wp_supershotgun && gamemission == doom)
-    {
-        return false;
-    }
-
-    // These weapons aren't available in shareware.
-
-    if ((weapon == wp_plasma || weapon == wp_bfg)
-     && gamemission == doom && gamemode == shareware)
-    {
-        return false;
-    }
-
-    // Can't select a weapon if we don't own it.
-
-    if (!players[consoleplayer].weaponowned[weapon])
-    {
-        return false;
-    }
-
-    // Can't select the fist if we have the chainsaw, unless
-    // we also have the berserk pack.
-
-    if (weapon == wp_fist
-     && players[consoleplayer].weaponowned[wp_chainsaw]
-     && !players[consoleplayer].powers[pw_strength])
-    {
-        return false;
-    }
-
-    return true;
-}
-
-static int G_NextWeapon(int direction)
-{
-    weapontype_t weapon;
-    int start_i, i;
-
-    // Find index in the table.
-
-    if (players[consoleplayer].pendingweapon == wp_nochange)
-    {
-        weapon = players[consoleplayer].readyweapon;
-    }
-    else
-    {
-        weapon = players[consoleplayer].pendingweapon;
-    }
-
-    for (i=0; i<arrlen(weapon_order_table); ++i)
-    {
-        if (weapon_order_table[i].weapon == weapon)
-        {
-            break;
-        }
-    }
-
-    // Switch weapon. Don't loop forever.
-    start_i = i;
-    do
-    {
-        i += direction;
-        i = (i + arrlen(weapon_order_table)) % arrlen(weapon_order_table);
-    } while (i != start_i && !WeaponSelectable(weapon_order_table[i].weapon));
-
-    return weapon_order_table[i].weapon_num;
-}
 
 //
 // G_BuildTiccmd
@@ -405,9 +310,9 @@ void G_BuildTiccmd(ticcmd_t* cmd)
     forward += forwardmove[speed];
   if (joyymove > 0)
     forward -= forwardmove[speed];
-  if (gamekeydown[key_straferight] || joybuttons[joybstraferight])
+  if (gamekeydown[key_straferight])
     side += sidemove[speed];
-  if (gamekeydown[key_strafeleft] || joybuttons[joybstrafeleft])
+  if (gamekeydown[key_strafeleft])
     side -= sidemove[speed];
 
     // buttons
@@ -440,10 +345,6 @@ void G_BuildTiccmd(ticcmd_t* cmd)
     newweapon = P_SwitchWeapon(&players[consoleplayer]);           // phares
   else
     {                                 // phares 02/26/98: Added gamemode checks
-      // [FG] prev/next weapon keys and buttons
-      if (gamestate == GS_LEVEL && next_weapon != 0)
-        newweapon = G_NextWeapon(next_weapon);
-      else
       newweapon =
         gamekeydown[key_weapon1] ? wp_fist :    // killough 5/2/98: reformatted
         gamekeydown[key_weapon2] ? wp_pistol :
@@ -504,8 +405,6 @@ void G_BuildTiccmd(ticcmd_t* cmd)
       cmd->buttons |= BT_CHANGE;
       cmd->buttons |= newweapon<<BT_WEAPONSHIFT;
     }
-
-  next_weapon = 0;
 
   // mouse
   if (mousebuttons[mousebforward])
@@ -608,11 +507,6 @@ static void G_DoLoadLevel(void)
 
   skyflatnum = R_FlatNumForName ( SKYFLATNAME );
 
-  if (gamemapinfo && gamemapinfo->skytexture[0])
-  {
-    skytexture = R_TextureNumForName(gamemapinfo->skytexture);
-  }
-  else
   // DOOM determines the sky texture to be used
   // depending on the current episode, and the game version.
   if (gamemode == commercial)
@@ -644,6 +538,9 @@ static void G_DoLoadLevel(void)
       }//jff 3/27/98 end sky setting fix
 
   levelstarttic = gametic;        // for time calculation
+  
+    if (!demo_compatibility && demo_version < 203)   // killough 9/29/98
+    basetic = gametic;
 
   if (wipegamestate == GS_LEVEL)
     wipegamestate = -1;             // force a wipe
@@ -711,32 +608,6 @@ static void G_DoLoadLevel(void)
           starttime = I_GetTime_RealTime();
           first=0;
         }
-    }
-}
-
-static void SetMouseButtons(unsigned int buttons_mask)
-{
-    int i;
-
-    for (i=0; i<5; ++i)
-    {
-        unsigned int button_on = (buttons_mask & (1 << i)) != 0;
-
-        // Detect button press:
-
-        if (!mousebuttons[i] && button_on)
-        {
-            if (i == mousebprevweapon)
-            {
-                next_weapon = -1;
-            }
-            else if (i == mousebnextweapon)
-            {
-                next_weapon = 1;
-            }
-        }
-
-  mousebuttons[i] = button_on;
     }
 }
 
@@ -813,18 +684,6 @@ boolean G_Responder(event_t* ev)
   if (gamestate == GS_FINALE && F_Responder(ev))
     return true;  // finale ate the event
 
-    // If the next/previous weapon keys are pressed, set the next_weapon
-    // variable to change weapons when the next ticcmd is generated.
-
-    if (ev->type == ev_keydown && ev->data1 == key_prevweapon)
-    {
-        next_weapon = -1;
-    }
-    else if (ev->type == ev_keydown && ev->data1 == key_nextweapon)
-    {
-        next_weapon = 1;
-    }
-
   switch (ev->type)
     {
     case ev_keydown:
@@ -841,7 +700,9 @@ boolean G_Responder(event_t* ev)
       return false;   // always let key up events filter down
 
     case ev_mouse:
-      SetMouseButtons(ev->data1);
+      mousebuttons[0] = ev->data1 & 1;
+      mousebuttons[1] = ev->data1 & 2;
+      mousebuttons[2] = ev->data1 & 4;
       mousex = (ev->data2*(mouseSensitivity_horiz*4))/10;  // killough
       mousey = (ev->data3*(mouseSensitivity_vert*4))/10;
       return true;    // eat events
@@ -851,10 +712,6 @@ boolean G_Responder(event_t* ev)
       joybuttons[1] = ev->data1 & 2;
       joybuttons[2] = ev->data1 & 4;
       joybuttons[3] = ev->data1 & 8;
-      joybuttons[4] = ev->data1 & 16;
-      joybuttons[5] = ev->data1 & 32;
-      joybuttons[6] = ev->data1 & 64;
-      joybuttons[7] = ev->data1 & 128;
       joyxmove = ev->data2;
       joyymove = ev->data3;
       return true;    // eat events
@@ -916,7 +773,7 @@ static void G_WriteDemoTiccmd(ticcmd_t* cmd)
   G_ReadDemoTiccmd (cmd);         // make SURE it is exactly the same
 }
 
-boolean secretexit;
+static boolean secretexit;
 
 void G_ExitLevel(void)
 {
@@ -967,50 +824,21 @@ static void G_DoCompleted(void)
   if (automapactive)
     AM_Stop();
 
-  wminfo.nextep = wminfo.epsd = gameepisode - 1;
-  wminfo.last = gamemap -1;
-  wminfo.lastmapinfo = gamemapinfo;
-  wminfo.nextmapinfo = NULL;
-  if (gamemapinfo)
-  {
-      const char* next = "";
-      if (gamemapinfo->endpic[0] && (strcmp(gamemapinfo->endpic, "-") != 0) && gamemapinfo->nointermission)
-      {
-          gameaction = ga_victory;
-          return;
-      }
-      if (secretexit) next = gamemapinfo->nextsecret;
-      if (next[0] == 0) next = gamemapinfo->nextmap;
-      if (next[0])
-      {
-          G_ValidateMapName(next, &wminfo.nextep, &wminfo.next);
-          wminfo.nextep--;
-          wminfo.next--;
-          // episode change
-          if (wminfo.nextep != wminfo.epsd)
-          {
-              for (i = 0; i < MAXPLAYERS; i++)
-                  players[i].didsecret = false;
-          }
-          wminfo.didsecret = players[consoleplayer].didsecret;
-          wminfo.partime = gamemapinfo->partime;
-          goto frommapinfo;	// skip past the default setup.
-      }
-  }
-
   if (gamemode != commercial) // kilough 2/7/98
-      switch (gamemap)
+    switch(gamemap)
       {
       case 8:
-          gameaction = ga_victory;
-          return;
+        gameaction = ga_victory;
+        return;
       case 9:
-          for (i = 0; i < MAXPLAYERS; i++)
-              players[i].didsecret = true;
-          break;
+        for (i=0 ; i<MAXPLAYERS ; i++)
+          players[i].didsecret = true;
+        break;
       }
 
   wminfo.didsecret = players[consoleplayer].didsecret;
+  wminfo.epsd = gameepisode -1;
+  wminfo.last = gamemap -1;
 
   // wminfo.next is 0 biased, unlike gamemap
   if (gamemode == commercial)
@@ -1061,19 +889,6 @@ static void G_DoCompleted(void)
           wminfo.next = gamemap;          // go to next level
     }
 
-  if (gamemode == commercial)
-  {
-      if (gamemap >= 1 && gamemap <= 34)
-          wminfo.partime = TICRATE * cpars[gamemap - 1];
-  }
-  else
-  {
-      if (gameepisode >= 1 && gameepisode <= 4 && gamemap >= 1 && gamemap <= 9)
-          wminfo.partime = TICRATE * pars[gameepisode][gamemap];
-  }
-
-frommapinfo:
-  wminfo.nextmapinfo = G_LookupMapinfo(wminfo.nextep + 1, wminfo.next + 1);
   wminfo.maxkills = totalkills;
   wminfo.maxitems = totalitems;
   wminfo.maxsecret = totalsecret;
@@ -1085,6 +900,7 @@ frommapinfo:
     wminfo.partime = TICRATE*pars[gameepisode][gamemap];
 
   wminfo.pnum = consoleplayer;
+
   for (i=0 ; i<MAXPLAYERS ; i++)
     {
       wminfo.plyr[i].in = playeringame[i];
@@ -1111,7 +927,6 @@ static void G_DoWorldDone(void)
   idmusnum = -1;             //jff 3/17/98 allow new level's music to be loaded
   gamestate = GS_LEVEL;
   gamemap = wminfo.next+1;
-  gamemapinfo = G_LookupMapinfo(gameepisode, gamemap);
   G_DoLoadLevel();
   gameaction = ga_nothing;
   viewactive = true;
@@ -1254,7 +1069,7 @@ static void G_DoPlayDemo(void)
 // killough 2/22/98: version id string format for savegames
 #define VERSIONID "BoomVer %d"
 
-static char savename[REBOOM_PATH_MAX +1];
+static char savename[PATH_MAX+1];
 
 //
 // killough 5/15/98: add forced loadgames, which allow user to override checks
@@ -1327,12 +1142,12 @@ void G_SaveGameName(char *name, int slot)
 
 #ifndef UNIX
   if (M_CheckParm("-cdrom"))
-    sprintf(name, "c:/doomdata/%.12s%d.DSG", savegamename, slot);
+    sprintf(name, "c:/doomdata/%.12s%d.dsg", savegamename, slot);
 #endif
 #ifdef UNIX
-    sprintf(name, "%s/.%.12s%d.DSG", basesavegame, savegamename, slot);
+    sprintf(name, "%s/.%.12s%d.dsg", basesavegame, savegamename, slot);
 #else
-    sprintf(name, "%s/%.12s%d.DSG", basesavegame, savegamename, slot);
+    sprintf(name, "%s/%.12s%d.dsg", basesavegame, savegamename, slot);
 #endif
 }
 
@@ -1343,9 +1158,9 @@ void G_SaveGameName(char *name, int slot)
 //
 // killough 12/98: use faster algorithm which has less IO
 
-uint64_t G_Signature(void)
+ULong64 G_Signature(void)
 {
-  uint64_t s = 0;
+  ULong64 s = 0;
   int lump, i;
   char name[9];
   
@@ -1366,7 +1181,7 @@ uint64_t G_Signature(void)
 
 static void G_DoSaveGame(void)
 {
-  char name[REBOOM_PATH_MAX + 1];
+  char name[PATH_MAX+1];
   char name2[VERSIONSIZE];
   char *description;
   int  length, i;
@@ -1396,14 +1211,14 @@ static void G_DoSaveGame(void)
   *save_p++ = gamemap;
 
   {  // killough 3/16/98, 12/98: store lump name checksum
-    uint64_t checksum = G_Signature();
+    ULong64 checksum = G_Signature();
     memcpy(save_p, &checksum, sizeof checksum);
     save_p += sizeof checksum;
   }
 
   // killough 3/16/98: store pwad filenames in savegame
   {
-    char **w = wad_files;
+    char **w = wadfiles;
     for (*save_p = 0; *w; w++)
       {
         CheckSaveGame(strlen(*w)+2);
@@ -1459,7 +1274,7 @@ static void G_DoLoadGame(void)
 {
   int  length, i;
   char vcheck[VERSIONSIZE];
-  uint64_t checksum;
+  ULong64 checksum;
 
   gameaction = ga_nothing;
 
@@ -1487,7 +1302,6 @@ static void G_DoLoadGame(void)
   gameskill = *save_p++;
   gameepisode = *save_p++;
   gamemap = *save_p++;
-  gamemapinfo = G_LookupMapinfo(gameepisode, gamemap);
 
   if (!forced_loadgame)
    {  // killough 3/16/98, 12/98: check lump name checksum
@@ -1542,25 +1356,6 @@ static void G_DoLoadGame(void)
 
   if (*save_p != 0xe6)
     I_Error ("Bad savegame");
-
-  // restore MUSINFO music
-  if (save_p - savebuffer <= length - 8)
-  {
-      char lump[9] = { 0 };
-      int i;
-
-      memcpy(lump, save_p, 8);
-
-      if ((i = W_CheckNumForName(lump)) > 0)
-      {
-          memset(&musinfo, 0, sizeof(musinfo));
-          musinfo.current_item = i;
-          musinfo.from_savegame = true;
-          S_ChangeMusInfoMusic(i, true);
-      }
-
-      save_p += 8;
-  }
 
   // done
   Z_Free(savebuffer);
@@ -1969,32 +1764,6 @@ void G_WorldDone(void)
   if (secretexit)
     players[consoleplayer].didsecret = true;
 
-  if (gamemapinfo)
-  {
-      if (gamemapinfo->intertextsecret && secretexit)
-      {
-          if (gamemapinfo->intertextsecret[0] != '-') // '-' means that any default intermission was cleared.
-              F_StartFinale();
-
-          return;
-      }
-      else if (gamemapinfo->intertext && !secretexit)
-      {
-          if (gamemapinfo->intertext[0] != '-') // '-' means that any default intermission was cleared.
-              F_StartFinale();
-
-          return;
-      }
-      else if (gamemapinfo->endpic[0] && (strcmp(gamemapinfo->endpic, "-") != 0))
-      {
-          // game ends without a status screen.
-          gameaction = ga_victory;
-          return;
-      }
-      // if nothing applied, use the defaults.
-  }
-
-
   if (gamemode == commercial)
     {
       switch (gamemap)
@@ -2112,53 +1881,8 @@ void G_SetFastParms(int fast_pending)
       }
 }
 
-mapentry_t* G_LookupMapinfo(int episode, int map)
-{
-    char lumpname[9];
-    unsigned i;
-    if (gamemode == commercial) snprintf(lumpname, 9, "MAP%02d", map);
-    else snprintf(lumpname, 9, "E%dM%d", episode, map);
-    for (i = 0; i < U_mapinfo.mapcount; i++)
-    {
-		if (!strcasecmp(lumpname, U_mapinfo.maps[i].mapname))
-        {
-            return &U_mapinfo.maps[i];
-        }
-    }
-    return NULL;
-}
-
-int G_ValidateMapName(const char* mapname, int* pEpi, int* pMap)
-{
-    // Check if the given map name can be expressed as a gameepisode/gamemap pair and be reconstructed from it.
-    char lumpname[9], mapuname[9];
-    int epi = -1, map = -1;
-
-    if (strlen(mapname) > 8) return 0;
-    strncpy(mapuname, mapname, 8);
-    mapuname[8] = 0;
-    M_ForceUppercase(mapuname);
-
-    if (gamemode != commercial)
-    {
-        if (sscanf(mapuname, "E%dM%d", &epi, &map) != 2) return 0;
-        snprintf(lumpname, 9, "E%dM%d", epi, map);
-    }
-    else
-    {
-        if (sscanf(mapuname, "MAP%d", &map) != 1) return 0;
-        snprintf(lumpname, 9, "MAP%02d", map);
-        epi = 1;
-    }
-
-    if (pEpi) *pEpi = epi;
-    if (pMap) *pMap = map;
-    return !strcmp(mapuname, lumpname);
-}
-
 // The sky texture to be used instead of the F_SKY1 dummy.
 extern int skytexture;
-extern int EpiCustom;
 
 //
 // G_InitNew
@@ -2181,9 +1905,6 @@ void G_InitNew(skill_t skill, int episode, int map)
   if (episode < 1)
     episode = 1;
 
-  // Disable all sanity checks if there are custom episode definitions. They do not make sense in this case.
-  if (!EpiCustom)
-  {
   if (gamemode == retail)
     {
       if (episode > 4)
@@ -2203,9 +1924,9 @@ void G_InitNew(skill_t skill, int episode, int map)
     map = 1;
   if (map > 9 && gamemode != commercial)
     map = 9;
-  }
 
   G_SetFastParms(fastparm || skill == sk_nightmare);  // killough 4/10/98
+
   M_ClearRandom();
 
   respawnmonsters = skill == sk_nightmare || respawnparm;
@@ -2222,7 +1943,6 @@ void G_InitNew(skill_t skill, int episode, int map)
   gameepisode = episode;
   gamemap = map;
   gameskill = skill;
-  gamemapinfo = G_LookupMapinfo(gameepisode, gamemap);
 
   //jff 4/16/98 force marks on automap cleared every new level start
   AM_clearMarks();
@@ -2363,6 +2083,8 @@ void G_BeginRecording(void)
 
   // killough 2/22/98: save compatibility flag in new demos
   *demo_p++ = compatibility;       // killough 2/22/98
+
+  demo_version = VERSION;     // killough 7/19/98: use this version's id
 
   *demo_p++ = gameskill;
   *demo_p++ = gameepisode;

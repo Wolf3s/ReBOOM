@@ -111,7 +111,3 @@ x64/Release/RCa01256
 x64/Release/RCa07708
 x64/Release/RCa10280
 *.res
-*.o
-src/build/reboom
-src/Makefile
-*.d

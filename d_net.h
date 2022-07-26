@@ -47,11 +47,7 @@
 
 
 // Networking and tick handling related.
-#if defined REMOVE_LIMITS
-#define BACKUPTICS              64
-#else
 #define BACKUPTICS              12
-#endif
 
 typedef enum
 {

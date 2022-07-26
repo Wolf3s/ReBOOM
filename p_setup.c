@@ -28,7 +28,6 @@
 //
 //-----------------------------------------------------------------------------
 
-#include "doomtype.h"
 #include "doomstat.h"
 #include "m_bbox.h"
 #include "m_argv.h"
@@ -499,7 +498,11 @@ void P_LoadSideDefs2(int lump)
           break;
 
         case 260: // killough 4/11/98: apply translucency to 2s normal texture
-		sd->midtexture = strncasecmp("TRANMAP", msd->midtexture, 8) ?
+#ifdef WINDOWS
+          sd->midtexture = _strnicmp("TRANMAP", msd->midtexture, 8) ?
+#else
+          sd->midtexture = strncasecmp("TRANMAP", msd->midtexture, 8) ?
+#endif
             (sd->special = W_CheckNumForName(msd->midtexture)) < 0 ||
             W_LumpLength(sd->special) != 65536 ?
             sd->special=0, R_TextureNumForName(msd->midtexture) :

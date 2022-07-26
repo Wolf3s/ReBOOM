@@ -15,10 +15,10 @@
 // Text mode emulation in SDL
 //
 
-#ifdef WINDOWS
-#include "SDL.h"
-#else
+#ifdef UNIX
 #include "SDL2/SDL.h"
+#else
+#include "SDL.h" // haleyjd
 #endif
 
 #include <ctype.h>
@@ -109,7 +109,7 @@ static const SDL_Color ega_colors[] =
     {0xfe, 0xfe, 0xfe, 0xff},          // 15: Bright white
 };
 
-#ifdef _WIN32
+#ifdef WINDOWS
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -201,7 +201,7 @@ static void ChooseFont(void)
     {
         font = &small_font;
     }
-#ifdef _WIN32
+#ifdef WINDOWS
     // On Windows we can use the system DPI settings to make a
     // more educated guess about whether to use the large font.
 
@@ -947,7 +947,7 @@ void TXT_StringConcat(char *dest, const char *src, size_t dest_len)
 }
 
 // On Windows, vsnprintf() is _vsnprintf().
-#ifdef _WIN32
+#ifdef WINDOWS
 #if _MSC_VER < 1400 /* not needed for Visual Studio 2008 */
 #define vsnprintf _vsnprintf
 #endif
@@ -989,4 +989,3 @@ int TXT_snprintf(char *buf, size_t buf_len, const char *s, ...)
     va_end(args);
     return result;
 }
-

@@ -53,7 +53,7 @@ boolean ST_Responder(event_t* ev);
 void ST_Ticker(void);
 
 // Called by main loop.
-void ST_Drawer(boolean fullscreen, boolean refresh);
+void ST_Drawer(int fullscreen, boolean refresh);
 
 // Called when the console player is spawned on each level.
 void ST_Start(void);
@@ -83,17 +83,13 @@ boolean ST_Responder(event_t* ev);
 extern int health_red;    // health amount less than which status is red
 extern int health_yellow; // health amount less than which status is yellow
 extern int health_green;  // health amount above is blue, below is green
-extern int health_gray;
 extern int armor_red;     // armor amount less than which status is red
 extern int armor_yellow;  // armor amount less than which status is yellow
 extern int armor_green;   // armor amount above is blue, below is green
-extern int armor_gray;
 extern int ammo_red;      // ammo percent less than which status is red
 extern int ammo_yellow;   // ammo percent less is yellow more green
-extern int ammo_gray;
 extern int sts_always_red;// status numbers do not change colors
-extern int sts_pct_always_yellow;// status percents do not change colors
+extern int sts_pct_always_gray;// status percents do not change colors
 extern int sts_traditional_keys;  // display keys the traditional way
-extern int sts_always_gray; // status numbers do not change colors
 
 #endif

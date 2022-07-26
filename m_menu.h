@@ -81,7 +81,6 @@ extern int warning_about_changes, print_warning_about_changes;
 // The following #defines are for the m_flags field of each item on every
 // Setup Screen. They can be OR'ed together where appropriate
 
-#define S_NULL       0x0 // Nothing
 #define S_HILITE     0x1 // Cursor is sitting on this item
 #define S_SELECT     0x2 // We're changing this item
 #define S_TITLE      0x4 // Title item

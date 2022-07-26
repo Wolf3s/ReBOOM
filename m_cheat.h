@@ -41,12 +41,13 @@ extern struct cheat_s {
     not_coop = 2,
     not_demo = 4, 
     not_menu = 8,
-    not_deh = 16,
+    not_deh  = 16,
     not_net = not_dm | not_coop
   } const when;
   void (*const func)();
   const int arg;
-  unsigned long long code, mask;
+  ULong64 code, mask;
+  boolean deh_modified;                // killough 9/12/98
 } cheat[];
 
 boolean M_FindCheats(int key);

@@ -31,16 +31,10 @@
 //
 //-----------------------------------------------------------------------------
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#ifdef WINDOWS
-#include <io.h>
-#endif
-#include <unistd.h> // getcwd
-#include "doomtype.h"
+
 #include "doomdef.h"
 #include "doomstat.h"
 #include "dstrings.h"
@@ -67,8 +61,6 @@
 #include "r_main.h"
 #include "d_main.h"
 #include "d_deh.h"  // Ty 04/08/98 - Externalizations
-#include "umapinfo.h" // U_ParseMapInfo()
-#include "lprintf.h"
 
 // DEHacked support - Ty 03/09/97
 // killough 10/98:
@@ -91,8 +83,9 @@ static char* D_dehout(void)
 
 // killough 10/98: preloaded files
 #define MAXLOADFILES 2
-char *wad_files[MAXWADFILES], *deh_files[MAXLOADFILES];
-int wad_file_source[MAXWADFILES];  // Ty 08/29/98 - add source of lumps/files
+char* wadfiles[MAXWADFILES];
+int wadfilesource[MAXWADFILES];  // Ty 08/29/98 - add source of lumps/files
+char* deh_files[MAXLOADFILES];
 
 boolean devparm;        // started game with -devparm
 
@@ -111,7 +104,8 @@ boolean singletics = false; // debug flag to cancel adaptiveness
 //jff 1/22/98 parms for disabling music and sound
 boolean nosfxparm;
 boolean nomusicparm;
-boolean umapinfo_loaded;
+
+int fullscreen = 0;
 
 //jff 4/18/98
 extern boolean inhelpscreens;
@@ -126,11 +120,11 @@ boolean advancedemo;
 
 extern boolean timingdemo, singledemo, demoplayback, fastdemo; // killough
 
-char    wadfile[REBOOM_PATH_MAX + 1];       // primary wad file
-char    mapdir[REBOOM_PATH_MAX + 1];        // directory of development maps
-char    basedefault[REBOOM_PATH_MAX + 1];   // default file
-char    baseiwad[REBOOM_PATH_MAX + 1];      // jff 3/23/98: iwad directory
-char    basesavegame[REBOOM_PATH_MAX + 1];  // killough 2/16/98: savegame directory
+char    wadfile[PATH_MAX + 1];       // primary wad file
+char    mapdir[PATH_MAX + 1];        // directory of development maps
+char    basedefault[PATH_MAX + 1];   // default file
+char    baseiwad[PATH_MAX + 1];      // jff 3/23/98: iwad directory
+char    basesavegame[PATH_MAX + 1];  // killough 2/16/98: savegame directory
 
 //jff 4/19/98 list of standard IWAD names
 const char* const standard_iwads[] =
@@ -201,7 +195,6 @@ void D_Display(void)
     static boolean viewactivestate = false;
     static boolean menuactivestate = false;
     static boolean inhelpscreensstate = false;
-    static boolean fullscreen = false;
     static gamestate_t oldgamestate = -1;
     static int borderdrawcount;
     int wipestart;
@@ -233,7 +226,7 @@ void D_Display(void)
             break;
         if (automapactive)
             AM_Drawer();
-        if (wipe || (viewheight != 200 && fullscreen) // killough 11/98
+        if (wipe || (viewheight != 200 && fullscreen == 1) // killough 11/98
             || (inhelpscreensstate && !inhelpscreens))
             redrawsbar = true;              // just put away the help screen
         ST_Drawer(viewheight == 200, redrawsbar);    // killough 11/98
@@ -540,21 +533,20 @@ static char title[128];
 //
 // Rewritten by Lee Killough
 //
-// killough 11/98: remove limit on number of files
-//
+// Ty 08/29/98 - add source parm to indicate where this came from
 
-void D_AddFile (char *file, int source)
+void D_AddFile(char* file, int source)
 {
-  static int numwadfiles;
+    static int numwadfiles;
 
-  if (numwadfiles >= MAXWADFILES)
-    I_Error("Error: Number of WAD files exceeds limit of %d", MAXWADFILES);
+    if (numwadfiles >= MAXWADFILES)
+        I_Error("Error: Number of WAD files exceeds limit of %d", MAXWADFILES);
 
-  wad_files[numwadfiles++] =
-    AddDefaultExtension(strcpy(malloc(strlen(file)+5), file), ".wad");
-  wad_file_source[numwadfiles-1] = source; // Ty 08/29/98
+    wadfiles[numwadfiles++] =
+        AddDefaultExtension(strcpy(malloc(strlen(file) + 5), file), ".wad");
+    wadfilesource[numwadfiles - 1] = source; // Ty 08/29/98
+
 }
-
 // Return the path where the executable lies -- Lee Killough
 #ifdef WINDOWS
 char* D_DoomExeDir(void)
@@ -574,18 +566,16 @@ char* D_DoomExeDir(void)
         {
             free(base);
             base = malloc(1024);
-#ifdef WINDOWS
-            if (!_getcwd(base, 1024))
-#else
             if (!getcwd(base, 1024))
-#endif
                 strcpy(base, current_dir_dummy);
         }
     }
     return base;
 }
 #elif defined UNIX
-static const char reboom_dir[] = { "/.reboom/" };
+// cph - V.Aguilar (5/30/99) suggested return ~/.lxdoom/, creating
+//  if non-existant
+static const char prboom_dir[] = { "/.reboom/" };
 
 char* D_DoomExeDir(void)
 {
@@ -595,11 +585,11 @@ char* D_DoomExeDir(void)
         char* home = getenv("HOME");
         size_t len = strlen(home);
 
-        base = malloc(len + strlen(reboom_dir) + 1);
+        base = malloc(len + strlen(prboom_dir) + 1);
         strcpy(base, home);
         // I've had trouble with trailing slashes before...
         if (base[len - 1] == '/') base[len - 1] = 0;
-        strcat(base, reboom_dir);
+        strcat(base, prboom_dir);
         mkdir(base, S_IRUSR | S_IWUSR | S_IXUSR); // Make sure it exists
     }
     return base;
@@ -711,7 +701,11 @@ boolean WadFileStatus(char* filename, boolean* isdir)
 
     i = strlen(filename);           //get length of path
     if (i >= 4)
-		if (!strncasecmp(filename + i - 4, ".wad", 4))
+#ifdef WINDOWS
+        if (!_strnicmp(filename + i - 4, ".wad", 4))
+#else
+        if (!strncasecmp(filename + i - 4, ".wad", 4))
+#endif
             return false;               //if already ends in .wad, not found
 
     strcat(filename, ".wad");        //try it with .wad added
@@ -723,30 +717,6 @@ boolean WadFileStatus(char* filename, boolean* isdir)
     }
     filename[i] = 0;                  //remove .wad
     return false;                   //and report doesn't exist
-}
-
-//
-// NormalizeSlashes
-//
-// Remove trailing slashes, translate backslashes to slashes
-// The string to normalize is passed and returned in str
-//
-// jff 4/19/98 Make killoughs slash fixer a subroutine
-//
-void NormalizeSlashes(char *str)
-{
-  int l;
-
-  // killough 1/18/98: Neater / \ handling.
-  // Remove trailing / or \ to prevent // /\ \/ \\, and change \ to /
-
-  if (!str || !(l = strlen(str)))
-    return;
-  if (str[--l]=='/' || str[l]=='\\')     // killough 1/18/98
-    str[l]=0;
-  while (l--)
-    if (str[l]=='\\')
-      str[l]='/';
 }
 
 //
@@ -779,6 +749,11 @@ void NormalizeSlashes(char *str)
 //  else replace filename with customiwad, if exists thats it
 // If $DOOMWADDIR is existing dir, try customiwad if set, else standard iwads
 //
+// If $HOME is an existing file
+//  If customiwad is not set, thats it
+//  else replace filename with customiwad, if exists thats it
+// If $HOME is an existing dir, try customiwad if set, else standard iwads
+//
 // IWAD not found
 //
 // jff 4/19/98 Add routine to search for a standard or custom IWAD in one
@@ -787,234 +762,101 @@ void NormalizeSlashes(char *str)
 // killough 11/98: simplified, removed error-prone cut-n-pasted code
 //
 
-char *FindIWADFile(void)
+char* FindIWADFile(void)
 {
-  static char iwad[256];
-  static char customiwad[256];
-  boolean     isdir=false;
-  int         i;
-  char        *p;
+    static const char* envvars[] = { "DOOMWADDIR", "HOME" };
+    static char iwad[PATH_MAX + 1], customiwad[PATH_MAX + 1];
+    boolean isdir = false;
+    int i, j;
+    char* p;
 
-  *iwad = 0;       // default return filename to empty
-  *customiwad = 0; // customiwad is blank
+    *iwad = 0;       // default return filename to empty
+    *customiwad = 0; // customiwad is blank
 
-  i = M_CheckParm("-iwad"); //jff 3/24/98 get -iwad parm if specified else use .
-  if (i && i<myargc-1)
-  {
-    sprintf(baseiwad,"%s",myargv[i+1]);
-    NormalizeSlashes(baseiwad);
-
-    strcpy(iwad,baseiwad);
-    if (WadFileStatus(iwad,&isdir))
+    i = M_CheckParm("-iwad"); //jff 3/24/98 get -iwad parm if specified else use .
+    if (i && i < myargc - 1)
     {
-      if (!isdir)
-        return iwad;
-      else
-      {
-        for (i=0;i<nstandard_iwads;i++)
-        {
-          int n = strlen(iwad);
-          strcat(iwad,standard_iwads[i]);
-          if (WadFileStatus(iwad,&isdir) && !isdir)
-            return iwad;
-          iwad[n] = 0; // reset iwad length to former
-        }
-      }
-    }
-    else
-    {
-      if (!strchr(iwad,':') && !strchr(iwad,'/'))
-        AddDefaultExtension(strcat(strcpy(customiwad, "/"), iwad), ".wad");
-    }
-  }
-
-  strcpy(iwad,".");
-  //jff 9/3/98 use logical output routine
-  lprintf(LO_INFO,"CURRENT DIRECTORY: Looking in %s\n",iwad);
-  if (*customiwad)
-  {
-    strcat(iwad,customiwad);
-    if (WadFileStatus(iwad,&isdir) && !isdir)
-      return iwad;
-  }
-  else
-  {
-    for (i=0;i<nstandard_iwads;i++)
-    {
-      int n = strlen(iwad);
-      strcat(iwad,standard_iwads[i]);
-      if (WadFileStatus(iwad,&isdir) && !isdir)
-        return iwad;
-      iwad[n] = 0; // reset iwad length to former
-    }
-  }
-
-  p = getenv("DOOMWADDIR");
-  if (p)
-  {
-    strcpy(iwad,p);
-    NormalizeSlashes(iwad);
-    //jff 9/3/98 use logical output routine
-    lprintf(LO_INFO,"DOOMWADDIR: Looking in %s\n",iwad);
-    if (WadFileStatus(iwad,&isdir))
-    {
-      if (!isdir)
-      {
-        if (!*customiwad)
-        {
-          //jff 9/3/98 use logical output routine
-          lprintf(LO_INFO,"Looking for %s\n",iwad);
-          return iwad;
-        }
+        NormalizeSlashes(strcpy(baseiwad, myargv[i + 1]));
+        if (WadFileStatus(strcpy(iwad, baseiwad), &isdir))
+            if (!isdir)
+                return iwad;
+            else
+                for (i = 0; i < nstandard_iwads; i++)
+                {
+                    int n = strlen(iwad);
+                    strcat(iwad, standard_iwads[i]);
+                    if (WadFileStatus(iwad, &isdir) && !isdir)
+                        return iwad;
+                    iwad[n] = 0; // reset iwad length to former
+                }
         else
-        {
-          p = strrchr(iwad,'/');
-          if (p)
-          {
-            *p=0;
-            strcat(iwad,customiwad);
-            //jff 9/3/98 use logical output routine
-            lprintf(LO_INFO,"Looking for %s\n",iwad);
-            if (WadFileStatus(iwad,&isdir) && !isdir)
-              return iwad;
-          }
-        }
-      }
-      else
-      {
-        //jff 9/3/98 use logical output routine
+            if (!strchr(iwad, ':') && !strchr(iwad, '/'))
+                AddDefaultExtension(strcat(strcpy(customiwad, "/"), iwad), ".wad");
+    }
+
+    for (j = 0; j < 2; j++)
+    {
+        strcpy(iwad, j ? D_DoomExeDir() : ".");
+        NormalizeSlashes(iwad);
+        printf("Looking in %s\n", iwad);   // killough 8/8/98
         if (*customiwad)
         {
-          strcat(iwad,customiwad);
-          if (WadFileStatus(iwad,&isdir) && !isdir)
-            return iwad;
+            strcat(iwad, customiwad);
+            if (WadFileStatus(iwad, &isdir) && !isdir)
+                return iwad;
         }
         else
-        {
-          for (i=0;i<nstandard_iwads;i++)
-          {
-            int n = strlen(iwad);
-            strcat(iwad,standard_iwads[i]);
-            if (WadFileStatus(iwad,&isdir) && !isdir)
-              return iwad;
-            iwad[n] = 0; // reset iwad length to former
-          }
-        }
-      }
+            for (i = 0; i < nstandard_iwads; i++)
+            {
+                int n = strlen(iwad);
+                strcat(iwad, standard_iwads[i]);
+                if (WadFileStatus(iwad, &isdir) && !isdir)
+                    return iwad;
+                iwad[n] = 0; // reset iwad length to former
+            }
     }
-  }
 
-  p = getenv("HOME");
-  if (p)
-  {
-    strcpy(iwad,p);
-    NormalizeSlashes(iwad);
-    //jff 9/3/98 use logical output routine
-    lprintf(LO_INFO,"HOME: Looking in %s\n",iwad);
-    if (WadFileStatus(iwad,&isdir))
-    {
-      if (!isdir)
-      {
-        if (!*customiwad)
+    for (i = 0; i < sizeof envvars / sizeof * envvars; i++)
+        if ((p = getenv(envvars[i])))
         {
-          //jff 9/3/98 use logical output routine
-          lprintf(LO_INFO,"Looking for %s\n",iwad);
-          return iwad;
+            NormalizeSlashes(strcpy(iwad, p));
+            if (WadFileStatus(iwad, &isdir))
+                if (!isdir)
+                {
+                    if (!*customiwad)
+                        return printf("Looking for %s\n", iwad), iwad; // killough 8/8/98
+                    else
+                        if ((p = strrchr(iwad, '/')))
+                        {
+                            *p = 0;
+                            strcat(iwad, customiwad);
+                            printf("Looking for %s\n", iwad);  // killough 8/8/98
+                            if (WadFileStatus(iwad, &isdir) && !isdir)
+                                return iwad;
+                        }
+                }
+                else
+                {
+                    printf("Looking in %s\n", iwad);  // killough 8/8/98
+                    if (*customiwad)
+                    {
+                        if (WadFileStatus(strcat(iwad, customiwad), &isdir) && !isdir)
+                            return iwad;
+                    }
+                    else
+                        for (i = 0; i < nstandard_iwads; i++)
+                        {
+                            int n = strlen(iwad);
+                            strcat(iwad, standard_iwads[i]);
+                            if (WadFileStatus(iwad, &isdir) && !isdir)
+                                return iwad;
+                            iwad[n] = 0; // reset iwad length to former
+                        }
+                }
         }
-        else
-        {
-          p = strrchr(iwad,'/');
-          if (p)
-          {
-            *p=0;
-            strcat(iwad,customiwad);
-            //jff 9/3/98 use logical output routine
-            lprintf(LO_INFO,"Looking for %s\n",iwad);
-            if (WadFileStatus(iwad,&isdir) && !isdir)
-              return iwad;
-          }
-        }
-      }
-      else
-      {
-        //jff 9/3/98 use logical output routine
-        if (*customiwad)
-        {
-          strcat(iwad,customiwad);
-          if (WadFileStatus(iwad,&isdir) && !isdir)
-            return iwad;
-        }
-        else
-        {
-          for (i=0;i<nstandard_iwads;i++)
-          {
-            int n = strlen(iwad);
-            strcat(iwad,standard_iwads[i]);
-            if (WadFileStatus(iwad,&isdir) && !isdir)
-              return iwad;
-            iwad[n] = 0; // reset iwad length to former
-          }
-        }
-      }
-    }
-  }
 
-    p = getenv("BOOMWADDIR");
-  if (p)
-  {
-    strcpy(iwad,p);
-    NormalizeSlashes(iwad);
-    //jff 9/3/98 use logical output routine
-    lprintf(LO_INFO,"BOOMWADDIR: Looking in %s\n",iwad);
-    if (WadFileStatus(iwad,&isdir))
-    {
-      if (!isdir)
-      {
-        if (!*customiwad)
-        {
-          //jff 9/3/98 use logical output routine
-          lprintf(LO_INFO,"Looking for %s\n",iwad);
-          return iwad;
-        }
-        else
-        {
-          p = strrchr(iwad,'/');
-          if (p)
-          {
-            *p=0;
-            strcat(iwad,customiwad);
-            //jff 9/3/98 use logical output routine
-            lprintf(LO_INFO,"Looking for %s\n",iwad);
-            if (WadFileStatus(iwad,&isdir) && !isdir)
-              return iwad;
-          }
-        }
-      }
-      else
-      {
-        //jff 9/3/98 use logical output routine
-        if (*customiwad)
-        {
-          strcat(iwad,customiwad);
-          if (WadFileStatus(iwad,&isdir) && !isdir)
-            return iwad;
-        }
-        else
-        {
-          for (i=0;i<nstandard_iwads;i++)
-          {
-            int n = strlen(iwad);
-            strcat(iwad,standard_iwads[i]);
-            if (WadFileStatus(iwad,&isdir) && !isdir)
-              return iwad;
-            iwad[n] = 0; // reset iwad length to former
-          }
-        }
-      }
-    }
-  }
-  *iwad = 0;
-  return iwad;
+    *iwad = 0;
+    return iwad;
 }
 
 //
@@ -1056,28 +898,30 @@ void IdentifyVersion(void)
             NormalizeSlashes(basesavegame);    //jff 9/22/98 fix c:\ not working
         }
         else
-            lprintf(LO_INFO, "Error: -save path does not exist, using current dir");  // killough 8/8/98
+            puts("Error: -save path does not exist, using current dir");  // killough 8/8/98
     }
+
+    // locate the IWAD and determine game mode from it
 
     iwad = FindIWADFile();
 
     if (iwad && *iwad)
     {
-        lprintf(LO_INFO, "IWAD found: %s\n", iwad); //jff 4/20/98 print only if found
+        printf("IWAD found: %s\n", iwad); //jff 4/20/98 print only if found
         CheckIWAD(iwad, &gamemode, &gamemission, &haswolflevels);
 
         switch (gamemode)
         {
         case retail:
-            lprintf(LO_INFO, "Ultimate DOOM version");  // killough 8/8/98
+            puts("Ultimate DOOM version");  // killough 8/8/98
             break;
 
         case registered:
-            lprintf(LO_INFO, "DOOM Registered version");
+            puts("DOOM Registered version");
             break;
 
         case shareware:
-            lprintf(LO_INFO, "DOOM Shareware version");
+            puts("DOOM Shareware version");
             break;
 
         case commercial:
@@ -1086,24 +930,28 @@ void IdentifyVersion(void)
             switch (gamemission)
             {
             case pack_tnt:
-                lprintf(LO_INFO, "Final DOOM: TNT - Evilution version");
+                puts("Final DOOM: TNT - Evilution version");
                 break;
 
             case pack_plut:
-                lprintf(LO_INFO, "Final DOOM: The Plutonia Experiment version");
+                puts("Final DOOM: The Plutonia Experiment version");
                 break;
 
             case doom2:
             default:
 
                 i = strlen(iwad);
-				if (i >= 10 && !strncasecmp(iwad + i - 10, "doom2f.wad", 10))
+#ifdef WINDOWS
+                if (i >= 10 && !_strnicmp(iwad + i - 10, "doom2f.wad", 10))
+#else
+                if (i >= 10 && !strncasecmp(iwad + i - 10, "doom2f.wad", 10))
+#endif
                 {
                     language = french;
-                    lprintf(LO_INFO, "DOOM II version, French language");  // killough 8/8/98
+                    puts("DOOM II version, French language");  // killough 8/8/98
                 }
                 else
-                    lprintf(LO_INFO, haswolflevels ? "DOOM II version" :  // killough 10/98
+                    puts(haswolflevels ? "DOOM II version" :  // killough 10/98
                         "DOOM II version, german edition, no wolf levels");
                 break;
             }
@@ -1114,8 +962,8 @@ void IdentifyVersion(void)
         }
 
         if (gamemode == indetermined)
-            lprintf(LO_WARN,"Unknown Game Version, may not work\n");
-    D_AddFile(iwad, source_iwad);
+            puts("Unknown Game Version, may not work");  // killough 8/8/98
+        D_AddFile(iwad, source_iwad);
     }
     else
         I_Error("IWAD not found\n");
@@ -1127,11 +975,7 @@ void IdentifyVersion(void)
 // Find a Response File
 //
 
-#if defined REMOVE_LIMITS
 #define MAXARGVS 1000
-#else
-#define MAXARGVS 100
-#endif
 
 void FindResponseFile(void)
 {
@@ -1216,36 +1060,40 @@ static void D_ProcessDehCommandLine(void)
     // Ty 03/18/98 also allow .bex extension.  .bex overrides if both exist.
     // killough 11/98: also allow -bex
 
-  int p = M_CheckParm ("-deh");
-  if (p || (p = M_CheckParm("-bex")))
+    int p = M_CheckParm("-deh");
+    if (p || (p = M_CheckParm("-bex")))
     {
-      // the parms after p are deh/bex file names,
-      // until end of parms or another - preceded parm
-      // Ty 04/11/98 - Allow multiple -deh files in a row
-      // killough 11/98: allow multiple -deh parameters
+        // the parms after p are deh/bex file names,
+        // until end of parms or another - preceded parm
+        // Ty 04/11/98 - Allow multiple -deh files in a row
+        // killough 11/98: allow multiple -deh parameters
 
-      boolean deh = true;
-      while (++p < myargc)
-        if (*myargv[p] == '-')
-          deh = !strcasecmp(myargv[p],"-deh") || !strcasecmp(myargv[p],"-bex");
-        else
-          if (deh)
-            {
-              char file[REBOOM_PATH_MAX+1];      // killough
-              AddDefaultExtension(strcpy(file, myargv[p]), ".bex");
-              if (access(file, F_OK))  // nope
+        boolean deh = true;
+        while (++p < myargc)
+            if (*myargv[p] == '-')
+#ifdef WINDOWS
+                deh = !_stricmp(myargv[p], "-deh") || !_stricmp(myargv[p], "-bex");
+#else
+                deh = !strcasecmp(myargv[p], "-deh") || !strcasecmp(myargv[p], "-bex");
+#endif
+            else
+                if (deh)
                 {
-                  AddDefaultExtension(strcpy(file, myargv[p]), ".deh");
-                  if (access(file, F_OK))  // still nope
-                    I_Error("Cannot find .deh or .bex file named %s",
-                            myargv[p]);
+                    char file[PATH_MAX + 1];      // killough
+                    AddDefaultExtension(strcpy(file, myargv[p]), ".bex");
+                    if (access(file, 0))  // nope
+                    {
+                        AddDefaultExtension(strcpy(file, myargv[p]), ".deh");
+                        if (access(file, 0))  // still nope
+                            I_Error("Cannot find .deh or .bex file named %s",
+                                myargv[p]);
+                    }
+                    // during the beta we have debug output to dehout.txt
+                    // (apparently, this was never removed after Boom beta-killough)
+                    ProcessDehFile(file, D_dehout(), 0);  // killough 10/98
                 }
-              // during the beta we have debug output to dehout.txt
-              // (apparently, this was never removed after Boom beta-killough)
-              ProcessDehFile(file, D_dehout(), 0);  // killough 10/98
-            }
     }
-  // ty 03/09/98 end of do dehacked stuff
+    // ty 03/09/98 end of do dehacked stuff
 }
 
 // killough 10/98: support preloaded deh/bex files
@@ -1270,22 +1118,14 @@ static void D_ProcessDehPreincludes(void)
                     s++;
                 if (*s)
                 {
-                    char file[REBOOM_PATH_MAX + 1];
+                    char file[PATH_MAX + 1];
                     AddDefaultExtension(strcpy(file, s), ".bex");
-#ifdef WINDOWS
-                    if (!_access(file, 4))
-#else
                     if (!access(file, 4))
-#endif
                         ProcessDehFile(file, D_dehout(), 0);
                     else
                     {
                         AddDefaultExtension(strcpy(file, s), ".deh");
-#ifdef WINDOWS
-                        if (!_access(file, 4))
-#else
                         if (!access(file, 4))
-#endif
                             ProcessDehFile(file, D_dehout(), 0);
                         else
                             printf("\nWarning: could not open %s .deh or .bex\n", s);
@@ -1308,15 +1148,14 @@ static void D_ProcessDehPreincludes(void)
 
 static void D_ProcessDehInWad(int i)
 {
-    if (M_CheckParm("-ndehacked"))
-    {
-        return;
-    }
-
     if (i >= 0)
     {
         D_ProcessDehInWad(lumpinfo[i].next);
-		if (!strncasecmp(lumpinfo[i].name, "dehacked", 8) &&
+#ifdef WINDOWS
+        if (!strnicmp(lumpinfo[i].name, "dehacked", 8) &&
+#else
+        if (!strncasecmp(lumpinfo[i].name, "dehacked", 8) &&
+#endif
             lumpinfo[i].namespace == ns_global)
             ProcessDehFile(NULL, D_dehout(), i);
     }
@@ -1325,7 +1164,18 @@ static void D_ProcessDehInWad(int i)
 #define D_ProcessDehInWads() D_ProcessDehInWad(lumpinfo[W_LumpNameHash \
                                                        ("dehacked") % (unsigned) numlumps].index);
 
-//ENDBOOM LUMP HERE AGAIN ONE DAY
+// 
+// Called at exit to display the ENDOOM screen (ENDTEXT in Heretic)
+//
+
+void D_Endoom(void)
+{
+    byte* endoom;
+
+    endoom = W_CacheLumpName("ENDBOOM", PU_STATIC);
+
+    I_EndDoom(endoom);
+}
 
 //
 // D_DoomMain
@@ -1334,15 +1184,15 @@ static void D_ProcessDehInWad(int i)
 void D_DoomMain(void)
 {
     int p, slot;
-    char file[REBOOM_PATH_MAX + 1];      // killough 3/22/98
+    char file[PATH_MAX + 1];      // killough 3/22/98
 
     setbuf(stdout, NULL);
 
     FindResponseFile();         // Append response file arguments to command-line
 
     // killough 10/98: set default savename based on executable's name
-    //Gibbon: Make it 8 chars
-    sprintf(savegamename = malloc(16), "%.8sSAV", D_DoomExeName());
+    //Gibbon: Make it 8 chars and have an underscore so it looks nicer
+    sprintf(savegamename = malloc(16), "%.8s_sav", D_DoomExeName());
 
     IdentifyVersion();
 
@@ -1365,24 +1215,88 @@ void D_DoomMain(void)
         if (M_CheckParm("-deathmatch"))
             deathmatch = 1;
 
-	lprintf(LO_INFO, "\n\n=============================================================================\n");
-        lprintf(LO_INFO, "ReBOOM Copyright (C) 2021 Gibbon\nThis program comes with ABSOLUTELY NO WARRANTY; for details see LICENCE.TXT.\nThis is free software, and you are welcome to redistribute it\nunder certain conditions; see LICENCE.TXT for details.\n");
+    switch (gamemode)
+    {
+    case retail:
+        sprintf(title,
+            "                         "
+            "The Ultimate DOOM Startup v%i.%02i"
+            "                           ",
+            VERSION / 100, VERSION % 100);
+        break;
+    case shareware:
+        sprintf(title,
+            "                            "
+            "DOOM Shareware Startup v%i.%02i"
+            "                           ",
+            VERSION / 100, VERSION % 100);
+        break;
 
-    	lprintf(LO_INFO, "%s\nBuilt on %s\n", title, version_date);    // killough 2/1/98
-	lprintf(LO_INFO, "=============================================================================\n\n");
+    case registered:
+        sprintf(title,
+            "                            "
+            "DOOM Registered Startup v%i.%02i"
+            "                           ",
+            VERSION / 100, VERSION % 100);
+        break;
+
+    case commercial:
+        switch (gamemission)      // joel 10/16/98 Final DOOM fix
+        {
+        case pack_plut:
+            sprintf(title,
+                "                   "
+                "DOOM 2: Plutonia Experiment v%i.%02i"
+                "                           ",
+                VERSION / 100, VERSION % 100);
+            break;
+
+        case pack_tnt:
+            sprintf(title,
+                "                     "
+                "DOOM 2: TNT - Evilution v%i.%02i"
+                "                           ",
+                VERSION / 100, VERSION % 100);
+            break;
+
+        case doom2:
+        default:
+
+            sprintf(title,
+                "                         "
+                "DOOM 2: Hell on Earth v%i.%02i"
+                "                           ",
+                VERSION / 100, VERSION % 100);
+
+            break;
+        }
+        break;
+        // joel 10/16/98 end Final DOOM fix
+
+    default:
+        sprintf(title,
+            "                     "
+            "Public DOOM - v%i.%i"
+            "                           ",
+            VERSION / 100, VERSION % 100);
+        break;
+    }
+
+    printf("%s\nBuilt on %s\n", title, version_date);    // killough 2/1/98
 
     if (devparm)
-        lprintf(LO_INFO, D_DEVSTR);
+        printf(D_DEVSTR);
 
 #ifndef UNIX
     if (M_CheckParm("-cdrom"))
     {
-        lprintf(LO_INFO, D_CDROM);
+        printf(D_CDROM);
 #ifdef UNIX
         mkdir("./doomdata", 755);
 #else
-        _mkdir("c:/doomdata");
+        mkdir("c:/doomdata");
 #endif
+
         // killough 10/98:
         sprintf(basedefault, "c:/doomdata/%s.cfg", D_DoomExeName());
     }
@@ -1419,7 +1333,7 @@ void D_DoomMain(void)
         // until end of parms or another - preceded parm
         modifiedgame = true;            // homebrew levels
         while (++p != myargc && *myargv[p] != '-')
-        D_AddFile(myargv[p], source_pwad);
+            D_AddFile(myargv[p], source_pwad);
     }
 
     if (!(p = M_CheckParm("-playdemo")) || p >= myargc - 1)    // killough
@@ -1432,9 +1346,8 @@ void D_DoomMain(void)
     {
         strcpy(file, myargv[p + 1]);
         AddDefaultExtension(file, ".lmp");     // killough
-        D_AddFile (file, source_lmp);
-        //jff 9/3/98 use logical output routine
-        lprintf(LO_CONFIRM,"Playing demo %s\n",file);
+        D_AddFile(file, source_lmp);
+        printf("Playing demo %s\n", file);
     }
 
     // get skill / episode / map from parms
@@ -1465,7 +1378,7 @@ void D_DoomMain(void)
 
     if ((p = M_CheckParm("-avg")) && p < myargc - 1 && deathmatch)
         //jff 9/3/98 use logical output routine
-        lprintf(LO_INFO, "Austin Virtual Gaming: Levels will end after 20 minutes");
+        puts("Austin Virtual Gaming: Levels will end after 20 minutes");
 
     if (((p = M_CheckParm("-warp")) ||      // killough 5/2/98
         (p = M_CheckParm("-wart"))) && p < myargc - 1)
@@ -1514,53 +1427,36 @@ void D_DoomMain(void)
     puts("V_Init: allocate screens.");    // killough 11/98: moved down to here
     V_Init();
 
-    lprintf(LO_INFO,"W_Init: Init WADfiles.\n");
-    W_InitMultipleFiles(wad_files, wad_file_source);
+    puts("W_Init: Init WADfiles.");
+    W_InitMultipleFiles(wadfiles, wadfilesource);
 
-    lprintf(LO_INFO,"\n");     // killough 3/6/98: add a newline, by popular demand :)
+    putchar('\n');     // killough 3/6/98: add a newline, by popular demand :)
 
     D_ProcessDehInWads();      // killough 10/98: now process all deh in wads
 
     D_ProcessDehPreincludes(); // killough 10/98: process preincluded .deh files
 
-   lprintf(LO_INFO,"\n");     // killough 3/6/98: add a newline, by popular demand :)
-
-   // Check for -file in shareware
-   if (modifiedgame)
+    // Check for -file in shareware
+    if (modifiedgame)
     {
-      // These are the lumps that will be checked in IWAD,
-      // if any one is not present, execution will be aborted.
-      static const char name[23][8]= {
-        "e2m1","e2m2","e2m3","e2m4","e2m5","e2m6","e2m7","e2m8","e2m9",
-        "e3m1","e3m3","e3m3","e3m4","e3m5","e3m6","e3m7","e3m8","e3m9",
-        "dphoof","bfgga0","heada1","cybra1","spida1d1" };
-      int i;
+        // These are the lumps that will be checked in IWAD,
+        // if any one is not present, execution will be aborted.
+        static const char name[23][8] = {
+          "e2m1","e2m2","e2m3","e2m4","e2m5","e2m6","e2m7","e2m8","e2m9",
+          "e3m1","e3m3","e3m3","e3m4","e3m5","e3m6","e3m7","e3m8","e3m9",
+          "dphoof","bfgga0","heada1","cybra1","spida1d1" };
+        int i;
 
-      if (gamemode == shareware)
-        I_Error("\nYou cannot -file with the shareware version. Register!");
+        if (gamemode == shareware)
+            I_Error("\nYou cannot -file with the shareware version. Register!");
 
-      // Check for fake IWAD with right name,
-      // but w/o all the lumps of the registered version.
-      if (gamemode == registered)
-        for (i = 0;i < 23; i++)
-          if (W_CheckNumForName(name[i])<0 &&
-              (W_CheckNumForName)(name[i],ns_sprites)<0) // killough 4/18/98
-            I_Error("\nThis is not the registered version.");
-    }
-
-    if (!M_CheckParm("-numapinfo"))
-    {
-        int lumpnum;
-        if ((lumpnum = W_CheckNumForName("UMAPINFO")) != -1)
-        {
-            const char* lump = (const char*)W_CacheLumpNum(lumpnum, PU_STATIC);
-            U_ParseMapInfo(lump, W_LumpLength(lumpnum));
-        }
-        lprintf(LO_INFO, "\nUMAPINFO: ENABLED.");
-        umapinfo_loaded = true;
-    } else {
-        lprintf(LO_INFO, "\nUMAPINFO: DISABLED.");
-        umapinfo_loaded = false;
+        // Check for fake IWAD with right name,
+        // but w/o all the lumps of the registered version.
+        if (gamemode == registered)
+            for (i = 0; i < 23; i++)
+                if (W_CheckNumForName(name[i]) < 0 &&
+                    (W_CheckNumForName)(name[i], ns_sprites) < 0) // killough 4/18/98
+                    I_Error("\nThis is not the registered version.");
     }
 
     V_InitColorTranslation(); //jff 4/24/98 load color translation lumps
@@ -1576,28 +1472,28 @@ void D_DoomMain(void)
     if (*startup5) puts(startup5);
     // End new startup strings
 
-    lprintf(LO_INFO, "\nM_Init: Init miscellaneous info.");
+    puts("M_Init: Init miscellaneous info.");
     M_Init();
 
-    lprintf(LO_INFO, "\nR_Init: Init DOOM refresh daemon - ");
+    printf("R_Init: Init DOOM refresh daemon - ");
     R_Init();
 
-    lprintf(LO_INFO, "\nP_Init: Init Playloop state.");
+    puts("\nP_Init: Init Playloop state.");
     P_Init();
 
-    lprintf(LO_INFO, "\nI_Init: Setting up machine state.");
+    puts("I_Init: Setting up machine state.");
     I_Init();
 
-    lprintf(LO_INFO, "\nD_CheckNetGame: Checking network game status.");
+    puts("D_CheckNetGame: Checking network game status.");
     D_CheckNetGame();
 
-    lprintf(LO_INFO, "\nS_Init: Setting up sound.");
+    puts("S_Init: Setting up sound.");
     S_Init(snd_SfxVolume /* *8 */, snd_MusicVolume /* *8*/);
 
-    lprintf(LO_INFO, "\nHU_Init: Setting up heads up display.");
+    puts("HU_Init: Setting up heads up display.");
     HU_Init();
 
-    lprintf(LO_INFO, "\nST_Init: Init status bar.\n");
+    puts("ST_Init: Init status bar.");
     ST_Init();
 
     idmusnum = -1; //jff 3/17/98 insure idmus number is blank
@@ -1612,7 +1508,7 @@ void D_DoomMain(void)
         // address as an integer on the command line!
 
         statcopy = (void*)(intptr_t)atoll(myargv[p + 1]);
-        lprintf(LO_INFO, "External statistics registered.\n");
+        puts("External statistics registered.");
     }
 
     // start the apropriate game based on parms

@@ -30,7 +30,7 @@
 #ifndef __I_VIDEO__
 #define __I_VIDEO__
 
-#define BOOM_WINDOW_TEXT "ReBOOM 2.06um"
+#define BOOM_WINDOW_TEXT "ReBOOM 3.02"
 
 #include "doomtype.h"
 
@@ -60,10 +60,6 @@ void I_ResetScreen(void);   // killough 10/98
 void I_BeginRead(void);
 void I_EndRead(void);
 
-boolean I_WritePNGfile(char* filename);
-
 extern int use_vsync;  // killough 2/8/98: controls whether vsync is called
 extern int page_flip;  // killough 8/15/98: enables page flipping (320x200)
-extern int integer_scaling; // [FG] force integer scales
-
 #endif

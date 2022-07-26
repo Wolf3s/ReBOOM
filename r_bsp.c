@@ -88,11 +88,8 @@ typedef struct {
 // have anything to do with visplanes, but it had everything to do with these
 // clip posts.
 
-#if defined REMOVE_LIMITS
-#define MAXSEGS 4096
-#else
 #define MAXSEGS (MAX_SCREENWIDTH/2+1)   /* killough 1/11/98, 2/8/98 */
-#endif
+
 // newend is one past the last valid seg
 static cliprange_t *newend;
 static cliprange_t solidsegs[MAXSEGS];
@@ -415,7 +412,7 @@ static void R_AddLine (seg_t *line)
       // Totally off the left edge?
       if (tspan >= span)
         return;
-      angle2 = 0 - clipangle;
+      angle2 = -clipangle;
     }
 
   // The seg is in the view range,
@@ -564,7 +561,7 @@ static boolean R_CheckBBox(fixed_t *bspcoord) // killough 1/28/98: static
       if (tspan >= span)
         return false;
 
-      angle2 = 0 - clipangle;
+      angle2 = -clipangle;
     }
 
   // Find the first clippost

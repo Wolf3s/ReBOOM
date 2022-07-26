@@ -29,7 +29,7 @@
 #ifdef UNIX
 #include "SDL2/SDL_net.h" //Gibbon
 #else
-#include <SDL_net.h>
+#include "SDL_net.h"
 #endif
 
 #include "z_zone.h"  /* memory allocation wrappers -- killough */
@@ -41,6 +41,7 @@
 #include "d_event.h"
 #include "d_net.h"
 #include "m_argv.h"
+
 #include "i_net.h"
 
 void    NetSend (void);

@@ -90,9 +90,6 @@ byte    *dc_source;      // first pixel in a column (possibly virtual)
 //  be used. It has also been used with Wolfenstein 3D.
 // 
 
-// proff: This is in drawasm.nas
-//#ifndef DJGPP      // killough 2/15/98
-
 void R_DrawColumn (void) 
 { 
   int              count; 
@@ -278,9 +275,7 @@ void R_DrawTLColumn (void)
 //
 
 #define FUZZTABLE 50 
-// proff 08/17/98: Changed for high-res
-//#define FUZZOFF (SCREENWIDTH)
-#define FUZZOFF 1
+#define FUZZOFF (SCREENWIDTH)
 
 static const int fuzzoffset[FUZZTABLE] = {
   FUZZOFF,-FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,
@@ -481,10 +476,6 @@ fixed_t ds_ystep;
 // start of a 64*64 tile image 
 byte *ds_source;        
 
-//#if !defined(DJGPP) && !defined(_WIN32) || defined(NOASM)
-// proff: In Win32 with VC50 it seems that R_DrawSan is faster in C than in ASM
-#ifndef DJGPP      // killough 2/15/98
-
 void R_DrawSpan (void) 
 { 
   unsigned position;
@@ -553,8 +544,6 @@ void R_DrawSpan (void)
     } 
 } 
 
-#endif
-
 //
 // R_InitBuffer 
 // Creats lookup tables that avoid
@@ -608,8 +597,7 @@ void R_FillBackScreen (void)
 
   dest = screens[1]; 
          
-  for ( y = 0 ; y < SCREENHEIGHT/*-SBARHEIGHT*/; y++ ) // proff/nicolas
-//---------- draw the full screen height^^^^                          
+  for (y=0 ; y<SCREENHEIGHT-SBARHEIGHT ; y++) 
     { 
       int x;
       for (x=0 ; x<SCREENWIDTH/64 ; x++) 
@@ -624,10 +612,7 @@ void R_FillBackScreen (void)
         } 
     } 
         
-// proff 08/17/98: Changed for high-res
-// proff/nicolas 09/20/98: Moved down for high-res
   if (scaledviewwidth == SCREENWIDTH)
-//  if (scaledviewwidth == 320)
     return;
 
   patch = W_CacheLumpName("brdr_t", PU_CACHE);
@@ -685,41 +670,12 @@ void R_VideoErase(unsigned ofs, int count)
 // Draws the border around the view
 //  for different size windows?
 //
+
+void V_MarkRect(int x, int y, int width, int height); 
  
 void R_DrawViewBorder(void) 
 { 
   int top, side, ofs, i;
-// proff/nicolas 09/20/98: Added for high-res (inspired by DosDOOM)
-  int side2;
- 
-// proff/nicolas 09/20/98: Removed for high-res
-//  if (scaledviewwidth == SCREENWIDTH) 
-//    return; 
-  
-// proff/nicolas 09/20/98: Added for high-res (inspired by DosDOOM)
-  if (( SCREENWIDTH > 320 ) && ( SCREENHEIGHT != viewheight ))
-  {
-    ofs = ( SCREENHEIGHT - SBARHEIGHT ) * SCREENWIDTH;
-    side= ( SCREENWIDTH - 320 ) / 2; 
-	  side2 = side * 2;
-
-    R_VideoErase ( ofs, side );
-    
-    ofs += ( SCREENWIDTH - side );
-    for ( i = 1; i < SBARHEIGHT; i++ )
-	  {
-      R_VideoErase ( ofs, side2 );
-      ofs += SCREENWIDTH;
-    }
-
-    R_VideoErase ( ofs, side );
-  }
-
-  if ( viewheight >= ( SCREENHEIGHT - SBARHEIGHT ))
-    return; // if high-res, don\B4t go any further!
-
-// proff/nicolas 09/20/98: End of addition
-
   top = ((SCREENHEIGHT-SBARHEIGHT)-viewheight)/2; 
   side = (SCREENWIDTH-scaledviewwidth)/2; 
  
@@ -739,6 +695,8 @@ void R_DrawViewBorder(void)
       R_VideoErase (ofs, side); 
       ofs += SCREENWIDTH; 
     } 
+
+  V_MarkRect (0,0,SCREENWIDTH, SCREENHEIGHT-SBARHEIGHT); 
 } 
 
 //----------------------------------------------------------------------------

@@ -29,14 +29,7 @@
 //
 //-----------------------------------------------------------------------------
 
-#ifdef WINDOWS
-#include <io.h>
-#endif
-
-#include <stdio.h>
-#include <stdarg.h>
 #include <errno.h>
-#include "doomtype.h"
 #include "doomstat.h"
 #include "m_argv.h"
 #include "g_game.h"
@@ -62,15 +55,12 @@
 static int config_help;         //jff 3/3/98
 int usemouse;
 int usejoystick;
+int screenshot_pcx; //jff 3/30/98 // option to output screenshot as pcx or bmp
 extern int mousebfire;
 extern int mousebstrafe;
 extern int mousebforward;
-extern int mousebprevweapon;
-extern int mousebnextweapon;
 extern int joybfire;
 extern int joybstrafe;
-extern int joybstrafeleft;
-extern int joybstraferight;
 extern int joybuse;
 extern int joybspeed;
 extern int viewwidth;
@@ -91,8 +81,6 @@ extern int cfg_scalefactor; // haleyjd 05/11/09
 extern int cfg_aspectratio; // haleyjd 05/11/09
 extern int disk_icon;
 extern char *chat_macros[];
-extern int fullscreen;
-extern int endboomlump;
 
 //jff 3/3/98 added min, max, and help string to all entries
 //jff 4/10/98 added isstr field to specify whether value is string or int
@@ -235,10 +223,10 @@ default_t defaults[] = {
   },
 
   {
-    "sts_pct_always_yellow",
-    (config_t *) &sts_pct_always_yellow, NULL,
+    "sts_pct_always_gray",
+    (config_t *) &sts_pct_always_gray, NULL,
     {1}, {0,1}, number, ss_stat, wad_yes,
-    "1 to make percent signs on status bar always yellow"
+    "1 to make percent signs on status bar always gray"
   },
 
   { // killough 2/28/98
@@ -272,7 +260,7 @@ default_t defaults[] = {
   { //jff 4/3/98 allow unlimited sensitivity
     "mouse_sensitivity_vert",
     (config_t *) &mouseSensitivity_vert, NULL,
-    {0}, {0,UL}, number, ss_none, wad_no,
+    {5}, {0,UL}, number, ss_none, wad_no,
     "adjust vertical (y) mouse sensitivity"
   },
 
@@ -300,7 +288,7 @@ default_t defaults[] = {
   { // killough 3/6/98: preserve autorun across games
     "autorun",
     (config_t *) &autorun, NULL,
-    {1}, {0,1}, number, ss_none, wad_no,
+    {0}, {0,1}, number, ss_none, wad_no,
     "1 to enable autorun"
   },
 
@@ -400,13 +388,6 @@ default_t defaults[] = {
     (config_t *) &key_menu_enter, NULL,
     {KEYD_ENTER}, {0,255}, number, ss_keys, wad_no,
     "key to select from menu or review past messages"
-  },
-
-  {
-    "key_menu_clear",
-    &key_menu_clear, NULL,
-    KEYD_DEL, {0,255}, number, ss_keys, wad_no,
-    "key to clear a key binding"
   },
 
   {
@@ -704,20 +685,6 @@ default_t defaults[] = {
   },
 
   {
-    "key_prevweapon",
-    &key_prevweapon, NULL,
-    {0}, {0,255}, number, ss_keys, wad_no,
-    "key to cycle to the previous weapon"
-  },
-
-  {
-    "key_nextweapon",
-    &key_nextweapon, NULL,
-    {0}, {0,255}, number, ss_keys, wad_no,
-    "key to cycle to the next weapon"
-  },
-
-  {
     "key_weapon1",
     (config_t *) &key_weapon1, NULL,
     {'1'}, {0,255}, number, ss_keys, wad_no,
@@ -794,6 +761,13 @@ default_t defaults[] = {
     "shortcut key to enter setup menu"
   },
 
+  { // jff 3/30/98 add ability to take screenshots in BMP format
+    "screenshot_pcx",
+    (config_t *) &screenshot_pcx, NULL,
+    {1}, {0,1}, number, ss_none, wad_no,
+    "1 to take a screenshot in PCX format, 0 for BMP"
+  },
+
   {
     "use_mouse",
     (config_t *) &usemouse, NULL,
@@ -804,37 +778,23 @@ default_t defaults[] = {
   { //jff 3/8/98 allow -1 in mouse bindings to disable mouse function
     "mouseb_fire",
     (config_t *) &mousebfire, NULL,
-    {0}, {-1,4}, number, ss_keys, wad_no,
+    {0}, {-1,2}, number, ss_keys, wad_no,
     "mouse button number to use for fire (-1 = disable)"
   },
 
   {
     "mouseb_strafe",
     (config_t *) &mousebstrafe, NULL,
-    {1}, {-1,4}, number, ss_keys, wad_no,
+    {1}, {-1,2}, number, ss_keys, wad_no,
     "mouse button number to use for strafing (-1 = disable)"
   },
 
   {
     "mouseb_forward",
     (config_t *) &mousebforward, NULL,
-    {2}, {-1,4}, number, ss_keys, wad_no,
+    {2}, {-1,2}, number, ss_keys, wad_no,
     "mouse button number to use for forward motion (-1 = disable)"
   }, //jff 3/8/98 end of lower range change for -1 allowed in mouse binding
-
-  {
-    "mouseb_prevweapon",
-    &mousebprevweapon, NULL,
-    {4}, {-1,4}, number, ss_keys, wad_no,
-    "mouse button number to cycle to the previous weapon (-1 = disable)"
-  },
-
-  {
-    "mouseb_nextweapon",
-    &mousebnextweapon, NULL,
-    {3}, {-1,4}, number, ss_keys, wad_no,
-    "mouse button number to cycle to the mext weapon (-1 = disable)"
-  },
 
   {
     "use_joystick",
@@ -1270,13 +1230,6 @@ default_t defaults[] = {
     {1}, {0,1}, number, ss_stat, wad_yes,
     "0 to disable permanent hud stats on screen - cannot be enabled with hud_nosecrets set to 1"
   },
-    
-  { // always show hud stats
-    "boom_show_level_name",
-    (config_t *) &boom_show_level_name, NULL,
-    {1}, {0,1}, number, ss_stat, wad_yes,
-    "0 to disable permanent level name hud stats on screen - cannot be enabled with hud_nosecrets set to 1"
-  },
 
   {  // killough 2/8/98: weapon preferences set by user:
     "weapon_choice_1",
@@ -1345,7 +1298,7 @@ default_t defaults[] = {
   {
     "joystick_num",
     (config_t *) &i_SDLJoystickNum, NULL,
-    {0}, {-1,UL}, number, ss_none, wad_no,
+    {-1}, {-1,UL}, number, ss_none, wad_no,
     "SDL joystick device number, -1 to disable"
   },
     
@@ -1399,62 +1352,21 @@ default_t defaults[] = {
     "1 to perform aspect ratio correction"
   },
 
-  {
-    "fullscreen",
-    &fullscreen, NULL,
-    {1}, {0, 1}, number, ss_stat, wad_no,
-    "0 to disable fullscreen mode"
-  },
+    // [FG] precache all sound effects
+   {
+     "precache_sounds",
+     (config_t *) &precache_sounds, NULL,
+     {1}, {0, 1}, number, ss_none, wad_no,
+     "1 to precache all sound effects"
+   },
 
-  {
-    "endboom",
-    &endboomlump, NULL,
-    {0}, {0, 1}, number, ss_stat, wad_no,
-    "1 to enable the endboom lump"
-  },
+   {
+     "toggle_fullscreen",
+     (config_t*) &fullscreen, NULL,
+     {1}, {0, 1}, number, ss_none, wad_no,
+     "1 to enable fullscreen"
+   },
 
-  {
-    "disable_horizontal_autoaim",
-    (config_t*) &disable_horizontal_autoaim, NULL,
-    {0}, {0,1}, number, ss_stat, wad_yes,
-    "1 to disable horizontal autoaim"
-  },
-
-  {
-    "accessibility_colours",
-    (config_t*)&accessibility_colours, NULL,
-    {0}, {0,1}, number, ss_stat, wad_yes,
-    "1 to enable accessibility colours"
-  },
-  
-  {
-    "accessibility_effects",
-    (config_t*)&accessibility_effects, NULL,
-    {0}, {0,1}, number, ss_stat, wad_yes,
-    "1 to enable accessibility effects"
-  },
-  
-  { // no color changes on status bar
-    "sts_always_gray",
-    (config_t *) &sts_always_gray, NULL,
-    {0}, {0,1}, number, ss_stat, wad_yes,
-    "1 to enable use of gray on status bar"
-  },
-  
-  { // no color changes on status bar
-    "hyper_berserk_shotgun",
-    (config_t *) &hyper_berserk_shotgun, NULL,
-    {0}, {0,1}, number, ss_stat, wad_yes,
-    "1 to enable use of when having berserk super shotgun power is increased"
-  },
-
-  {
-    "more_gibs",
-    (config_t*)&more_gibs, NULL,
-    {0}, {0,1}, number, ss_stat, wad_yes,
-    "1 to enable more gore"
-  },
-  
   {NULL}         // last entry
 };
 
@@ -1501,7 +1413,11 @@ default_t *M_LookupDefault(const char *name)
 
   // Look up name in hash table
   for (dp = defaults[default_hash(name)].first;
-  dp&& strcasecmp(name, dp->name); dp = dp->next);
+#ifdef WINDOWS
+       dp && _stricmp(name, dp->name); dp = dp->next);
+#else
+       dp&& strcasecmp(name, dp->name); dp = dp->next);
+#endif
   return dp;
 }
 
@@ -1511,7 +1427,7 @@ default_t *M_LookupDefault(const char *name)
 
 void M_SaveDefaults (void)
 {
-  char tmpfile[REBOOM_PATH_MAX + 1];
+  char tmpfile[PATH_MAX+1];
   default_t *dp;
   int line, blanks;
   FILE *f;
@@ -1834,6 +1750,8 @@ void M_LoadDefaults (void)
     }
 
   defaults_loaded = true;            // killough 10/98
+
+  //jff 3/4/98 redundant range checks for hud deleted here
 }
 
 //
@@ -1936,10 +1854,230 @@ int M_ReadFile(char const *name, byte **buffer)
   return 0;
 }
 
-boolean WritePNGfile(char* filename, byte* data, int width,
-    int height, byte* palette)
+//
+// SCREEN SHOTS
+//
+
+typedef struct
 {
-    return I_WritePNGfile(filename);
+  char     manufacturer;
+  char     version;
+  char     encoding;
+  char     bits_per_pixel;
+
+  unsigned short  xmin;
+  unsigned short  ymin;
+  unsigned short  xmax;
+  unsigned short  ymax;
+
+  unsigned short  hres;
+  unsigned short  vres;
+
+  unsigned char palette[48];
+
+  char     reserved;
+  char     color_planes;
+  unsigned short  bytes_per_line;
+  unsigned short  palette_type;
+
+  char     filler[58];
+  unsigned char data;   // unbounded
+} pcx_t;
+
+
+//
+// WritePCXfile
+//
+
+boolean WritePCXfile(char *filename, byte *data, int width,
+                     int height, byte *palette)
+{
+  int    i;
+  int    length;
+  pcx_t* pcx;
+  byte*  pack;
+  boolean success;      // killough 10/98
+
+  pcx = Z_Malloc(width*height*2+1000, PU_STATIC, NULL);
+
+  pcx->manufacturer = 0x0a; // PCX id
+  pcx->version = 5;         // 256 color
+  pcx->encoding = 1;        // uncompressed
+  pcx->bits_per_pixel = 8;  // 256 color
+  pcx->xmin = 0;
+  pcx->ymin = 0;
+  pcx->xmax = SHORT((short)(width-1));
+  pcx->ymax = SHORT((short)(height-1));
+  pcx->hres = SHORT((short)width);
+  pcx->vres = SHORT((short)height);
+  memset (pcx->palette,0,sizeof(pcx->palette));
+  pcx->color_planes = 1;        // chunky image
+  pcx->bytes_per_line = SHORT((short)width);
+  pcx->palette_type = SHORT(2); // not a grey scale
+  memset (pcx->filler,0,sizeof(pcx->filler));
+
+  // pack the image
+
+  pack = &pcx->data;
+
+  for (i = 0 ; i < width*height ; i++)
+    if ( (*data & 0xc0) != 0xc0)
+      *pack++ = *data++;
+    else
+      {
+        *pack++ = 0xc1;
+        *pack++ = *data++;
+      }
+
+  // write the palette
+
+  *pack++ = 0x0c; // palette ID byte
+  for (i = 0 ; i < 768 ; i++)
+    *pack++ = gammatable[usegamma][*palette++];   // killough
+
+  // write output file
+
+  length = pack - (byte *)pcx;
+  success = M_WriteFile (filename, pcx, length);  // killough 10/98
+
+  Z_Free (pcx);
+
+  return success;    // killough 10/98
+}
+
+
+// jff 3/30/98 types and data structures for BMP output of screenshots
+//
+// killough 5/2/98:
+// Changed type names to avoid conflicts with endianess functions
+
+#define BI_RGB 0L
+
+typedef unsigned short uint_t;
+typedef uint32_t dword_t; // [FG] unsigned long
+typedef int32_t long_t; // [FG] long
+typedef unsigned char ubyte_t;
+
+#ifdef WINDOWS
+#pragma pack(push, 1)
+#endif
+
+typedef struct tagBITMAPFILEHEADER
+{
+  uint_t  bfType;
+  dword_t bfSize;
+  uint_t  bfReserved1;
+  uint_t  bfReserved2;
+  dword_t bfOffBits;
+} __attribute__ ((packed)) BITMAPFILEHEADER;
+
+typedef struct tagBITMAPINFOHEADER
+{
+  dword_t biSize;
+  long_t  biWidth;
+  long_t  biHeight;
+  uint_t  biPlanes;
+  uint_t  biBitCount;
+  dword_t biCompression;
+  dword_t biSizeImage;
+  long_t  biXPelsPerMeter;
+  long_t  biYPelsPerMeter;
+  dword_t biClrUsed;
+  dword_t biClrImportant;
+} __attribute__ ((packed)) BITMAPINFOHEADER;
+
+#ifdef WINDOWS
+#pragma pack(pop)
+#endif
+
+// jff 3/30/98 binary file write with error detection
+// killough 10/98: changed into macro to return failure instead of aborting
+
+#define SafeWrite(data,size,number,st) do {   \
+    if (fwrite(data,size,number,st) < (number)) \
+   return fclose(st), I_EndRead(), false; } while(0)
+
+//
+// WriteBMPfile
+// jff 3/30/98 Add capability to write a .BMP file (256 color uncompressed)
+//
+
+boolean WriteBMPfile(char *filename, byte *data, int width,
+                     int height, byte *palette)
+{
+  int i,wid;
+  BITMAPFILEHEADER bmfh;
+  BITMAPINFOHEADER bmih;
+  int fhsiz,ihsiz;
+  FILE *st;
+  char zero=0;
+  ubyte_t c;
+
+
+  I_BeginRead();              // killough 10/98
+  
+  fhsiz = sizeof(BITMAPFILEHEADER);
+  ihsiz = sizeof(BITMAPINFOHEADER);
+  wid = 4*((width+3)/4);
+  //jff 4/22/98 add endian macros
+  bmfh.bfType = SHORT(19778);
+  bmfh.bfSize = LONG(fhsiz+ihsiz+256L*4+width*height);
+  bmfh.bfReserved1 = SHORT(0);
+  bmfh.bfReserved2 = SHORT(0);
+  bmfh.bfOffBits = LONG(fhsiz+ihsiz+256L*4);
+
+  bmih.biSize = LONG(ihsiz);
+  bmih.biWidth = LONG(width);
+  bmih.biHeight = LONG(height);
+  bmih.biPlanes = SHORT(1);
+  bmih.biBitCount = SHORT(8);
+  bmih.biCompression = LONG(BI_RGB);
+  bmih.biSizeImage = LONG(wid*height);
+  bmih.biXPelsPerMeter = LONG(0);
+  bmih.biYPelsPerMeter = LONG(0);
+  bmih.biClrUsed = LONG(256);
+  bmih.biClrImportant = LONG(256);
+
+  st = fopen(filename,"wb");
+  if (st!=NULL)
+    {
+      // write the header
+      SafeWrite(&bmfh.bfType,sizeof(bmfh.bfType),1,st);
+      SafeWrite(&bmfh.bfSize,sizeof(bmfh.bfSize),1,st);
+      SafeWrite(&bmfh.bfReserved1,sizeof(bmfh.bfReserved1),1,st);
+      SafeWrite(&bmfh.bfReserved2,sizeof(bmfh.bfReserved2),1,st);
+      SafeWrite(&bmfh.bfOffBits,sizeof(bmfh.bfOffBits),1,st);
+
+      SafeWrite(&bmih.biSize,sizeof(bmih.biSize),1,st);
+      SafeWrite(&bmih.biWidth,sizeof(bmih.biWidth),1,st);
+      SafeWrite(&bmih.biHeight,sizeof(bmih.biHeight),1,st);
+      SafeWrite(&bmih.biPlanes,sizeof(bmih.biPlanes),1,st);
+      SafeWrite(&bmih.biBitCount,sizeof(bmih.biBitCount),1,st);
+      SafeWrite(&bmih.biCompression,sizeof(bmih.biCompression),1,st);
+      SafeWrite(&bmih.biSizeImage,sizeof(bmih.biSizeImage),1,st);
+      SafeWrite(&bmih.biXPelsPerMeter,sizeof(bmih.biXPelsPerMeter),1,st);
+      SafeWrite(&bmih.biYPelsPerMeter,sizeof(bmih.biYPelsPerMeter),1,st);
+      SafeWrite(&bmih.biClrUsed,sizeof(bmih.biClrUsed),1,st);
+      SafeWrite(&bmih.biClrImportant,sizeof(bmih.biClrImportant),1,st);
+
+      // write the palette, in blue-green-red order, gamma corrected
+      for (i=0;i<768;i+=3)
+        {
+          c=gammatable[usegamma][palette[i+2]];
+          SafeWrite(&c,sizeof(char),1,st);
+          c=gammatable[usegamma][palette[i+1]];
+          SafeWrite(&c,sizeof(char),1,st);
+          c=gammatable[usegamma][palette[i+0]];
+          SafeWrite(&c,sizeof(char),1,st);
+          SafeWrite(&zero,sizeof(char),1,st);
+        }
+
+      for (i = 0 ; i < height ; i++)
+        SafeWrite(data+(height-1-i)*width,sizeof(byte),wid,st);
+
+      fclose(st);
+    }
+  return I_EndRead(), true;       // killough 10/98
 }
 
 //
@@ -1950,113 +2088,57 @@ boolean WritePNGfile(char* filename, byte* data, int width,
 //
 // killough 10/98: improved error-handling
 
-void M_ScreenShot(void)
+void M_ScreenShot (void)
 {
-    boolean success = false;
+  boolean success = false;
 
-    errno = 0;
-#ifdef WINDOWS
-    if (!_access(".", 2))
-#else
-    if (!access(".", 2))
-#endif
+  errno = 0;
+
+  if (!access(".",2))
     {
-        static int shot;
-        char lbmname[REBOOM_PATH_MAX + 1];
-        int tries = 10000;
+      static int shot;
+      char lbmname[PATH_MAX+1];
+      int tries = 10000;
 
-        do
-            sprintf(lbmname, "doom%02d.png", shot++);
-#ifdef WINDOWS
-        while (!_access(lbmname, 0) && --tries);
-#else
-        while (!access(lbmname, 0) && --tries);
-#endif
-        if (tries)
+      do
+        sprintf(lbmname,                         //jff 3/30/98 pcx or bmp?
+                screenshot_pcx ? "doom%02d.pcx" : "doom%02d.bmp", shot++);
+      while (!access(lbmname,0) && --tries);
+
+      if (tries)
         {
-            // killough 4/18/98: make palette stay around
-            // (PU_CACHE could cause crash)
+          // killough 4/18/98: make palette stay around
+          // (PU_CACHE could cause crash)
 
-            byte* pal = W_CacheLumpName("PLAYPAL", PU_STATIC);
-            byte* linear = screens[2];
+          byte *pal = W_CacheLumpName ("PLAYPAL", PU_STATIC);
+          byte *linear = screens[2];
 
-            I_ReadScreen(linear);
+          I_ReadScreen(linear);
 
-            // save the pcx file
-            //jff 3/30/98 write pcx or bmp depending on mode
+          // save the pcx file
+          //jff 3/30/98 write pcx or bmp depending on mode
 
-            // killough 10/98: detect failure and remove file if error
-        // killough 11/98: add hires support
-            if (!(success = (WritePNGfile) // [FG] PNG
-                (lbmname, linear, SCREENWIDTH, SCREENHEIGHT, pal)))
-            {
-                int t = errno;
-                remove(lbmname);
-                errno = t;
-            }
+          // killough 10/98: detect failure and remove file if error
+          if (!(success = (screenshot_pcx ? WritePCXfile : WriteBMPfile)
+                (lbmname,linear, SCREENWIDTH, SCREENHEIGHT,pal)))
+	    {
+	      int t = errno;
+	      remove(lbmname);
+	      errno = t;
+	    }
 
-            // killough 4/18/98: now you can mark it PU_CACHE
-            Z_ChangeTag(pal, PU_CACHE);
+          // killough 4/18/98: now you can mark it PU_CACHE
+          Z_ChangeTag(pal, PU_CACHE);
         }
     }
 
-    // 1/18/98 killough: replace "SCREEN SHOT" acknowledgement with sfx
-    // players[consoleplayer].message = "screen shot"
+  // 1/18/98 killough: replace "SCREEN SHOT" acknowledgement with sfx
+  // players[consoleplayer].message = "screen shot"
 
-    // killough 10/98: print error message and change sound effect if error
-    S_StartSound(NULL, !success ? doom_printf("%s", errno ? strerror(errno) :
-        "Could not take screenshot"), sfx_oof :
-        gamemode == commercial ? sfx_radio : sfx_tink);
-}
+  // killough 10/98: print error message and change sound effect if error
+  S_StartSound(NULL, !success ? doom_printf("%s", errno ? strerror(errno) :
+					"Could not take screenshot"), sfx_oof :
+               gamemode==commercial ? sfx_radio : sfx_tink);
 
-boolean M_StrToInt(const char* str, int* result)
-{
-    return sscanf(str, " 0x%x", (unsigned int*)result) == 1
-        || sscanf(str, " 0X%x", (unsigned int*)result) == 1
-        || sscanf(str, " 0%o", (unsigned int*)result) == 1
-        || sscanf(str, " %d", result) == 1;
-}
 
-// On Windows, vsnprintf() is _vsnprintf().
-#ifdef _WIN32
-#if _MSC_VER < 1400 /* not needed for Visual Studio 2008 */
-#define vsnprintf _vsnprintf
-#endif
-#endif
-
-// Safe, portable vsnprintf().
-static int PRINTF_ATTR(3, 0) M_vsnprintf(char *buf, size_t buf_len, const char *s, va_list args)
-{
-    int result;
-
-    if (buf_len < 1)
-    {
-        return 0;
-    }
-
-    // Windows (and other OSes?) has a vsnprintf() that doesn't always
-    // append a trailing \0. So we must do it, and write into a buffer
-    // that is one byte shorter; otherwise this function is unsafe.
-    result = vsnprintf(buf, buf_len, s, args);
-
-    // If truncated, change the final char in the buffer to a \0.
-    // A negative result indicates a truncated buffer on Windows.
-    if (result < 0 || result >= buf_len)
-    {
-        buf[buf_len - 1] = '\0';
-        result = buf_len - 1;
-    }
-
-    return result;
-}
-
-// Safe, portable snprintf().
-int M_snprintf(char* buf, size_t buf_len, const char* s, ...)
-{
-    va_list args;
-    int result;
-    va_start(args, s);
-    result = M_vsnprintf(buf, buf_len, s, args);
-    va_end(args);
-    return result;
 }

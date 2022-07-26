@@ -41,21 +41,6 @@ boolean modifiedgame;
 
 //-----------------------------------------------------------------------------
 
-// More Gibs - With or Without Hyper Shotgun
-int more_gibs;
-
-// Hyper Berserk Shotgun
-int hyper_berserk_shotgun;
-
-// Accessibility colours
-int accessibility_colours;
-
-// Accessibility effects
-int accessibility_effects;
-
-// No horizontal autoaim
-int disable_horizontal_autoaim;
-
 // compatibility with old engines (monster behavior, metrics, etc.)
 int compatibility, default_compatibility;          // killough 1/31/98
 
@@ -82,15 +67,3 @@ int default_player_bobbing;  // killough 3/1/98: make local to each game
 
 int monsters_remember;          // killough 3/1/98
 int default_monsters_remember;
-
-char *MAPNAME(int e, int m)
-{
-  static char name[9];
-
-  if (gamemode == commercial)
-    snprintf(name, sizeof(name), "MAP%02d", m);
-  else
-    snprintf(name, sizeof(name), "E%dM%d", e, m);
-
-  return name;
-}

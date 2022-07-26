@@ -49,23 +49,44 @@
 
 typedef int fixed_t;
 
+// Adam - Adding more efficient abs routine
+#ifdef BOOM_ASM
+__inline int boom_abs(int x)
+{
+    asm
+    (
+      "mov eax,x"
+      "cdq"
+      "xor eax,edx"
+      "sub eax,edx"
+    );
+}
+#endif
+
+//
+// Absolute Value
+//
+
+// killough 5/10/98: In djgpp, use inlined assembly for performance
+// killough 9/05/98: better code seems to be gotten from using inlined C
+
 //
 // Fixed Point Multiplication
 //
 
-static inline fixed_t FixedMul(fixed_t a, fixed_t b)
+__inline__ static fixed_t FixedMul(fixed_t a, fixed_t b)
 {
-  return (fixed_t)((int64_t) a*b >> FRACBITS);
+  return (fixed_t)((Long64) a*b >> FRACBITS);
 }
 
 //
 // Fixed Point Division
 //
 
-static inline fixed_t FixedDiv(fixed_t a, fixed_t b)
+__inline__ static fixed_t FixedDiv(fixed_t a, fixed_t b)
 {
   return (abs(a)>>14) >= abs(b) ? ((a^b)>>31) ^ D_MAXINT :
-    (fixed_t)(((int64_t) a << FRACBITS) / b);
+    (fixed_t)(((Long64) a << FRACBITS) / b);
 }
 
 #endif

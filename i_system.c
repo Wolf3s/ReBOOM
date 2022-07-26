@@ -35,10 +35,9 @@
 #ifdef UNIX
 #include "SDL2/SDL.h"
 #else
-#include <SDL.h>
+#include "SDL.h"
 #endif
 
-#include "txt_main.h"
 #include "z_zone.h"
 #include "i_system.h"
 #include "i_sound.h"
@@ -49,69 +48,15 @@
 #include "v_video.h"
 #include "m_argv.h"
 #include "i_video.h" //Adam - For BOOM_WINDOW_TEXT
-#include "lprintf.h"
+#include "txt_main.h"
 
-int endboomlump;
+#define ENDOOM_W 80
+#define ENDOOM_H 25
 
 ticcmd_t *I_BaseTiccmd(void)
 {
   static ticcmd_t emptycmd; // killough
   return &emptycmd;
-}
-
-//
-// I_EndDoom
-//
-// killough 2/22/98: Add support for ENDBOOM, which is PC-specific
-// killough 8/1/98:  change back to ENDOOM
-// haleyjd 10/09/05: ENDOOM emulation thanks to fraggle and
-//                   Chocolate DOOM!
-//
-void I_EndDoom(void)
-{
-    unsigned char* screendata;
-    int64_t y;
-    int64_t indent;
-    unsigned char* endoom_data;
-
-    endoom_data = W_CacheLumpName("ENDBOOM", PU_STATIC);
-
-    // Set up text mode screen
-
-    TXT_Init();
-
-    TXT_SetWindowTitle(BOOM_WINDOW_TEXT);
-
-    // Write the data to the screen memory
-
-    screendata = TXT_GetScreenData();
-
-    indent = (80 - TXT_SCREEN_W) / 2;
-
-    for (y = 0; y < TXT_SCREEN_H; ++y)
-    {
-        memcpy(screendata + (y * TXT_SCREEN_W * 2),
-            endoom_data + (y * 80 + indent) * 2,
-            TXT_SCREEN_W * 2);
-    }
-
-    // Wait for a keypress
-
-    while (true)
-    {
-        TXT_UpdateScreen();
-
-        if (TXT_GetChar() > 0)
-        {
-            break;
-        }
-
-        TXT_Sleep(0);
-    }
-
-    // Shut down text mode screen
-
-    TXT_Shutdown();
 }
 
 void I_WaitVBL(int count)
@@ -140,11 +85,11 @@ int I_GetTime_RealTime(void)
 
 // killough 4/13/98: Make clock rate adjustable by scale factor
 int realtic_clock_rate = 100;
-static int64_t I_GetTime_Scale = 1<<24;
+static Long64 I_GetTime_Scale = 1<<24;
 int I_GetTime_Scaled(void)
 {
    // haleyjd:
-   return (int)((int64_t) I_GetTime_RealTime() * I_GetTime_Scale >> 24);
+   return (int)((Long64) I_GetTime_RealTime() * I_GetTime_Scale >> 24);
 }
 
 static int  I_GetTime_FastDemo(void)
@@ -270,9 +215,9 @@ void I_InitKeyboard(void)
 void I_Init(void)
 {
    extern int key_autorun;
-   int64_t clock_rate = realtic_clock_rate, p;
+   int clock_rate = realtic_clock_rate, p;
    
-   if((p = M_CheckParm("-speed")) && p < (int64_t)myargc -1 &&
+   if((p = M_CheckParm("-speed")) && p < myargc-1 &&
       (p = atoll(myargv[p+1])) >= 10 && p <= 1000)
       clock_rate = p;
    
@@ -285,7 +230,7 @@ void I_Init(void)
    else
       if(clock_rate != 100)
       {
-         I_GetTime_Scale = ((int64_t) clock_rate << 24) / 100;
+         I_GetTime_Scale = ((Long64) clock_rate << 24) / 100;
          I_GetTime = I_GetTime_Scaled;
       }
       else
@@ -325,17 +270,14 @@ static char errmsg[2048];    // buffer of error message -- killough
 
 static int has_exited;
 
-void I_Quit(void)
+void I_Quit (void)
 {
-    has_exited = 1;   /* Prevent infinitely recursive exits -- killough */
-
-    if (*errmsg)
-        lprintf(LO_INFO, errmsg);   // killough 8/8/98
-
-    if (endboomlump)
-    {
-        I_EndDoom();
-    }
+   has_exited=1;   /* Prevent infinitely recursive exits -- killough */
+   
+   if (*errmsg)
+      puts(errmsg);   // killough 8/8/98
+   else
+      //I_EndDoom(endoom);
 
    if (demorecording)
       G_CheckDemoStatus();
@@ -361,4 +303,57 @@ void I_Error(const char *error, ...) // killough 3/20/98: add const
       has_exited=1;   // Prevent infinitely recursive exits -- killough
       exit(-1);
    }
+}
+
+// Adam - Adding back ENDBOOM lump
+// Adam - Created by using the SDL2 textscreen code from Chocolate Doom (Thanks Fraggle!)
+
+// 
+// Displays the text mode ending screen after the game quits
+//
+
+void I_EndDoom(byte *endoom)
+{
+    unsigned char *screendata;
+    int y;
+    int indent;
+
+    I_Quit();
+
+    // Set up text mode screen
+
+    TXT_Init();
+
+    TXT_SetWindowTitle(BOOM_WINDOW_TEXT);
+
+    // Write the data to the screen memory
+
+    screendata = TXT_GetScreenData();
+
+    indent = (ENDOOM_W - TXT_SCREEN_W) / 2;
+
+    for (y=0; y<TXT_SCREEN_H; ++y)
+    {
+        memcpy(screendata + (y * TXT_SCREEN_W * 2),
+               endoom + (y * ENDOOM_W + indent) * 2,
+               TXT_SCREEN_W * 2);
+    }
+
+    // Wait for a keypress
+
+    while (true)
+    {
+        TXT_UpdateScreen();
+
+        if (TXT_GetChar() > 0)
+        {
+            break;
+        }
+
+        TXT_Sleep(0);
+    }
+
+    // Shut down text mode screen
+
+    TXT_Shutdown();
 }

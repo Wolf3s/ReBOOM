@@ -42,24 +42,6 @@
 
 // We need the playr data structure as well.
 #include "d_player.h"
-#include "umapinfo.h"
-
-char *MAPNAME(int e, int m);
-
-// More Gibs - With or Without Hyper Shotgun
-extern int more_gibs;
-
-// Hyper Berserk Shotgun
-extern int hyper_berserk_shotgun;
-
-// Accessibility colours
-extern int accessibility_colours;
-
-// Accessibility effects
-extern int accessibility_effects;
-
-// No horizontal autoaim
-extern int disable_horizontal_autoaim;
 
 // ------------------------
 // Command line parameters.
@@ -118,9 +100,6 @@ extern  boolean   autostart;
 extern  skill_t         gameskill;
 extern  int   gameepisode;
 extern  int   gamemap;
-
-//UMAPINFO
-extern  mapentry_t* gamemapinfo;
 
 // Nightmare mode flag, single player.
 extern  boolean         respawnmonsters;

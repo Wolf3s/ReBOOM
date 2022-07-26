@@ -261,15 +261,12 @@ static st_number_t w_ready;
 //jff 2/16/98 status color change levels
 int ammo_red;      // ammo percent less than which status is red
 int ammo_yellow;   // ammo percent less is yellow more green
-int ammo_gray;
 int health_red;    // health amount less than which status is red
 int health_yellow; // health amount less than which status is yellow
 int health_green;  // health amount above is blue, below is green
-int health_gray;
 int armor_red;     // armor amount less than which status is red
 int armor_yellow;  // armor amount less than which status is yellow
 int armor_green;   // armor amount above is blue, below is green
-int armor_gray;
 
  // in deathmatch only, summary of frags stats
 static st_number_t w_frags;
@@ -635,43 +632,50 @@ void ST_Ticker(void)
   st_oldhealth = plyr->health;
 }
 
-int64_t st_palette = 0;
+static int st_palette = 0;
 
 void ST_doPaletteStuff(void)
 {
-    int         palette;
-    int         count = plyr->damagecount;
-    
-    if (plyr->powers[pw_strength])
+  int         palette;
+  byte*       pal;
+  int cnt = plyr->damagecount;
+
+  if (plyr->powers[pw_strength])
     {
-        count = ReBOOMMathMax(12, count);
+      // slowly fade the berzerk out
+      int bzc = 12 - (plyr->powers[pw_strength]>>6);
+      if (bzc > cnt)
+        cnt = bzc;
     }
-    if (count)
+
+  if (cnt)
     {
-        palette = ReBOOMMathMin((count + 7) >> 3, NUMREDPALS);
+      palette = (cnt+7)>>3;
+      if (palette >= NUMREDPALS)
+        palette = NUMREDPALS-1;
+      palette += STARTREDPALS;
     }
-    else if (plyr->bonuscount)
-    {
-        palette = (plyr->bonuscount + 7) >> 3;
+  else
+    if (plyr->bonuscount)
+      {
+        palette = (plyr->bonuscount+7)>>3;
         if (palette >= NUMBONUSPALS)
-        {
-            palette = NUMBONUSPALS - 1;
-        }
+          palette = NUMBONUSPALS-1;
         palette += STARTBONUSPALS;
-    }
-    else if (plyr->powers[pw_ironfeet] > 4 * 32 || plyr->powers[pw_ironfeet] & 8)
-    {
+      }
+    else
+      if (plyr->powers[pw_ironfeet] > 4*32 || plyr->powers[pw_ironfeet] & 8)
         palette = RADIATIONPAL;
-    }
-    else {
+      else
         palette = 0;
-    }
-    if (palette != st_palette)
+
+  if (palette != st_palette)
     {
-        // Adam - casting a 4 byte int (palette) to a long long to avoid an overflow
-        byte * lump = (byte*)W_CacheLumpNum(lu_palette, PU_CACHE) + (int64_t)palette * 768;
-        I_SetPalette(lump);
-        st_palette = palette;
+      st_palette = palette;
+      // haleyjd: must cast to byte *, arith. on void pointer is
+      // a GNU C extension
+      pal = (byte *)W_CacheLumpNum(lu_palette, PU_CACHE) + palette*768;
+      I_SetPalette (pal);
     }
 }
 
@@ -684,8 +688,7 @@ void ST_drawWidgets(boolean refresh)
 
   // used by w_frags widget
   st_fragson = deathmatch && st_statusbaron;
-if (!sts_always_gray)
-{
+
   //jff 2/16/98 make color of ammo depend on amount
   if (*w_ready.num*100 < ammo_red*plyr->maxammo[weaponinfo[w_ready.data].ammo])
     STlib_updateNum(&w_ready, cr_red, refresh);
@@ -722,44 +725,6 @@ if (!sts_always_gray)
   else
     STlib_updatePercent(&w_armor, cr_blue_status, refresh); //killough 2/28/98
 
-} else { // gray below here
-
-  if (*w_ready.num*100 < ammo_gray*plyr->maxammo[weaponinfo[w_ready.data].ammo])
-    STlib_updateNum(&w_ready, cr_gray, refresh);
-  else
-    if (*w_ready.num*100 <
-        ammo_gray*plyr->maxammo[weaponinfo[w_ready.data].ammo])
-      STlib_updateNum(&w_ready, cr_gray, refresh);
-    else
-      STlib_updateNum(&w_ready, cr_gray, refresh);
-
-  for (i=0;i<4;i++)
-    {
-      STlib_updateNum(&w_ammo[i], NULL, refresh);   //jff 2/16/98 no xlation
-      STlib_updateNum(&w_maxammo[i], NULL, refresh);
-    }
-
-  //jff 2/16/98 make color of health depend on amount
-  if (*w_health.n.num<health_gray)
-    STlib_updatePercent(&w_health, cr_gray, refresh);
-  else if (*w_health.n.num<health_gray)
-    STlib_updatePercent(&w_health, cr_gray, refresh);
-  else if (*w_health.n.num<=health_gray)
-    STlib_updatePercent(&w_health, cr_gray, refresh);
-  else
-    STlib_updatePercent(&w_health, cr_gray, refresh); //killough 2/28/98
-
-  //jff 2/16/98 make color of armor depend on amount
-  if (*w_armor.n.num<armor_gray)
-    STlib_updatePercent(&w_armor, cr_gray, refresh);
-  else if (*w_armor.n.num<armor_gray)
-    STlib_updatePercent(&w_armor, cr_gray, refresh);
-  else if (*w_armor.n.num<=armor_gray)
-    STlib_updatePercent(&w_armor, cr_gray, refresh);
-  else
-    STlib_updatePercent(&w_armor, cr_gray, refresh); //killough 2/28/98
-}
-
   STlib_updateBinIcon(&w_armsbg, refresh);
 
   for (i=0;i<6;i++)
@@ -793,9 +758,9 @@ void ST_diffDraw(void)
   ST_drawWidgets(false);
 }
 
-void ST_Drawer(boolean fullscreen, boolean refresh)
+void ST_Drawer(int fullscreen, boolean refresh)
 {
-  st_statusbaron = !fullscreen || automapactive;
+  st_statusbaron = fullscreen == 0 || automapactive;
   st_firsttime = st_firsttime || refresh;
 
   ST_doPaletteStuff();  // Do red-/gold-shifts from damage/items
@@ -814,10 +779,10 @@ void ST_loadGraphics(void)
   // Load the numbers, tall and short
   for (i=0;i<10;i++)
     {
-		sprintf(namebuf, "STTNUM%d", i);
-        tallnum[i] = (patch_t*)W_CacheLumpName(namebuf, PU_STATIC);
-        sprintf(namebuf, "STYSNUM%d", i);
-        shortnum[i] = (patch_t*)W_CacheLumpName(namebuf, PU_STATIC);
+      sprintf(namebuf, "STTNUM%d", i);
+      tallnum[i] = (patch_t *) W_CacheLumpName(namebuf, PU_STATIC);
+      sprintf(namebuf, "STYSNUM%d", i);
+      shortnum[i] = (patch_t *) W_CacheLumpName(namebuf, PU_STATIC);
     }
 
   // Load percent key.

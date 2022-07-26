@@ -29,7 +29,6 @@
 
 #include "doomdef.h"
 #include "doomstat.h"
-#include "doomtype.h"
 #include "m_random.h"
 #include "r_main.h"
 #include "p_maputl.h"
@@ -1045,28 +1044,22 @@ void P_SpawnPlayerMissile(mobj_t* source,mobjtype_t type)
   slope = P_AimLineAttack (source, an, 16*64*FRACUNIT);
 
   if (!linetarget)
-  {
-      an += 1 << 26;
-      if (!disable_horizontal_autoaim)
+    {
+    an += 1<<26;
+    slope = P_AimLineAttack (source, an, 16*64*FRACUNIT);
+
+    if (!linetarget)
       {
-          slope = P_AimLineAttack(source, an, 16 * 64 * FRACUNIT);
+      an -= 2<<26;
+      slope = P_AimLineAttack (source, an, 16*64*FRACUNIT);
       }
 
-      if (!linetarget)
+    if (!linetarget)
       {
-          an -= 2 << 26;
-          if (!disable_horizontal_autoaim)
-          {
-              slope = P_AimLineAttack(source, an, 16 * 64 * FRACUNIT);
-          }
-
-          if (!linetarget)
-          {
-              an = source->angle;
-              slope = 0;
-          }
+      an = source->angle;
+      slope = 0;
       }
-  }
+    }
 
   x = source->x;
   y = source->y;

@@ -66,11 +66,10 @@ byte *G_WriteOptions(byte *demo_p);        // killough 3/1/98
 void G_PlayerReborn(int player);
 void G_InitNew(skill_t skill, int episode, int map);
 void G_DoVictory(void);
-uint64_t G_Signature(void);      // killough 12/98
+ULong64 G_Signature(void);      // killough 12/98
+
 // killough 1/18/98: Doom-style printf;   killough 4/25/98: add gcc attributes
 void doom_printf(const char *, ...) __attribute__((format(printf,1,2)));
-
-int G_ValidateMapName(const char* mapname, int* pEpi, int* pMap);
 
 // killough 5/2/98: moved from m_misc.c:
 
@@ -85,7 +84,6 @@ extern int  key_menu_down;
 extern int  key_menu_backspace;                              //     ^
 extern int  key_menu_escape;                                 //     |
 extern int  key_menu_enter;                                  // phares 3/7/98
-extern int  key_menu_clear;
 extern int  key_strafeleft;
 extern int  key_straferight;
 
@@ -127,9 +125,7 @@ extern int  key_weapon5;
 extern int  key_weapon6;
 extern int  key_weapon7;
 extern int  key_weapon8;
-extern int  key_weapon9;        
-extern int  key_prevweapon;
-extern int  key_nextweapon;                                    
+extern int  key_weapon9;                                            
 extern int  destination_keys[MAXPLAYERS];
 extern int  key_map_right;
 extern int  key_map_left;

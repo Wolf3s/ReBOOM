@@ -19,7 +19,7 @@
 //
 //  You should have received a copy of the GNU General Public License
 //  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+//  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
 //  02111-1307, USA.
 //
 // DESCRIPTION:
@@ -434,7 +434,7 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher)
         return;
       player->message = s_GOTBERSERK; // Ty 03/22/98 - externalized
       if (player->readyweapon != wp_fist)
-    player->pendingweapon = wp_fist;
+	player->pendingweapon = wp_fist;
       sound = sfx_getpow;
       break;
 
@@ -628,7 +628,7 @@ static void P_KillMobj(mobj_t *source, mobj_t *target)
         {
           // count all monster deaths,
           // even those caused by other monsters
-          players->killcount++;
+	      players->killcount++;
         }
 
   if (target->player)
@@ -642,23 +642,15 @@ static void P_KillMobj(mobj_t *source, mobj_t *target)
       P_DropWeapon (target->player);
 
       if (target->player == &players[consoleplayer] && automapactive)
-        AM_Stop();    // don't die in auto map; switch view prior to dying
+	    AM_Stop();    // don't die in auto map; switch view prior to dying
     }
-    // More Gibs
-    if((more_gibs && source && source->player && target->info->xdeathstate && !(demoplayback || demorecording)))
-        {
-            P_SetMobjState(target, target->info->xdeathstate);
-        }
-        else if (target->health < -target->info->spawnhealth && target->info->xdeathstate)
-        {
-            P_SetMobjState(target, target->info->xdeathstate);
-        }
-        else
-        {
-            P_SetMobjState(target, target->info->deathstate);
-        }
 
-  target->tics -= P_Random(pr_killtics) & 3;
+  if (target->health < -target->info->spawnhealth && target->info->xdeathstate)
+    P_SetMobjState (target, target->info->xdeathstate);
+  else
+    P_SetMobjState (target, target->info->deathstate);
+
+  target->tics -= P_Random(pr_killtics)&3;
 
   if (target->tics < 1)
     target->tics = 1;

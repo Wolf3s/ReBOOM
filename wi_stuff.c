@@ -36,7 +36,6 @@
 #include "wi_stuff.h"
 #include "s_sound.h"
 #include "sounds.h"
-#include "hu_stuff.h"
 
 // Ty 03/17/98: flag that new par times have been loaded in d_deh
 extern boolean deh_pars;  
@@ -384,8 +383,6 @@ static patch_t*   bp[MAXPLAYERS];
 // Name graphics of each level (centered)
 static patch_t**  lnames;
 
-static const char* exitpic, * enterpic;
-
 
 //
 // CODE
@@ -416,15 +413,6 @@ boolean WI_Responder(event_t* ev)
   return false;
 }
 
-extern patch_t* hu_font[HU_FONTSIZE];
-
-static void WI_DrawString(int y, const char* str)
-{
-    extern void M_DrawString(int x, int y, int color, const char* str);
-    extern int  M_StringWidth(char* str);
-
-    M_DrawString(160 - (M_StringWidth((char*)str) / 2), y, CR_GRAY, str);
-}
 
 // ====================================================================
 // WI_drawLF
@@ -434,38 +422,17 @@ static void WI_DrawString(int y, const char* str)
 //
 static void WI_drawLF(void)
 {
-    int y = WI_TITLEY;
+  int y = WI_TITLEY;
 
-    // The level defines a new name but no texture for the name.
-    if (wbs->lastmapinfo && wbs->lastmapinfo->levelname && wbs->lastmapinfo->levelpic[0] == 0)
-    {
-        WI_DrawString(y, wbs->lastmapinfo->levelname);
+  // draw <LevelName> 
+  V_DrawPatch((SCREENWIDTH - SHORT(lnames[wbs->last]->width))/2,
+              y, FB, lnames[wbs->last]);
 
-        y += (5 * SHORT(hu_font['A' - HU_FONTSTART]->height) / 4);
-    }
-    else if (wbs->lastmapinfo && wbs->lastmapinfo->levelpic[0])
-    {
-        patch_t* lpic = W_CacheLumpName(wbs->lastmapinfo->levelpic, PU_CACHE);
-
-        V_DrawPatch((SCREENWIDTH - SHORT(lpic->width)) / 2,
-            y, FB, lpic);
-
-        y += (5 * SHORT(lpic->height)) / 4;
-    }
-    else
-        // [FG] prevent crashes for levels without name graphics
-        if (wbs->last < lnames)
-        {
-            // draw <LevelName> 
-            V_DrawPatch((SCREENWIDTH - SHORT(lnames[wbs->last]->width)) / 2,
-                y, FB, lnames[wbs->last]);
-
-            // draw "Finished!"
-            y += (5 * SHORT(lnames[wbs->last]->height)) / 4;
-        }
-
-    V_DrawPatch((SCREENWIDTH - SHORT(finished->width)) / 2,
-        y, FB, finished);
+  // draw "Finished!"
+  y += (5*SHORT(lnames[wbs->last]->height))/4;
+  
+  V_DrawPatch((SCREENWIDTH - SHORT(finished->width))/2,
+              y, FB, finished);
 }
 
 
@@ -477,38 +444,17 @@ static void WI_drawLF(void)
 //
 static void WI_drawEL(void)
 {
-    int y = WI_TITLEY;
+  int y = WI_TITLEY;
 
-    // draw "Entering"
-    V_DrawPatch((SCREENWIDTH - SHORT(entering->width)) / 2,
-        y, FB, entering);
+  // draw "Entering"
+  V_DrawPatch((SCREENWIDTH - SHORT(entering->width))/2,
+              y, FB, entering);
 
-    // The level defines a new name but no texture for the name
-    if (wbs->nextmapinfo && wbs->nextmapinfo->levelname && wbs->nextmapinfo->levelpic[0] == 0)
-    {
-        y += (5 * SHORT(entering->height)) / 4;
+  // draw level
+  y += (5*SHORT(lnames[wbs->next]->height))/4;
 
-        WI_DrawString(y, wbs->nextmapinfo->levelname);
-    }
-    else if (wbs->nextmapinfo && wbs->nextmapinfo->levelpic[0])
-    {
-        patch_t* lpic = W_CacheLumpName(wbs->nextmapinfo->levelpic, PU_CACHE);
-
-        y += (5 * SHORT(lpic->height)) / 4;
-
-        V_DrawPatch((SCREENWIDTH - SHORT(lpic->width)) / 2,
-            y, FB, lpic);
-    }
-    else
-        // [FG] prevent crashes for levels without name graphics
-        if (wbs->next < lnames)
-        {
-            // draw level
-            y += (5 * SHORT(lnames[wbs->next]->height)) / 4;
-
-            V_DrawPatch((SCREENWIDTH - SHORT(lnames[wbs->next]->width)) / 2,
-                y, FB, lnames[wbs->next]);
-        }
+  V_DrawPatch((SCREENWIDTH - SHORT(lnames[wbs->next]->width))/2,
+              y, FB, lnames[wbs->next]);
 }
 
 
@@ -573,11 +519,6 @@ static void WI_initAnimatedBack(void)
   int   i;
   anim_t* a;
 
-  if (exitpic)
-      return;
-  if (enterpic && entering)
-      return;
-
   if (gamemode == commercial)  // no animation for DOOM2
     return;
 
@@ -614,11 +555,6 @@ static void WI_updateAnimatedBack(void)
 {
   int   i;
   anim_t* a;
-
-  if (exitpic)
-      return;
-  if (enterpic && state != StatCount)
-      return;
 
   if (gamemode == commercial)
     return;
@@ -676,11 +612,6 @@ static void WI_drawAnimatedBack(void)
 {
   int     i;
   anim_t*   a;
-
-  if (exitpic)
-      return;
-  if (enterpic && state != StatCount)
-      return;
 
   if (gamemode==commercial) //jff 4/25/98 Someone forgot commercial an enum
     return;
@@ -955,26 +886,6 @@ static boolean    snl_pointeron = false;
 //
 static void WI_initShowNextLoc(void)
 {
-    if (gamemapinfo)
-    {
-        if (gamemapinfo->endpic[0])
-        {
-            G_WorldDone();
-            return;
-        }
-        state = ShowNextLoc;
-
-        // episode change
-        if (wbs->epsd != wbs->nextep)
-        {
-            void WI_loadData(void);
-
-            wbs->epsd = wbs->nextep;
-            wbs->last = wbs->next - 1;
-            WI_loadData();
-        }
-    }
-
   state = ShowNextLoc;
   acceleratestage = 0;
   cnt = SHOWNEXTLOCDELAY * TICRATE;
@@ -1010,32 +921,11 @@ static void WI_drawShowNextLoc(void)
 {
   int   i;
   int   last;
-  
-  if (gamemapinfo != NULL &&
-      gamemapinfo->endpic[0] &&
-      strcmp(gamemapinfo->endpic, "-") != 0)
-  {
-      return;
-  }
-
-  if (gamemapinfo != NULL &&
-      gamemapinfo->endpic[0] &&
-      strcmp(gamemapinfo->endpic, "-") != 0)
-  {
-      return;
-  }
 
   WI_slamBackground();
 
   // draw animated background
-  WI_drawAnimatedBack();
-
-  // custom interpic.
-  if (exitpic || (enterpic && state != StatCount))
-  {
-      WI_drawEL();
-      return;
-  }
+  WI_drawAnimatedBack(); 
 
   if ( gamemode != commercial)
     {
@@ -1667,6 +1557,7 @@ static void WI_updateStats(void)
       // killough 2/22/98: Make secrets = 100% if maxsecret = 0:
       cnt_secret[0] = (wbs->maxsecret ? 
                        (plrs[me].ssecret * 100) / wbs->maxsecret : 100);
+
       cnt_time = plrs[me].stime / TICRATE;
       cnt_par = wbs->partime / TICRATE;
       S_StartSound(0, sfx_barexp);
@@ -1901,11 +1792,7 @@ void WI_DrawBackground(void)
 {
   char  name[9];  // limited to 8 characters
 
-  if (state != StatCount && enterpic)
-      strcpy(name, enterpic);
-  else if (exitpic)
-      strcpy(name, exitpic);
-  else if (gamemode == commercial || (gamemode == retail && wbs->epsd == 3))
+  if (gamemode == commercial || (gamemode == retail && wbs->epsd == 3))
     strcpy(name, "INTERPIC");
   else 
     sprintf(name, "WIMAP%d", wbs->epsd);
@@ -1922,7 +1809,7 @@ void WI_DrawBackground(void)
 // Args:    none
 // Returns: void
 //
-void WI_loadData(void)
+static void WI_loadData(void)
 {
   int   i,j;
   char name[9];
@@ -1996,14 +1883,15 @@ void WI_loadData(void)
             }
         }
     }
+
   // More hacks on minus sign.
-  wiminus = W_CacheLumpName("WIMINUS", PU_STATIC);	
+  wiminus = W_CacheLumpName("WIMINUS", PU_STATIC); 
 
   for (i=0;i<10;i++)
     {
       // numbers 0-9
-	sprintf(name, "WINUM%d", i);
-	num[i] = W_CacheLumpName(name, PU_STATIC);
+      sprintf(name, "WINUM%d", i);     
+      num[i] = W_CacheLumpName(name, PU_STATIC);
     }
 
   // percent sign
@@ -2174,10 +2062,6 @@ static void WI_initVariables(wbstartstruct_t* wbstartstruct)
 void WI_Start(wbstartstruct_t* wbstartstruct)
 {
   WI_initVariables(wbstartstruct);
-
-  exitpic = (wbs->lastmapinfo && wbs->lastmapinfo->exitpic[0]) ? wbs->lastmapinfo->exitpic : NULL;
-  enterpic = (wbs->nextmapinfo && wbs->nextmapinfo->enterpic[0]) ? wbs->nextmapinfo->enterpic : NULL;
-
   WI_loadData();
 
   if (deathmatch)

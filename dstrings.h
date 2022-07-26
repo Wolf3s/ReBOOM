@@ -74,15 +74,5 @@ extern const size_t NUM_QUITMESSAGES;  // Calculated in dstrings.c
 
 extern const char* const endmsg[];   // killough 1/18/98 const added
 
-char* M_StringDuplicate(const char* orig);
-void M_ForceUppercase(char* text);
-boolean M_FileExists(const char *filename);
-char *M_FileCaseExists(const char *path);
-char *M_StringJoin(const char *s, ...);
-char *M_DirName(const char *path);
-const char* M_BaseName(const char* path);
-boolean M_StringConcat(char *dest, const char *src, size_t dest_size);
-void M_ForceLowercase(char *text);
-boolean M_StringCopy(char *dest, const char *src, size_t dest_size);
 
 #endif

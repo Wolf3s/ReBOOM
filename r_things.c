@@ -838,40 +838,37 @@ void R_DrawSprite(vissprite_t* spr)
     // killough 4/11/98: improve sprite clipping for underwater/fake ceilings
 
     if (spr->heightsec != -1)  // only things in specially marked sectors
-        {
-          fixed_t h,mh;
-          int phs = viewplayer->mo->subsector->sector->heightsec;
-          if ((mh = sectors[spr->heightsec].floorheight) > spr->gz &&
-              (h = centeryfrac - FixedMul(mh-=viewz, spr->scale)) >= 0 &&
-              (h >>= FRACBITS) < viewheight) {
+    {
+        fixed_t h, mh;
+        int phs = viewplayer->mo->subsector->sector->heightsec;
+        if ((mh = sectors[spr->heightsec].floorheight) > spr->gz &&
+            (h = centeryfrac - FixedMul(mh -= viewz, spr->scale)) >= 0 &&
+            (h >>= FRACBITS) < viewheight)
             if (mh <= 0 || (phs != -1 && viewz > sectors[phs].floorheight))
-              {                          // clip bottom
-                for (x=spr->x1 ; x<=spr->x2 ; x++)
-                  if (clipbot[x] == -2 || h < clipbot[x])
-                    clipbot[x] = h;
-              }
+            {                          // clip bottom
+                for (x = spr->x1; x <= spr->x2; x++)
+                    if (clipbot[x] == -2 || h < clipbot[x])
+                        clipbot[x] = h;
+            }
             else                        // clip top
-        if (phs != -1 && viewz <= sectors[phs].floorheight) // killough 11/98
-          for (x=spr->x1 ; x<=spr->x2 ; x++)
-            if (cliptop[x] == -2 || h > cliptop[x])
-        cliptop[x] = h;
-          }
+                for (x = spr->x1; x <= spr->x2; x++)
+                    if (cliptop[x] == -2 || h > cliptop[x])
+                        cliptop[x] = h;
 
-          if ((mh = sectors[spr->heightsec].ceilingheight) < spr->gzt &&
-              (h = centeryfrac - FixedMul(mh-viewz, spr->scale)) >= 0 &&
-              (h >>= FRACBITS) < viewheight) {
+        if ((mh = sectors[spr->heightsec].ceilingheight) < spr->gzt &&
+            (h = centeryfrac - FixedMul(mh - viewz, spr->scale)) >= 0 &&
+            (h >>= FRACBITS) < viewheight)
             if (phs != -1 && viewz >= sectors[phs].ceilingheight)
-              {                         // clip bottom
-                for (x=spr->x1 ; x<=spr->x2 ; x++)
-                  if (clipbot[x] == -2 || h < clipbot[x])
-                    clipbot[x] = h;
-              }
+            {                         // clip bottom
+                for (x = spr->x1; x <= spr->x2; x++)
+                    if (clipbot[x] == -2 || h < clipbot[x])
+                        clipbot[x] = h;
+            }
             else                       // clip top
-              for (x=spr->x1 ; x<=spr->x2 ; x++)
-                if (cliptop[x] == -2 || h > cliptop[x])
-                  cliptop[x] = h;
-          }
-        }
+                for (x = spr->x1; x <= spr->x2; x++)
+                    if (cliptop[x] == -2 || h > cliptop[x])
+                        cliptop[x] = h;
+    }
     // killough 3/27/98: end special clipping for deep water / fake ceilings
 
     // all clipping has been performed, so draw the sprite

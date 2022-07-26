@@ -31,7 +31,6 @@
 #define __M_MISC__
 
 #include "doomtype.h"
-#include "doomdef.h"
 
 //
 // MISC
@@ -46,8 +45,8 @@ int M_DrawText(int x,int y,boolean direct, char *string);
 struct default_s *M_LookupDefault(const char *name);     // killough 11/98
 boolean M_ParseOption(const char *name, boolean wad);    // killough 11/98
 void M_LoadOptions(void);                                // killough 11/98
-boolean M_StrToInt(const char* str, int* result);
-int M_snprintf(char* buf, size_t buf_len, const char* s, ...);
+
+extern int screenshot_pcx;                               // killough 10/98
 
 // phares 4/21/98:
 // Moved from m_misc.c so m_menu.c could see it.
