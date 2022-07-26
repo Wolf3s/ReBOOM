@@ -368,40 +368,6 @@ static void HandleWindowEvent(SDL_WindowEvent *event)
     }
 }
 
-// [FG] fullscreen toggle from Chocolate Doom 3.0
-
-static boolean ToggleFullScreenKeyShortcut(SDL_Keysym *sym)
-{
-    Uint16 flags = (KMOD_LALT | KMOD_RALT);
-#if defined(__APPLE__)
-    flags |= (KMOD_LGUI | KMOD_RGUI);
-#endif
-    return sym->scancode == SDL_SCANCODE_RETURN && (sym->mod & flags) != 0;
-}
-
-// [FG] window size when returning from fullscreen mode
-static int window_width, window_height;
-
-static void I_ToggleFullScreen(void)
-{
-    unsigned int flags = 0;
-
-    fullscreen = !fullscreen;
-
-    if (fullscreen == 1)
-    {
-        SDL_GetWindowSize(screen, &window_width, &window_height);
-        flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
-    }
-
-    SDL_SetWindowFullscreen(screen, flags);
-
-    if (fullscreen == 0)
-    {
-        SDL_SetWindowSize(screen, window_width, window_height);
-    }
-}
-
 // killough 3/22/98: rewritten to use interrupt-driven keyboard queue
 
 extern int usemouse;
@@ -429,11 +395,6 @@ void I_GetEvent()
       switch(event.type)
       {
       case SDL_KEYDOWN:
-         if (ToggleFullScreenKeyShortcut(&event.key.keysym))
-         {
-            I_ToggleFullScreen();
-            break;
-         }
          d_event.type = ev_keydown;
          d_event.data1 = I_TranslateKey(&event.key.keysym);
          // haleyjd 08/29/03: don't post out-of-range keys
@@ -692,15 +653,10 @@ static void I_InitGraphicsMode(void)
       grabmouse = 0;
 
    // [FG] window flags
-   flags |= SDL_WINDOW_RESIZABLE;
    flags |= SDL_WINDOW_ALLOW_HIGHDPI;
 
-   // haleyjd: fullscreen support
-   if(M_CheckParm("-fullscreen"))
-   {
-      fullscreen = 1; // 5/11/09: forgotten O_O
-      flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
-   }
+   fullscreen = 1; // 5/11/09: forgotten O_O
+   flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
 
    if(M_CheckParm("-aspect"))
       useaspect = true;
@@ -723,15 +679,6 @@ static void I_InitGraphicsMode(void)
          I_Error("Error creating window for video startup: %s",
                  SDL_GetError());
       }
-   }
-
-   // [FG] window size when returning from fullscreen mode
-   window_width = scalefactor * v_w;
-   window_height = scalefactor * actualheight;
-
-   if (!(flags & SDL_WINDOW_FULLSCREEN_DESKTOP))
-   {
-      SDL_SetWindowSize(screen, window_width, window_height);
    }
 
    pixel_format = SDL_GetWindowPixelFormat(screen);

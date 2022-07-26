@@ -105,8 +105,6 @@ boolean singletics = false; // debug flag to cancel adaptiveness
 boolean nosfxparm;
 boolean nomusicparm;
 
-int fullscreen = 0;
-
 //jff 4/18/98
 extern boolean inhelpscreens;
 

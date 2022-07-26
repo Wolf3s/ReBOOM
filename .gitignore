@@ -111,3 +111,8 @@ x64/Release/RCa01256
 x64/Release/RCa07708
 x64/Release/RCa10280
 *.res
+*.db
+*.db-shm
+*.db-wal
+*.opendb
+.vs/ReBOOM/v17/.suo

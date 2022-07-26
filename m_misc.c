@@ -1360,13 +1360,6 @@ default_t defaults[] = {
      "1 to precache all sound effects"
    },
 
-   {
-     "toggle_fullscreen",
-     (config_t*) &fullscreen, NULL,
-     {1}, {0, 1}, number, ss_none, wad_no,
-     "1 to enable fullscreen"
-   },
-
   {NULL}         // last entry
 };
 
