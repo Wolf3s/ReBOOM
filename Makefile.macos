@@ -1,0 +1,12 @@
+SRC = $(wildcard *.c)
+OBJ = $(SRC:.c=.o)
+CC = gcc
+CFLAGS = -std=c17 -pedantic -Wall -DUNIX -arch x86_64 -arch arm64
+LDFLAGS = -lSDL2-2.0.0 -lSDL2_mixer-2.0.0 -lSDL2_net-2.0.0 -lm
+
+reboom: $(OBJ)
+	$(CC) -o $@ $^ $(LDFLAGS)
+
+.PHONY: clean
+clean:
+	rm -f $(OBJ) reboom
