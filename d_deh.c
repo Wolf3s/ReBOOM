@@ -33,8 +33,8 @@
 
 // killough 5/2/98: fixed headers, removed rendunant external declarations:
 
-#ifndef WINDOWS
-#include <strings.h>
+#ifdef WINDOWS
+#include <string.h>
 #endif
 #include "doomdef.h"
 #include "doomstat.h"

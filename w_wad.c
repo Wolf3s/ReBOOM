@@ -27,9 +27,11 @@
 //
 //-----------------------------------------------------------------------------
 
-#ifndef WINDOWS
-#include <strings.h>
+#ifdef WINDOWS
+#include <string.h>
+#else
 #include <unistd.h>
+#include <string>
 #endif
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -540,7 +542,7 @@ void WritePredefinedLumpWad(const char *filename)
 #ifdef WINDOWS // proff: In Visual C open is defined a bit different
   if ( (handle = open (filenam, O_RDWR | O_CREAT | O_BINARY, _S_IWRITE|_S_IREAD)) != -1)
 #else
-  if ( (handle = open (filenam, O_RDWR | O_CREAT | 0, S_IWUSR|S_IRUSR)) != -1)
+  //if ( (handle = open (filenam, O_RDWR | O_CREAT | 0, S_IWUSR|S_IRUSR)) != -1)
 #endif
   {
     wadinfo_t header = {"PWAD"};

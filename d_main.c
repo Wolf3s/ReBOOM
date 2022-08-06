@@ -1150,7 +1150,7 @@ static void D_ProcessDehInWad(int i)
     {
         D_ProcessDehInWad(lumpinfo[i].next);
 #ifdef WINDOWS
-        if (!strnicmp(lumpinfo[i].name, "dehacked", 8) &&
+        if (!_strnicmp(lumpinfo[i].name, "dehacked", 8) &&
 #else
         if (!strncasecmp(lumpinfo[i].name, "dehacked", 8) &&
 #endif
