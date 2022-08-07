@@ -31,7 +31,7 @@
 #include <string.h>
 #else
 #include <unistd.h>
-#include <string>
+#include <string.h>
 #endif
 #include <sys/types.h>
 #include <sys/stat.h>
