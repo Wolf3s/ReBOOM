@@ -68,8 +68,8 @@ BEGIN
     "            VALUE ""FileDescription"", ""ReBOOM""\r\n"
     "            VALUE ""FileVersion"", RC_FILEVERSION2\r\n"
     "            VALUE ""InternalName"", ""Pooch""\r\n"
-    "            VALUE ""LegalCopyright"", ""Copyright © 1993-1996, id Software & 2018-2021, Gibbon""\r\n"
-    "            VALUE ""LegalTrademarks"", ""Doom® is a Registered Trademark of id Software, Inc.""\r\n"
+    "            VALUE ""LegalCopyright"", ""Copyright ï¿½ 1993-1999 id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman. 2018-2022 Gibbon & 2022 Wolf3s""\r\n"
+    "            VALUE ""LegalTrademarks"", ""Doomï¿½ is a Registered Trademark of id Software, Inc.""\r\n"
     "            VALUE ""OriginalFilename"", ""reboom.exe""\r\n"
     "            VALUE ""ProductName"", ""ReBOOM""\r\n"
     "            VALUE ""ProductVersion"", RC_PRODUCTVERSION2\r\n"
@@ -90,7 +90,7 @@ END
 // Icon
 //
 
-IDI_ICON1               ICON                    "icon1.ico"
+IDI_ICON1               ICON                    "ReBOOM.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -132,8 +132,8 @@ BEGIN
             VALUE "FileDescription", "ReBOOM"
             VALUE "FileVersion", RC_FILEVERSION2
             VALUE "InternalName", "ReBOOM"
-            VALUE "LegalCopyright", "Copyright © 1993-1996, id Software & 2018-2021, Gibbon"
-            VALUE "LegalTrademarks", "Doom® is a Registered Trademark of id Software, Inc."
+            VALUE "LegalCopyright", "Copyright ï¿½ 1993-1999 id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman. 2018-2022 Gibbon & 2022 Wolf3s"
+            VALUE "LegalTrademarks", "Doomï¿½ is a Registered Trademark of id Software, Inc."
             VALUE "OriginalFilename", "reboom.exe"
             VALUE "ProductName", "ReBOOM"
             VALUE "ProductVersion", RC_PRODUCTVERSION2
